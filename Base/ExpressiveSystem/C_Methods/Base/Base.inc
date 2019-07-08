@@ -7,7 +7,7 @@ ObjectBase_H = $(addsuffix .h,$(Base))
 
 
 DS_CALL = $(addsuffix DataStructures/,$(BASE_CALL))
-include  $(addsuffix DataStructures.inc,$(DS_CALL))
+# include  $(addsuffix DataStructures.inc,$(DS_CALL))
 
 DataStructures_HP = $(addprefix DataStructures/,$(DataStructures_H))
 DataStructures_OP = $(addprefix DataStructures/,$(DataStructures_O))

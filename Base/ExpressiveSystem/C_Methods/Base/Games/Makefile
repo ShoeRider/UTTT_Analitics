@@ -4,7 +4,7 @@ ENVDIR =
 include ../../Base/MakeBase.inc
 include Games.inc
 
-SUBDIRS =  TickTackToe UTickTackToe GameThreading
+SUBDIRS =  
 
 all: Games.o SubDirs #Simulation.o
 

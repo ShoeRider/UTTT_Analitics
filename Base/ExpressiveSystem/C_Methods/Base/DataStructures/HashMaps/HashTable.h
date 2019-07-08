@@ -1,9 +1,9 @@
 #ifndef HashTable_H
 #define HashTable_H
 
-#include "../Base.h"
-#include "DoublyLinkedList.h"
-#include "StringFields.h"
+#include "../../Base.h"
+#include "../DoublyLinkedList.h"
+#include "../StringFields.h"
 
 typedef struct Hash_t
 {
@@ -31,7 +31,7 @@ int Get_PJWHash_2D_CMatrix_t(_2D_CMatrix_t*_2D_CMatrix);
 
 
 HashTable_t* Create_HashTable_t(int ArraySize);
-int GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag);
+int GetItemIndex_HashTable(HashTable_t* HashTable,int UniqueTag);
 Hash_t* PULL_HashTable(HashTable_t* HashTable,int UniqueTag);
 bool Print_HashTable(HashTable_t* HashTable);
 Hash_t* Push_HashTable(HashTable_t* HashTable,void* Structure,int UniqueTag);

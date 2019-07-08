@@ -1,11 +1,11 @@
 # -*- MakeFile -*-
-include ../MakeBase.inc
+include ../../MakeBase.inc
 
 
 
-all: SubDirs $(DataStructures_CU) $(DataStructures_C)
+all: SubDirs $(Maps_C) $(Maps_CU)
 
-SUBDIRS = HashMaps
+SUBDIRS =
 #Calls all subdir makefiles
 .PHONY: SubDirs $(SUBDIRS)
 SubDirs: $(SUBDIRS)
@@ -13,10 +13,10 @@ $(SUBDIRS) :
 	$(MAKE) -C $@
 
 
-$(DataStructures_CU):
+$(Maps_CU):
 	nvcc -arch=$(arch) -c $(addsuffix .cu,$@) -o $(addsuffix .o,$@)
 
-$(DataStructures_C):
+$(Maps_C):
 	nvcc -arch=$(arch) -c $(addsuffix .c,$@) -o $(addsuffix .o,$@)
 
 
@@ -31,4 +31,4 @@ clean :
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
-	rm -f *.o *.gch
+	rm -f *.o *.gch HashTable

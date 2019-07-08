@@ -23,15 +23,10 @@ $(SUBDIRS) :
 
 #make Test Executable
 Test: SimTest $(ALLOBJS)
-	@echo $@
-	@echo $(ALLOBJS)
 	#$(CC) $(LFLAGS) SimTest.o $(ALLOBJS) -O3 -o $@ -lm
 	nvcc -arch=compute_61 -code=sm_61 -lcuda -Xcompiler -fopenmp SimTest.o $(ALLOBJS) -o $@
 
 SimTest :SimTest.cu Sim.h $(ALLHDR)
-	@echo "@"
-	@echo $@
-	@echo $(ALLHDR)
 	#$(CC) $(CFLAGS) SimTest.cu Sim.h $(ALLHDR)
 	nvcc -arch=sm_61 -c $@.cu -o $@.o
 

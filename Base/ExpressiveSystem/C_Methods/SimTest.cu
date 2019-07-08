@@ -87,11 +87,11 @@ void TerminalUnitTesting(bool Print, int CallSign)
   }
   else if (Option == 2)
   {
-    TTT_T(CallSign);
+    //TTT_T(CallSign);
   }
   else if (Option == 3)
   {
-    UTTT_T(CallSign);
+    //UTTT_T(CallSign);
   }
   else if (Option == 4)
   {

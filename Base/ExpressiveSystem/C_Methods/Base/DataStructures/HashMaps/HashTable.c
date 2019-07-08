@@ -58,7 +58,7 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 }
 
 
-int GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
+int GetItemIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
 {
 	int Index = UniqueTag % HashTable->ArraySize;
 	int OverLapIndex = Index;
@@ -85,7 +85,7 @@ int GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
 
 Hash_t* PULL_HashTable(HashTable_t* HashTable,int UniqueTag)
 {
-	int Index = GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag);
+	int Index = GetItemIndex_HashTable(HashTable,UniqueTag);
 	if(Index==-1)
 	{
 		return NULL;
@@ -111,6 +111,8 @@ Hash_t* Push_HashTable(HashTable_t* HashTable,void* Structure,int UniqueTag)
 		return NULL;
 	}
 	HashTable->ElementsAdded++;
+
+
 	while(true)
 	{
 		//printf("\t Accessing Index:%d\n",Index);
@@ -185,95 +187,5 @@ int Get_PJWHash_2D_CMatrix_t(_2D_CMatrix_t*_2D_CMatrix)
 	return PJWHash(_2D_CMatrix->Array,_2D_CMatrix->IndexSize);
 }
 
-//Create
-//Add
-//Remove
-//Free
-void HashTable_T0()
-{
-	const char* charString[100];
-	HashTable_t* HashTable = Create_HashTable_t(10);
-	for(int x=0;x<8;x++)
-	{
-		GatherTerminalString("Enter a string", (char*)&charString);
-		int UniqueTag =PJWHash((const char*)&charString, 99);
-		Push_HashTable(HashTable,NULL,UniqueTag);
-		Print_HashTable(HashTable);
-	}
-	Free_HashTable_t(HashTable);
-
-
-
-}
-void HashTable_T1()
-{
-	HashTable_t* HashTable  = Create_HashTable_t(1000000);
-	Free_HashTable_t(HashTable);
-}
-
-
-void PJWHash_T()
-{
-	const char* charString[100];
-	while(true)
-	{
-		GatherTerminalString("Enter a string", (char*)&charString);
-		printf("%d\n",PJWHash((const char*)&charString, 99));
-	}
-
-}
-
-
-void HashTable_TT()
-{
-	int SelectedTest = 0;
-  printf("0 = PJWHash_T()\n");
-  printf("1 = HashTable_T()\n");
-  printf("2 = \n");
-  printf("100 =\n");
-  GatherTerminalInt("Please Select Test:",&SelectedTest);
-  if (SelectedTest == 0)
-  {
-    PJWHash_T();
-  }
-  else if (SelectedTest == 1)
-  {
-		HashTable_T0();
-  }
-  else if (SelectedTest == 2)
-  {
-		HashTable_T1();
-  }
-  else if (SelectedTest == 3)
-  {
-
-  }
-  else if (SelectedTest == 4)
-  {
-
-  }
-  else if (SelectedTest == 100)
-  {
-
-  }
-}
-
-void HashTable_T(int CallSign)
-{
-	printf("\n\n");
-	printf("Starting HashTable_T Tests:\n");
-	printf("----------------------------\n");
-
-	if (CallSign == 1)
-	{
-		//
-	}
-	else
-	{
-		HashTable_TT();
-	}
-
-
-}
 
 #endif // HashTable_C

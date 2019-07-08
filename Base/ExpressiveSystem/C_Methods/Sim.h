@@ -7,8 +7,9 @@
 
 #include "Base/Base.c"
 #include "Base/DataStructures/DataStructures.h"
+#include "Base/DataStructures/HashMaps/HashMaps.h"
 
 #include "Base/NNOperations/NNOperations.h"
-#include "Base/Games/Games.h"
+//#include "Base/Games/Games.h"
 #include "Base/ParallelComponents/ParallelComponents.h"
 #endif //SIM_H

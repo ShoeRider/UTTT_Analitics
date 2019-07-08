@@ -5,6 +5,5 @@
 #include "DoublyLinkedList.c"
 #include "StringFields.h"
 #include "MMath.cu"
-#include "HashTable.c"
 
 #endif //DataStructures_H

@@ -4,6 +4,7 @@
 #include "HashTable.h"
 
 
+
 // Code Implementation File Information ///////////////////////////////////////
 /**
 * @file DoublyLinkedList.c
@@ -56,10 +57,11 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 	return HashTable;
 }
 
+
 int GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
 {
 	int Index = UniqueTag % HashTable->ArraySize;
-
+	int OverLapIndex = Index;
 	while(true)
 	{
 		if(!HashTable->Table[Index].Accessed)
@@ -73,28 +75,22 @@ int GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
 		Index++;
 		if(HashTable->ArraySize == Index)
 		{Index=0;}
+		if(Index==OverLapIndex)
+		{
+			return -1;
+		}
 	}
 }
 
 
 Hash_t* PULL_HashTable(HashTable_t* HashTable,int UniqueTag)
 {
-	int Index = UniqueTag % HashTable->ArraySize;
-
-	while(true)
+	int Index = GetIndex_HashTable(HashTable_t* HashTable,int UniqueTag);
+	if(Index==-1)
 	{
-		if(!HashTable->Table[Index].Accessed)
-		{
-			return NULL;
-		}
-		else if(HashTable->Table[Index].UniqueTag == UniqueTag)
-		{
-			return &HashTable->Table[Index];
-		}
-		Index++;
-		if(HashTable->ArraySize == Index)
-		{Index=0;}
+		return NULL;
 	}
+	return &HashTable->Table[Index];
 }
 
 bool Print_HashTable(HashTable_t* HashTable)

@@ -5,6 +5,6 @@
 General Discription:
 Contains:
   - DoublyLinkedList
-  - Dictionary
-  - 
+  - Dictionary(HashTable)
+  - Matrix
 */

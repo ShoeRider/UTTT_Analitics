@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <omp.h>
-
+#include <stdarg.h>
 //#include "DataStructures/FileServices/sqlite/sqlite3.h"
 
 #define ReadLine 1000

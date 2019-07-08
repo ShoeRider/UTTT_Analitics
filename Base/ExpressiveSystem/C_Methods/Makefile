@@ -19,7 +19,7 @@ $(SUBDIRS) :
 
 
 
-
+#I followed these instructions to Install CUDA: https://www.pugetsystems.com/labs/hpc/How-To-Install-CUDA-10-1-on-Ubuntu-19-04-1405/
 
 #make Test Executable
 Test: SimTest $(ALLOBJS)

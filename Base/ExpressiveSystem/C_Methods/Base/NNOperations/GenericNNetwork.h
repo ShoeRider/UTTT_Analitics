@@ -1,9 +1,6 @@
 #ifndef GenericNNetwork_H
 #define GenericNNetwork_H
 
-#include "../Base.h"
-#include "../DataStructures/DoublyLinkedList.h"
-#include "../DataStructures/MMath.h"
 #include "../ParallelComponents/GPU_Management.h"
 
 

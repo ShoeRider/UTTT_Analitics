@@ -35,6 +35,28 @@ void HashTable_V()
 	printf("HashTable  \t\t\tV:1.00\n");
 }
 
+HashTable_t* Create_HashTable_t()
+{
+	HashTable_t* HashTable = (HashTable_t*) malloc(sizeof(DefaultHashSize));
+
+	HashTable->ArraySize = DefaultHashSize;
+	HashTable->ElementsAdded = 0;
+	HashTable->DLL_Handle    = Create_DLL_Handle();
+	HashTable->Table = (Hash_t*) malloc(DefaultHashSize*sizeof(Hash_t));
+	Hash_t* SetHash = HashTable->Table;
+
+
+	for(int x=0;x<HashTable->ArraySize;x++)
+	{
+			//printf("Looping through array %d\n",x );
+		SetHash[x].Accessed  = false;
+		SetHash[x].Structure = NULL;
+		SetHash[x].UniqueTag = 0;
+					//printf("end of loop through array %d\n",x );
+	}
+	return HashTable;
+}
+
 HashTable_t* Create_HashTable_t(int ArraySize)
 {
 	HashTable_t* HashTable = (HashTable_t*) malloc(sizeof(HashTable_t));
@@ -58,7 +80,8 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 }
 
 
-int GetItemIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
+
+int GetIndex(HashTable_t* HashTable,int UniqueTag)
 {
 	int Index = UniqueTag % HashTable->ArraySize;
 	int OverLapIndex = Index;
@@ -83,9 +106,9 @@ int GetItemIndex_HashTable(HashTable_t* HashTable,int UniqueTag)
 }
 
 
-Hash_t* PULL_HashTable(HashTable_t* HashTable,int UniqueTag)
+Hash_t* Find(HashTable_t* HashTable,int UniqueTag)
 {
-	int Index = GetItemIndex_HashTable(HashTable,UniqueTag);
+	int Index = GetIndex(HashTable,UniqueTag);
 	if(Index==-1)
 	{
 		return NULL;
@@ -93,7 +116,7 @@ Hash_t* PULL_HashTable(HashTable_t* HashTable,int UniqueTag)
 	return &HashTable->Table[Index];
 }
 
-bool Print_HashTable(HashTable_t* HashTable)
+bool Print(HashTable_t* HashTable)
 {
 	for(int x=0;x<HashTable->ArraySize;x++)
 	{
@@ -102,7 +125,7 @@ bool Print_HashTable(HashTable_t* HashTable)
 	return true;
 }
 
-Hash_t* Push_HashTable(HashTable_t* HashTable,void* Structure,int UniqueTag)
+Hash_t* Add(HashTable_t* HashTable,void* Structure,int UniqueTag)
 {
 	int Index = UniqueTag % HashTable->ArraySize;
 	//printf("Push_HashTable- UniqueTag:%d HashTable->ArraySize:%d Index:%d\n",UniqueTag,HashTable->ArraySize, Index);
@@ -131,6 +154,7 @@ Hash_t* Push_HashTable(HashTable_t* HashTable,void* Structure,int UniqueTag)
 	}
 }
 
+
 void Free_HashTable_t(HashTable_t* HashTable)
 {
 	Hash_t* FreeHash = HashTable->Table;
@@ -141,51 +165,15 @@ void Free_HashTable_t(HashTable_t* HashTable)
 			free(FreeHash[x].Structure);
 		}
 	}
+	Free_DLL(HashTable,1);
+
 	free(FreeHash);
 	free(HashTable);
 }
 
-unsigned long ElfHash ( const unsigned char *s )
-{
-    unsigned long   h = 0, high;
-    while ( *s )
-    {
-        h = ( h << 4 ) + *s++;
-        if ( high = h & 0xF0000000 )
-            h ^= high >> 24;
-        h &= ~high;
-    }
-    return h;
-}
 
-unsigned int PJWHash(const char* str, unsigned int length)
-{
-   const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(unsigned int) * 8);
-   const unsigned int ThreeQuarters     = (unsigned int)((BitsInUnsignedInt  * 3) / 4);
-   const unsigned int OneEighth         = (unsigned int)(BitsInUnsignedInt / 8);
-   const unsigned int HighBits          =
-                      (unsigned int)(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
-   unsigned int hash = 0;
-   unsigned int test = 0;
-   unsigned int i    = 0;
 
-   for (i = 0; i < length; ++str, ++i)
-   {
-      hash = (hash << OneEighth) + (*str);
 
-      if ((test = hash & HighBits) != 0)
-      {
-         hash = (( hash ^ (test >> ThreeQuarters)) & (~HighBits));
-      }
-   }
-
-   return hash;
-}
-
-int Get_PJWHash_2D_CMatrix_t(_2D_CMatrix_t*_2D_CMatrix)
-{
-	return PJWHash(_2D_CMatrix->Array,_2D_CMatrix->IndexSize);
-}
 
 
 #endif // HashTable_C

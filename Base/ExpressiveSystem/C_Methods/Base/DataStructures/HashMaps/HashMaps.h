@@ -2,8 +2,8 @@
 #define HashMaps_H
 
 
-#include "HashTable.c"
-#include "HashTable_T.c"
+#include "HashTable/HashTable.c"
+#include "HashTable/HashTable_T.c"
 
 
 #endif //HashMaps_H

@@ -1,8 +1,8 @@
-#ifndef StringFields_C
-#define StringFields_C
+#ifndef StringField_C
+#define StringField_C
 
 
-#include "StringFields.h"
+#include "StringField.h"
 
 // Code Implementation File Information ///////////////////////////////////////
 /**
@@ -53,6 +53,44 @@ _2D_CMatrix_t* Copy_CMatrix(_2D_CMatrix_t* Given_2D_CMatrix)
 
 	return New_2D_CMatrix;
 }
+
+unsigned int PJWHash(const char* str, unsigned int length)
+{
+   const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(unsigned int) * 8);
+   const unsigned int ThreeQuarters     = (unsigned int)((BitsInUnsignedInt  * 3) / 4);
+   const unsigned int OneEighth         = (unsigned int)(BitsInUnsignedInt / 8);
+   const unsigned int HighBits          =
+                      (unsigned int)(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
+   unsigned int hash = 0;
+   unsigned int test = 0;
+   unsigned int i    = 0;
+
+   for (i = 0; i < length; ++str, ++i)
+   {
+      hash = (hash << OneEighth) + (*str);
+
+      if ((test = hash & HighBits) != 0)
+      {
+         hash = (( hash ^ (test >> ThreeQuarters)) & (~HighBits));
+      }
+   }
+
+   return hash;
+}
+
+unsigned long ElfHash ( const unsigned char *s )
+{
+    unsigned long   h = 0, high;
+    while ( *s )
+    {
+        h = ( h << 4 ) + *s++;
+        if ( high = h & 0xF0000000 )
+            h ^= high >> 24;
+        h &= ~high;
+    }
+    return h;
+}
+
 
 
 
@@ -769,25 +807,6 @@ bool ValidateNumber(char* Line)
   }
 }
 
-void Test_SSToken()
-{
-	char Line[100]=" \t  SomeImportantStuff";
-	char* LinePointer = &Line[0];
-	//SSearchToken(&LinePointer," \t","Some");
-	printf("%s\n",LinePointer);  // -> prints "Some Important Stuff"
 
-}
 
-void StringFields_T()
-{
-	printf("\n\n");
-	printf("Character Operations:\n");
-	printf("===================\n");
-	//IntegerToHex(10);
-	//IntegerToHex(12);
-
-	//Test_SSToken();
-
-}
-
-#endif // StringFields_C
+#endif // StringField_C

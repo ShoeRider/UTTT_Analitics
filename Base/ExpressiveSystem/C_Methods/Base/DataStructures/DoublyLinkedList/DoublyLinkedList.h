@@ -1,9 +1,7 @@
 #ifndef DoublyLinkedList_H
 #define DoublyLinkedList_H
 
-#include "../Base.h"
 
-#include "StringFields.c"
 // Program Header Information ////////////////////////////////////////
 /**
 * @file DoublyLinkedList.h

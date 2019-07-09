@@ -2,7 +2,7 @@
 #define StringFields_h
 
 
-#include "../Base.h"
+//#include "../Base.h"
 
 // Program Header Information ////////////////////////////////////////
 /**

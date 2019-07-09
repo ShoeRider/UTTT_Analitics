@@ -1,9 +1,8 @@
 #ifndef MMath_H
 #define MMath_H
 
-#include "../Base.h"
-#include "StringFields.h"
-#include "DoublyLinkedList.h"
+
+//#include "Primatives.h"
 
 typedef struct IMatrix_t
 {

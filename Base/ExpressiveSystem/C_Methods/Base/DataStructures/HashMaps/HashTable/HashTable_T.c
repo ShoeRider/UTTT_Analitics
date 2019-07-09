@@ -35,60 +35,36 @@
 //Add
 //Remove
 //Free
-void HashTable_T0()
+
+void MallocFree_HashTable_t()
 {
-	const char* charString[100];
-	HashTable_t* HashTable = Create_HashTable_t(10);
-	for(int x=0;x<8;x++)
-	{
-		GatherTerminalString("Enter a string", (char*)&charString);
-		int UniqueTag =PJWHash((const char*)&charString, 99);
-		Push_HashTable(HashTable,NULL,UniqueTag);
-		Print_HashTable(HashTable);
-	}
-	Free_HashTable_t(HashTable);
-
-
-
-}
-void HashTable_T1()
-{
-	HashTable_t* HashTable  = Create_HashTable_t(1000000);
+	HashTable_t* HashTable  = Create_HashTable_t();
 	Free_HashTable_t(HashTable);
 }
 
 
-void PJWHash_T()
-{
-	const char* charString[100];
-	while(true)
-	{
-		GatherTerminalString("Enter a string", (char*)&charString);
-		printf("%d\n",PJWHash((const char*)&charString, 99));
-	}
 
-}
 
 
 void HashTable_TT()
 {
 	int SelectedTest = 0;
-  printf("0 = PJWHash_T()\n");
-  printf("1 = HashTable_T()\n");
+  printf("0 = MallocFree_HashTable_t()\n");
+  printf("1 = ()\n");
   printf("2 = \n");
   printf("100 =\n");
   GatherTerminalInt("Please Select Test:",&SelectedTest);
   if (SelectedTest == 0)
   {
-    PJWHash_T();
+		MallocFree_HashTable_t();
   }
   else if (SelectedTest == 1)
   {
-		HashTable_T0();
+
   }
   else if (SelectedTest == 2)
   {
-		HashTable_T1();
+
   }
   else if (SelectedTest == 3)
   {

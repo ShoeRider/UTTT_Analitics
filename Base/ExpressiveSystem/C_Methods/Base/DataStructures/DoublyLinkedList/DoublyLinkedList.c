@@ -64,17 +64,7 @@ DLL_Node_t* Create_DLL_Node()
 	DLL_Node_Pointer->Given_Struct = NULL;
 	return DLL_Node_Pointer;
 }
-//creates space for DLL_Node_t, and returns a pointer
-DLL_Node_t* Create_DLL_Node_WithString(char* Given_String)
-{
-	char* String =(char *) malloc(sizeof(char)*MAXCHAR);
-	DLL_Node_t * DLL_Node_Pointer =(DLL_Node_t*) malloc(sizeof(DLL_Node_t));
-	DLL_Node_Pointer->Next=NULL;
-	DLL_Node_Pointer->Prev=NULL;
-	DLL_Node_Pointer->Given_Struct = String;
-	CopyString(Given_String,String);
-	return DLL_Node_Pointer;
-}
+
 
 
 
@@ -299,7 +289,30 @@ void ViewString_DLL(DLL_Handle_t* File_DLL)
 
 }
 
+void Free_DLL(DLL_Handle_t* DLL_Handle,int Ignore_Structures)
+{
+	if(DLL_Handle->ListLength > 0)
+	{
+		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
+		while(Node->Next != NULL)
+		{
+			if(Ignore_Structures)
+			{
+				free(Node->Given_Struct);
+			}
+			Node = (DLL_Node_t*)Node->Next;
+			free(Node->Prev);
+		}
+		if(Ignore_Structures)
+		{
+			free(Node->Given_Struct);
+		}
+		free(Node);
 
+	}
+	free(DLL_Handle->Mutex);
+	free(DLL_Handle);
+}
 
 //Takes pointer to Handle and free's all elements within the Linked List
 void Free_DLL(DLL_Handle_t* DLL_Handle)

@@ -1,8 +1,10 @@
 # UTTT_Analitics
-Ultimate Tick Tack Toe is a simple advancement to the game Tick Tack Toe, except the board is expanded to contain 9 smaller tick tack toe games.
-This is a Simple C program to find the best stratagies/moves based on the MonteCarlo Tree search. 
+Ultimate Tick Tack Toe is a simple advancement to the game Tick Tack Toe, except the board, is expanded to contain nine smaller tick tack toe games. for a general idea about the game check out this YouTube video: https://www.youtube.com/watch?v=37PC0bGMiTI
+Note the implemented rules in my program are slightly different and will be added in an additional document/Tutorial.
+
+This repository contains a simple C program to find the best strategies/moves based on the Monte Carlo Tree Search. 
 
 In progress: 
 + Implementing HashTable to remove overlapping game branches.
-+ Machine learning with Neural Networks with back propigation to help find moves faster 
++ Machine learning with Neural Networks with backpropagation to help find moves faster 
 

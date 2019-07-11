@@ -24,7 +24,7 @@
 //DLL - Doubly Linked List
 typedef struct DLL_Node_t
 {
-  void * Given_Struct;
+  void * GivenStruct;
   struct DLL_Node_t *Prev;
   struct DLL_Node_t *Next;
 } DLL_Node_t;
@@ -43,21 +43,6 @@ typedef struct DLL_Handle_t
 } DLL_Handle_t;
 
 
-typedef struct DLLCall_t
-{
-  struct DLL_Node_t *Node;
-  struct DLL_Handle_t *Head;
-} DLLCall_t;
-
-
-typedef struct PassThrough_t
-{
-  void * Given_Struct0;
-  void * Given_Struct1;
-  void * Given_Struct2;
-  void * Given_Struct3;
-  void * Mutex;
-} PassThrough_t;
 
 
 #define DLL_TransversedNode(Code)
@@ -119,10 +104,10 @@ if(DLL_Handle != NULL)                                    \
     DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;    \
     while(Node->Next != NULL)                             \
     {                                                     \
-       Method((Structure*)Node->Given_Struct);            \
+       Method((Structure*)Node->GivenStruct);            \
       Node = (DLL_Node_t*)Node->Next;                     \
     }                                                     \
-     Method((Structure*)Node->Given_Struct);              \
+     Method((Structure*)Node->GivenStruct);              \
   }                                                       \
                                                           \
 }                                                         \
@@ -137,10 +122,10 @@ if(DLL_Handle != NULL)                                    \
     DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;    \
     while(Node->Next != NULL)                             \
     {                                                     \
-      Sum += Method((Structure*)Node->Given_Struct);      \
+      Sum += Method((Structure*)Node->GivenStruct);      \
       Node = (DLL_Node_t*)Node->Next;                     \
     }                                                     \
-    Sum += Method((Structure*)Node->Given_Struct);        \
+    Sum += Method((Structure*)Node->GivenStruct);        \
   }                                                       \
                                                           \
 }                                                         \
@@ -154,11 +139,11 @@ void DLL_##Method##_##Structure(DLL_Handle_t* DLL_Handle)       \
     DLL_Node_t* Node1 = (DLL_Node_t*)DLL_Handle->First;         \
     while(Node1->Next != NULL)                                  \
     {                                                           \
-      FreeMethod((Structure*)Node1->Given_Struct);              \
+      FreeMethod((Structure*)Node1->GivenStruct);              \
       Node1 = (DLL_Node_t*)Node1->Next;                         \
       free(Node1->Prev);                                        \
     }                                                           \
-    FreeMethod((Structure*)Node1->Given_Struct);                \
+    FreeMethod((Structure*)Node1->GivenStruct);                \
     free(Node1);                                                \
   }                                                             \
   free(DLL_Handle->Mutex);                                      \
@@ -182,11 +167,11 @@ void Free_##Structure##_DLL(DLL_Handle_t* DLL_Handle)              \
     DLL_Node_t* Node1 = (DLL_Node_t*)DLL_Handle->First;         \
     while(Node1->Next != NULL)                                  \
     {                                                           \
-      FreeMethod((Structure*)Node1->Given_Struct);              \
+      FreeMethod((Structure*)Node1->GivenStruct);              \
       Node1 = (DLL_Node_t*)Node1->Next;                         \
       free(Node1->Prev);                                        \
     }                                                           \
-    FreeMethod((Structure*)Node1->Given_Struct);                \
+    FreeMethod((Structure*)Node1->GivenStruct);                \
     free(Node1);                                                \
   }                                                             \
   free(DLL_Handle->Mutex);                                      \
@@ -198,7 +183,7 @@ void Free_##Structure##_DLL(DLL_Handle_t* DLL_Handle)              \
 
 typedef struct TwoHandles_t
 {
-  void * Given_Struct0;
+  void * GivenStruct0;
   DLL_Handle_t *Head0;
   DLL_Handle_t *Head1;
 } TwoHandles_t;
@@ -207,26 +192,30 @@ typedef struct TwoHandles_t
 void DoublyLinkedList_V();
 // Function Prototypes
 //Create struct Functions
-DLL_Node_t* Create_DLL_Node();
-DLL_Node_t* Create_DLL_Node_WithStruct(void* Given_Struct);
-DLL_Node_t* Create_DLL_Node_WithString(char* Given_String);
+DLL_Node_t* Create_DLL_Node_t();
+DLL_Node_t* Create_DLL_Node_t(void* GivenStruct);
 DLL_Handle_t* Create_DLL_Handle();
 
+
+void Set(DLL_Node_t* Node,void* GivenStruct);
+
 //Addnodes to Doubly Linked List
-void Add_Node_To_Handle(DLL_Node_t* Node, DLL_Handle_t* Head);
-void Add_Node_To_Handle_T(DLLCall_t* DLLCall);
+void Add(DLL_Handle_t* Head,DLL_Node_t* Node);
+void Add(DLL_Handle_t* Head,void* GivenStruct);
+void Add(DLL_Node_t* Node,void* GivenStruct);
+void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node);
 
 
-void AddToEnd_DLLHandle_t(DLL_Node_t* Node, DLL_Handle_t* Head);
-void AddToStart_DLLHandle_t(DLL_Node_t* Node, DLL_Handle_t* Head);
 
-void AddStructTo_DLL_Node(DLL_Node_t* Node,void* Given_Struct);
 
 //View Functions
 void ViewString_DLL(DLL_Handle_t* File_DLL);
 
 //free Functions
-DLL_Node_t* RemoveGetFirst_Node_From_Handle_T(DLL_Handle_t* Head);
+DLL_Node_t* PopFirst(DLL_Handle_t* Head);
+DLL_Node_t* PopLast(DLL_Handle_t* Head);
+
 //void RemoveFirst_Node_From_Handle_T(DLL_Handle_t* Head);
+void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle);
 void Free_DLL(DLL_Handle_t* DLL_Handle);
 #endif //DoublyLinkedList_H

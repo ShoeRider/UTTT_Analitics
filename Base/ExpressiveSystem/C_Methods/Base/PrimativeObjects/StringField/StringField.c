@@ -54,7 +54,7 @@ _2D_CMatrix_t* Copy_CMatrix(_2D_CMatrix_t* Given_2D_CMatrix)
 	return New_2D_CMatrix;
 }
 
-unsigned int PJWHash(const char* str, unsigned int length)
+/*unsigned int PJWHash(char* str, unsigned int length)
 {
    const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(unsigned int) * 8);
    const unsigned int ThreeQuarters     = (unsigned int)((BitsInUnsignedInt  * 3) / 4);
@@ -76,9 +76,9 @@ unsigned int PJWHash(const char* str, unsigned int length)
    }
 
    return hash;
-}
+}*/
 
-unsigned long ElfHash ( const unsigned char *s )
+/*unsigned long ElfHash ( const unsigned char *s )
 {
     unsigned long   h = 0, high;
     while ( *s )
@@ -89,7 +89,7 @@ unsigned long ElfHash ( const unsigned char *s )
         h &= ~high;
     }
     return h;
-}
+}*/
 
 
 

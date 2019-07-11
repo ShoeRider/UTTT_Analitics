@@ -56,46 +56,38 @@ void DoublyLinkedList_V()
 
 
 //creates space for DLL_Node_t, and returns a pointer
-DLL_Node_t* Create_DLL_Node()
+DLL_Node_t* Create_DLL_Node_t()
 {
-	DLL_Node_t * DLL_Node_Pointer = (DLL_Node_t *)malloc(sizeof(DLL_Node_t));
-	DLL_Node_Pointer->Next = NULL;
-	DLL_Node_Pointer->Prev = NULL;
-	DLL_Node_Pointer->Given_Struct = NULL;
-	return DLL_Node_Pointer;
-}
-
-
-
-
-
-
-//creates space for DLL_Node_t, and returns a pointer
-void AddStructTo_DLL_Node(DLL_Node_t* Node,void* Given_Struct)
-{
-	if(Node->Given_Struct != NULL)
-	{
-		free(Node->Given_Struct);
-	}
-	Node->Given_Struct = Given_Struct;
+	return Create_DLL_Node_t(NULL);
 }
 
 
 //creates space for DLL_Node_t, and returns a pointer
-DLL_Node_t* Create_DLL_Node_WithStruct(void* Given_Struct)
+DLL_Node_t* Create_DLL_Node_t(void* GivenStruct)
 {
 	DLL_Node_t * DLL_Node_Pointer =(DLL_Node_t *) malloc(sizeof(DLL_Node_t));
 	DLL_Node_Pointer->Next = NULL;
 	DLL_Node_Pointer->Prev = NULL;
-	DLL_Node_Pointer->Given_Struct = Given_Struct;
+	DLL_Node_Pointer->GivenStruct = GivenStruct;
 	return DLL_Node_Pointer;
 }
 
 
 
+//creates space for DLL_Node_t, and returns a pointer
+void Set(DLL_Node_t* Node,void* GivenStruct)
+{
+	if(Node->GivenStruct != NULL)
+	{
+		free(Node->GivenStruct);
+	}
+	Node->GivenStruct = GivenStruct;
+}
+
+
 
 //creates space for DLL_Handle_t, and returns a pointer
-DLL_Handle_t* Create_DLL_Handle()
+DLL_Handle_t* Create_DLL_Handle_t()
 {
 	DLL_Handle_t* DLL_Handle = (DLL_Handle_t*)malloc(sizeof(DLL_Handle_t));
 	DLL_Handle->ListLength = 0;
@@ -111,7 +103,7 @@ DLL_Handle_t* Create_DLL_Handle()
 
 //takes un liked node(DoublyLinkedListNode_t) and adds connections to it
 //allso adds it to defined 'head'(DoublyLinkedListHead_t)
-DLL_Node_t* RemoveGetFirst_Node_From_Handle_T(DLL_Handle_t* Head)
+DLL_Node_t* PopFirst(DLL_Handle_t* Head)
 {
 	//Doesnt Delete First Node Just Removes It !!
 	DLL_Node_t* Removing = Head->First;
@@ -142,16 +134,16 @@ DLL_Node_t* RemoveGetFirst_Node_From_Handle_T(DLL_Handle_t* Head)
 
 //takes un liked node(DoublyLinkedListNode_t) and adds connections to it
 //allso adds it to defined 'head'(DoublyLinkedListHead_t)
-DLL_Node_t* RemoveGetLast_Node_From_Handle_T(DLL_Handle_t* Head)
+DLL_Node_t* PopLast(DLL_Handle_t* Head)
 {//TODO Test
 	//Doesnt Delete First Node Just Removes It !!
 	DLL_Node_t* Removing = Head->Last;
-	if(Head->ListLength == 0)								//If Head Has no Nodes, nothing to remove
+	if(Head->ListLength == 0)							//If Head Has no Nodes, nothing to remove
 	{
 		//do nothing
 		return NULL;
 	}
-	else if(Head->ListLength == 1)								//If Head Has no Nodes, nothing to remove
+	else if(Head->ListLength == 1)				//Head Has a single Nodes,
 	{
 		Head->First = NULL;
 		Head->Last = NULL;
@@ -170,9 +162,13 @@ DLL_Node_t* RemoveGetLast_Node_From_Handle_T(DLL_Handle_t* Head)
 	}
 }
 
-//takes un liked node(DoublyLinkedListNode_t) and adds connections to it
-//allso adds it to defined 'head'(DoublyLinkedListHead_t)
-void AddToEnd_DLLHandle_t(DLL_Node_t* Node, DLL_Handle_t* Head)
+
+
+
+
+//takes a new node(DoublyLinkedListNode_t) and adds it the end of a DLL
+//moves required Pointers
+void Add(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
 	DLL_Node_t* Temp = NULL;
 
@@ -192,7 +188,13 @@ void AddToEnd_DLLHandle_t(DLL_Node_t* Node, DLL_Handle_t* Head)
 	}
 }
 
-void AddToStart_DLLHandle_t(DLL_Node_t* Node, DLL_Handle_t* Head)
+void Add(DLL_Handle_t* Handle,void* GivenStruct)
+{
+	DLL_Node_t* NewNode = Create_DLL_Node_t(GivenStruct);
+	Add(Handle,NewNode);
+}
+
+void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
 	DLL_Node_t* Temp = NULL;
 
@@ -212,61 +214,55 @@ void AddToStart_DLLHandle_t(DLL_Node_t* Node, DLL_Handle_t* Head)
 	}
 }
 
-//takes un liked node(DoublyLinkedListNode_t) and adds connections to it
-//allso adds it to defined 'head'(DoublyLinkedListHead_t)
-void Add_Node_To_Handle_T(DLLCall_t* DLLCall)
+DLL_Node_t* Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
-	DLL_Node_t* Temp = NULL;
-
-	if(((DLL_Handle_t *)DLLCall->Head)->ListLength == 0)								//If Head Has no Nodes, Add Single Node
+	DLL_Node_t* Removing = Head->Last;
+	if(Head->First == Node)
 	{
-		((DLL_Handle_t *)DLLCall->Head)->First = (DLL_Node_t* )DLLCall->Node;
-		((DLL_Handle_t *)DLLCall->Head)->Last = (DLL_Node_t* )DLLCall->Node;
-		((DLL_Handle_t *)DLLCall->Head)->ListLength=1;
+		return PopFirst(Head);
+	}
+	else if(Head->Last == Node)
+	{
+		return PopLast(Head);
 	}
 	else
 	{
-		((DLL_Node_t*)DLLCall->Node)->Prev = ((DLL_Handle_t*)DLLCall->Head)->Last;
-		Temp = ((DLL_Handle_t *)DLLCall->Head)->Last;
-		((DLL_Handle_t *)DLLCall->Head)->Last = (DLL_Node_t*)DLLCall->Node;
-		Temp->Next = (DLL_Node_t* )DLLCall->Node;
-		((DLL_Handle_t *)DLLCall->Head)->ListLength++;
+		DLL_Node_t* Prev = (Removing->Prev);
+		DLL_Node_t* Next = (Removing->Next);
+		Prev->Next = Prev;
+		Prev->Prev = Next;
+
+		Head->ListLength--;
+		Removing->Next = NULL;
+		Removing->Prev = NULL;
+		return Removing;
 	}
 }
 
-//takes a new node(DoublyLinkedListNode_t) and adds it the end of a DLL
-//moves required Pointers
-void Add_Node_To_Handle(DLL_Node_t* Node, DLL_Handle_t* Head)
+void* Remove(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
-	DLL_Node_t* Temp = NULL;
-
-	if(Head->ListLength == 0)								//If Head Has no Nodes, Add Single Node
+	DLL_Node_t* DLL_Node = Pop(Head,Node);
+	void* GivenStruct = NULL;
+	if (DLL_Node == NULL)
 	{
-		Head->First = (DLL_Node_t* )Node;
-		Head->Last = (DLL_Node_t* )Node;
-		Head->ListLength = 1;
+		//Something went wrong
+		return GivenStruct;
 	}
-	else
-	{
-		Node->Prev = (DLL_Node_t* )Head->Last;
-		Temp = (DLL_Node_t* ) Head->Last;
-		Head->Last = (DLL_Node_t* )Node;
-		Temp->Next = (DLL_Node_t* )Node;
-		Head->ListLength++;
-	}
+	GivenStruct = DLL_Node->GivenStruct;
+	return GivenStruct;
 }
 
 
 //ViewString_Node
-//Takes DLL_Node_t and Prints (Node->Given_Struct) as a Character String
+//Takes DLL_Node_t and Prints (Node->GivenStruct) as a Character String
 void ViewString_Node(DLL_Node_t* Node)
 {
-  printf("%s\n",(char*)Node->Given_Struct);
+  printf("%s\n",(char*)Node->GivenStruct);
 }
 
 //ViewString_DLL
 //Takes DLL_Handle_t and Loops to each Node printing a string as
-// (Node->Given_Struct) as a Character String
+// (Node->GivenStruct) as a Character String
 void ViewString_DLL(DLL_Handle_t* File_DLL)
 {
   printf("Viewing String DLL\n");
@@ -279,7 +275,7 @@ void ViewString_DLL(DLL_Handle_t* File_DLL)
 	  while(NodeSlide->Next != NULL)
 	  {
 			//Node's String Value
-	    ViewString_Node(NodeSlide);
+	    //ViewString_Node(NodeSlide);
 			//then move to Next
 	    NodeSlide = (DLL_Node_t*)NodeSlide->Next;
 	  }
@@ -289,26 +285,17 @@ void ViewString_DLL(DLL_Handle_t* File_DLL)
 
 }
 
-void Free_DLL(DLL_Handle_t* DLL_Handle,int Ignore_Structures)
+void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle)
 {
 	if(DLL_Handle->ListLength > 0)
 	{
 		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
 		while(Node->Next != NULL)
 		{
-			if(Ignore_Structures)
-			{
-				free(Node->Given_Struct);
-			}
 			Node = (DLL_Node_t*)Node->Next;
 			free(Node->Prev);
 		}
-		if(Ignore_Structures)
-		{
-			free(Node->Given_Struct);
-		}
 		free(Node);
-
 	}
 	free(DLL_Handle->Mutex);
 	free(DLL_Handle);
@@ -322,11 +309,11 @@ void Free_DLL(DLL_Handle_t* DLL_Handle)
 		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
 		while(Node->Next != NULL)
 		{
-			free(Node->Given_Struct);
+			free(Node->GivenStruct);
 			Node = (DLL_Node_t*)Node->Next;
 			free(Node->Prev);
 		}
-		free(Node->Given_Struct);
+		free(Node->GivenStruct);
 		free(Node);
 
 	}

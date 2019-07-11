@@ -42,7 +42,15 @@ void MallocFree_HashTable_t()
 	Free_HashTable_t(HashTable);
 }
 
-
+void AddStrings_HashTable_T()
+{
+	HashTable_t* HashTable  = Create_HashTable_t(5);
+	Add(HashTable,"Test1",(void*)10);
+	Add(HashTable,"Test52",(void*)11);
+	Add(HashTable,"Test53",(void*)11);
+	Print(HashTable);
+	Free_HashTable_t(HashTable);
+}
 
 
 
@@ -50,7 +58,7 @@ void HashTable_TT()
 {
 	int SelectedTest = 0;
   printf("0 = MallocFree_HashTable_t()\n");
-  printf("1 = ()\n");
+  printf("1 = AddStrings_HashTable_T()\n");
   printf("2 = \n");
   printf("100 =\n");
   GatherTerminalInt("Please Select Test:",&SelectedTest);
@@ -60,7 +68,7 @@ void HashTable_TT()
   }
   else if (SelectedTest == 1)
   {
-
+		AddStrings_HashTable_T();
   }
   else if (SelectedTest == 2)
   {

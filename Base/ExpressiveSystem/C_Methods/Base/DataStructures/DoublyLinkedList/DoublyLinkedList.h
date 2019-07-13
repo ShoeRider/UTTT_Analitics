@@ -197,12 +197,15 @@ DLL_Node_t* Create_DLL_Node_t(void* GivenStruct);
 DLL_Handle_t* Create_DLL_Handle();
 
 
-void Set(DLL_Node_t* Node,void* GivenStruct);
+
 
 //Addnodes to Doubly Linked List
 void Add(DLL_Handle_t* Head,DLL_Node_t* Node);
-void Add(DLL_Handle_t* Head,void* GivenStruct);
+DLL_Node_t* Add(DLL_Handle_t* Head,void* GivenStruct);
+
 void Add(DLL_Node_t* Node,void* GivenStruct);
+void Set(DLL_Node_t* Node,void* GivenStruct);
+
 void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node);
 
 
@@ -214,6 +217,7 @@ void ViewString_DLL(DLL_Handle_t* File_DLL);
 //free Functions
 void* PopFirst(DLL_Handle_t* Head);
 void* PopLast(DLL_Handle_t* Head);
+void* Pop(DLL_Handle_t* Head,DLL_Node_t* Node);
 
 //void RemoveFirst_Node_From_Handle_T(DLL_Handle_t* Head);
 void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle);

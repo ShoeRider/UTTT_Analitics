@@ -10,6 +10,7 @@ typedef struct Hash_t
 {
   Mutex_t Mutex;
   bool Accessed; // Stores a boolean value if this element has ever been set.
+  bool InUse;
   int UniqueHash;
   void* GivenStruct;
 

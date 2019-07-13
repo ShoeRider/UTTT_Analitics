@@ -54,6 +54,7 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 	{
 			//printf("Looping through array %d\n",x );
 		HashTable->Table[x].Accessed    = false;
+		HashTable->Table[x].InUse       = false;
 		HashTable->Table[x].GivenStruct = NULL;
 		HashTable->Table[x].UniqueHash  = 0;
 					//printf("end of loop through array %d\n",x );
@@ -90,18 +91,18 @@ int _Extend(HashTable_t* HashTable)
 }
 
 
-//_Scan(ForNextOpening)(HashTable_t* HashTable,int UniqueHash)
+//_ScanAdd(ForNextOpening)(HashTable_t* HashTable,int UniqueHash)
 //Retruns:
 // [0-MaxInteger] : Index in HashTable->Table[Index]
 // -1             : Entry Exists
 // -2             : Array Full/Unexpected Error
-int _Scan(HashTable_t* HashTable,int UniqueHash)
+int _ScanAdd(HashTable_t* HashTable,int UniqueHash)
 {
 	int Index = UniqueHash % HashTable->ArraySize;
 	int OverlapedStartIndex = Index;
 	while(true)
 	{
-		if(!HashTable->Table[Index].Accessed)
+		if(!HashTable->Table[Index].Accessed && !HashTable->Table[Index].InUse)
 		{
 			return Index;
 		}
@@ -134,6 +135,9 @@ int Exists(HashTable_t* HashTable,int UniqueHash)
 	int OverlapedStartIndex = Index;
 	while(true)
 	{
+		printf("\tIndex:%d\n",Index);
+		printf("\t  Accessed:%d\n",HashTable->Table[Index].Accessed);
+		printf("\t  UniqueHash:%d\n",HashTable->Table[Index].UniqueHash);
 		if(!HashTable->Table[Index].Accessed)
 		{
 			return -1;
@@ -142,8 +146,12 @@ int Exists(HashTable_t* HashTable,int UniqueHash)
 		{
 			return Index;
 		}
+		printf("\t  OverlapedStartIndex:%d,%d\n",OverlapedStartIndex,Index);
+
 		Index++;
-		if(HashTable->ArraySize >= Index)
+		printf("\t  HashTable->ArraySize:%d\n",HashTable->ArraySize);
+
+		if(HashTable->ArraySize <= Index)
 		{
 			Index = 0;
 		}
@@ -151,6 +159,7 @@ int Exists(HashTable_t* HashTable,int UniqueHash)
 		{
 			return -2;
 		}
+
 	}
 }
 
@@ -163,7 +172,7 @@ int Exists(HashTable_t* HashTable,int UniqueHash)
 // -2             : Array Full, Unexpected Error
 int Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 {
-	int Index = _Scan(HashTable,UniqueHash);
+	int Index = _ScanAdd(HashTable,UniqueHash);
 	if (Index<0)
 	{
 		return Index;
@@ -171,9 +180,13 @@ int Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 
 	//Add to Hash Array and DLL
 	HashTable->Table[Index].Accessed    = true;
+	HashTable->Table[Index].InUse       = true;
 	HashTable->Table[Index].UniqueHash  = UniqueHash;
 	HashTable->Table[Index].GivenStruct = GivenStruct;
-	Add(HashTable->Elements,(void*)&HashTable->Table[Index]);
+
+	HashTable->Table[Index].DLL_Node
+	 							= Add(HashTable->Elements,(void*)&HashTable->Table[Index]);
+
 	HashTable->ElementsAdded++;
 	_Extend(HashTable);
 	return Index;
@@ -231,16 +244,25 @@ void* Get(HashTable_t* HashTable, char* String)
 	return Get(HashTable,hash);
 }
 
-void Remove(HashTable_t* HashTable,Hash_t* Hash)
-{
-	Hash->UniqueHash = 0;
-	Hash->GivenStruct = NULL;
-	Pop(HashTable->Elements,Hash->DLL_Node);
-}
 
-void Remove(HashTable_t* HashTable,int UniqueHash)
+//Remove(HashTable_t* HashTable,int UniqueHash)
+//Returns Index
+// [0-MaxInteger] : Index in HashTable->Table[Index]
+// -1             : No UniqueHash
+// -2             : Unexpected Error
+int Remove(HashTable_t* HashTable,int UniqueHash)
 {
+	int Index = Exists(HashTable,UniqueHash);
+	if(Index>=0)
+	{
+		//Hash_t* Hash      = &;
+		HashTable->Table[Index].UniqueHash  = 0;
+		HashTable->Table[Index].GivenStruct = NULL;
+		HashTable->Table[Index].InUse       = false;
 
+		Pop(HashTable->Elements,HashTable->Table[Index].DLL_Node);
+	}
+	return Index;
 }
 
 
@@ -251,12 +273,14 @@ void Remove(HashTable_t* HashTable,int UniqueHash)
 void* Pop(HashTable_t* HashTable,int Hash)
 {
 	int Index = Exists(HashTable,Hash);
+	printf("Exists:%d\n",Index);
 	if (Index>=0)
 	{
 		void* GivenStruct = (&HashTable->Table[Index])->GivenStruct;
-		Remove(HashTable,&HashTable->Table[Index]);
+		Remove(HashTable,Hash);
 		return GivenStruct;
 	}
+	printf("Hash :%d Not found!\n",Hash);
 	return NULL;
 }
 
@@ -278,11 +302,14 @@ void* Pop(HashTable_t* HashTable, char* String)
 //Print(HashTable_t* HashTable)
 void Print(HashTable_t* HashTable)
 {
+	printf("\n\n");
+	printf("HashTable: %p\n",HashTable);
 	for(int x=0;x<HashTable->ArraySize;x++)
 	{
-		printf("Index:%d, Accessed: %d, UniqueTag: %d, UniqueTag: %p\n",x, HashTable->Table[x].Accessed, HashTable->Table[x].UniqueHash,HashTable->Table[x].GivenStruct);
+		printf("\tIndex:%d, Accessed: %d, UniqueTag: %d, UniqueTag: %p\n",x, HashTable->Table[x].Accessed, HashTable->Table[x].UniqueHash,HashTable->Table[x].GivenStruct);
 	}
-
+	Print(HashTable->Elements);
+	printf("\n\n");
 }
 
 

@@ -204,10 +204,11 @@ void Add(DLL_Handle_t* Head,DLL_Node_t* Node)
 	}
 }
 
-void Add(DLL_Handle_t* Handle,void* GivenStruct)
+DLL_Node_t* Add(DLL_Handle_t* Handle,void* GivenStruct)
 {
 	DLL_Node_t* NewNode = Create_DLL_Node_t(GivenStruct);
 	Add(Handle,NewNode);
+	return NewNode;
 }
 
 void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node)

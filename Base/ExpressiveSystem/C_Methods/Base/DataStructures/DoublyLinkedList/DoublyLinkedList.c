@@ -74,7 +74,6 @@ DLL_Node_t* Create_DLL_Node_t(void* GivenStruct)
 
 
 
-//creates space for DLL_Node_t, and returns a pointer
 void Set(DLL_Node_t* Node,void* GivenStruct)
 {
 	if(Node->GivenStruct != NULL)
@@ -83,6 +82,7 @@ void Set(DLL_Node_t* Node,void* GivenStruct)
 	}
 	Node->GivenStruct = GivenStruct;
 }
+
 
 
 
@@ -103,7 +103,7 @@ DLL_Handle_t* Create_DLL_Handle_t()
 
 //takes un liked node(DoublyLinkedListNode_t) and adds connections to it
 //allso adds it to defined 'head'(DoublyLinkedListHead_t)
-DLL_Node_t* PopFirst(DLL_Handle_t* Head)
+void* PopFirst(DLL_Handle_t* Head)
 {
 	//Doesnt Delete First Node Just Removes It !!
 	DLL_Node_t* Removing = Head->First;
@@ -117,7 +117,6 @@ DLL_Node_t* PopFirst(DLL_Handle_t* Head)
 		Head->First = NULL;
 		Head->Last = NULL;
 		Head->ListLength = 0;
-		return Removing;
 	}
 	else
 	{
@@ -127,14 +126,23 @@ DLL_Node_t* PopFirst(DLL_Handle_t* Head)
 		Removing->Next = NULL;
 		Temp->Prev = NULL;
 		Head->ListLength--;
-		return Removing;
 	}
+
+
+	if (Removing == NULL)
+	{
+		//Something went wrong
+		return NULL;
+	}
+	void* GivenStruct = Removing->GivenStruct;
+	free(Removing);
+	return GivenStruct;
 }
 
 
 //takes un liked node(DoublyLinkedListNode_t) and adds connections to it
 //allso adds it to defined 'head'(DoublyLinkedListHead_t)
-DLL_Node_t* PopLast(DLL_Handle_t* Head)
+void* PopLast(DLL_Handle_t* Head)
 {//TODO Test
 	//Doesnt Delete First Node Just Removes It !!
 	DLL_Node_t* Removing = Head->Last;
@@ -148,7 +156,6 @@ DLL_Node_t* PopLast(DLL_Handle_t* Head)
 		Head->First = NULL;
 		Head->Last = NULL;
 		Head->ListLength = 0;
-		return Removing;
 	}
 	else
 	{
@@ -158,8 +165,17 @@ DLL_Node_t* PopLast(DLL_Handle_t* Head)
 		Removing->Next = NULL;
 		Temp->Prev = NULL;
 		Head->ListLength--;
-		return Removing;
 	}
+
+
+	if (Removing == NULL)
+	{
+		//Something went wrong
+		return NULL;
+	}
+	void* GivenStruct = Removing->GivenStruct;
+	free(Removing);
+	return GivenStruct;
 }
 
 
@@ -214,9 +230,18 @@ void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node)
 	}
 }
 
-DLL_Node_t* Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
+//Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
+//Retruns:
+// 0 : Success
+// -1:
+void* Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
-	DLL_Node_t* Removing = Head->Last;
+	if (Node == NULL)
+	{
+		//Something went wrong
+		return NULL;
+	}
+
 	if(Head->First == Node)
 	{
 		return PopFirst(Head);
@@ -227,63 +252,55 @@ DLL_Node_t* Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
 	}
 	else
 	{
-		DLL_Node_t* Prev = (Removing->Prev);
-		DLL_Node_t* Next = (Removing->Next);
+		Head->ListLength--;
+
+		DLL_Node_t* Prev = (Node->Prev);
+		DLL_Node_t* Next = (Node->Next);
 		Prev->Next = Prev;
 		Prev->Prev = Next;
 
-		Head->ListLength--;
-		Removing->Next = NULL;
-		Removing->Prev = NULL;
-		return Removing;
-	}
-}
+		Node->Next = NULL;
+		Node->Prev = NULL;
 
-void* Remove(DLL_Handle_t* Head,DLL_Node_t* Node)
-{
-	DLL_Node_t* DLL_Node = Pop(Head,Node);
-	void* GivenStruct = NULL;
-	if (DLL_Node == NULL)
-	{
-		//Something went wrong
+		void* GivenStruct = Node->GivenStruct;
+		free(Node);
 		return GivenStruct;
 	}
-	GivenStruct = DLL_Node->GivenStruct;
-	return GivenStruct;
 }
 
 
-//ViewString_Node
-//Takes DLL_Node_t and Prints (Node->GivenStruct) as a Character String
-void ViewString_Node(DLL_Node_t* Node)
-{
-  printf("%s\n",(char*)Node->GivenStruct);
-}
 
-//ViewString_DLL
-//Takes DLL_Handle_t and Loops to each Node printing a string as
-// (Node->GivenStruct) as a Character String
-void ViewString_DLL(DLL_Handle_t* File_DLL)
+
+//Print(HashTable_t* HashTable)
+void Print(DLL_Handle_t* Handle)
 {
-  printf("Viewing String DLL\n");
-	//create Node_Slide that 'Slides' accross the given DLL Nodes
-	if((DLL_Node_t*)File_DLL->First!=NULL)
+	printf("DLL Handle Located At:%p\n",Handle);
+	if (Handle->ListLength == 0)
 	{
-		DLL_Node_t* NodeSlide = (DLL_Node_t*)File_DLL->First;
-
-		//Loop through the DLL untill the end
-	  while(NodeSlide->Next != NULL)
+		printf("No Nodes added at this time.\n");
+	}
+	else
+	{
+	  if(Handle->ListLength > 0)
 	  {
-			//Node's String Value
-	    //ViewString_Node(NodeSlide);
-			//then move to Next
-	    NodeSlide = (DLL_Node_t*)NodeSlide->Next;
+	    DLL_Node_t* Node = (DLL_Node_t*)Handle->First;
+			int NodeItteration = 0;
+	    while(Node->Next != NULL)
+	    {
+	      printf("\tNode:%d, Structure:%p\n",NodeItteration, Node->GivenStruct);
+	      Node = (DLL_Node_t*)Node->Next;
+				NodeItteration++;
+	    }
+	    printf("\tNode:%d, Structure:%p\n",NodeItteration, Node->GivenStruct);
 	  }
-		//Print the final Node
-	  ViewString_Node(NodeSlide);
 	}
 
 }
+
+
+
+
+
 
 void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle)
 {

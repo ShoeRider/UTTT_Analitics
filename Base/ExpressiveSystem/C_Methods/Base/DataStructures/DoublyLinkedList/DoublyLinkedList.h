@@ -212,8 +212,8 @@ void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node);
 void ViewString_DLL(DLL_Handle_t* File_DLL);
 
 //free Functions
-DLL_Node_t* PopFirst(DLL_Handle_t* Head);
-DLL_Node_t* PopLast(DLL_Handle_t* Head);
+void* PopFirst(DLL_Handle_t* Head);
+void* PopLast(DLL_Handle_t* Head);
 
 //void RemoveFirst_Node_From_Handle_T(DLL_Handle_t* Head);
 void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle);

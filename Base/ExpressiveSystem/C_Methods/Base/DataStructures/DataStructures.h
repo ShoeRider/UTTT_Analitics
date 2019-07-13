@@ -2,6 +2,7 @@
 #define DataStructures_H
 
 #include "DoublyLinkedList/DoublyLinkedList.c"
+#include "DoublyLinkedList/DoublyLinkedList_T.c"
 #include "HashMaps/HashMaps.h"
 
 #include "MMath.cu"

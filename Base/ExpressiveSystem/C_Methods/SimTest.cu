@@ -65,7 +65,7 @@ void TerminalUnitTesting(bool Print, int CallSign)
   printf("===================\n");
   printf("99: ALL:\n");
   printf("1: Base_T:\n");
-  printf("2: TTT_T:\n");
+  printf("2: DoublyLinkedList:\n");
   printf("3: UTTT_T:\n");
   printf("4: XML_Light:\n");
   printf("5: NNLayer_T:\n");
@@ -87,7 +87,7 @@ void TerminalUnitTesting(bool Print, int CallSign)
   }
   else if (Option == 2)
   {
-    //TTT_T(CallSign);
+    DoublyLinkedList_T(CallSign);
   }
   else if (Option == 3)
   {

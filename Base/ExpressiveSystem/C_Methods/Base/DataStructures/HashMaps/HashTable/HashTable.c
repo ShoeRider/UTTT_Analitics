@@ -231,6 +231,17 @@ void* Get(HashTable_t* HashTable, char* String)
 	return Get(HashTable,hash);
 }
 
+void Remove(HashTable_t* HashTable,Hash_t* Hash)
+{
+	Hash->UniqueHash = 0;
+	Hash->GivenStruct = NULL;
+	Pop(HashTable->Elements,Hash->DLL_Node);
+}
+
+void Remove(HashTable_t* HashTable,int UniqueHash)
+{
+
+}
 
 
 //Pop(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
@@ -243,7 +254,7 @@ void* Pop(HashTable_t* HashTable,int Hash)
 	if (Index>=0)
 	{
 		void* GivenStruct = (&HashTable->Table[Index])->GivenStruct;
-
+		Remove(HashTable,&HashTable->Table[Index]);
 		return GivenStruct;
 	}
 	return NULL;
@@ -265,10 +276,6 @@ void* Pop(HashTable_t* HashTable, char* String)
 
 
 //Print(HashTable_t* HashTable)
-//Retruns:
-// [0-MaxInteger] : Index in HashTable->Table[Index]
-// -1             : UniqueTag Already Exists
-// -2             : Array Full, Unexpected Error
 void Print(HashTable_t* HashTable)
 {
 	for(int x=0;x<HashTable->ArraySize;x++)

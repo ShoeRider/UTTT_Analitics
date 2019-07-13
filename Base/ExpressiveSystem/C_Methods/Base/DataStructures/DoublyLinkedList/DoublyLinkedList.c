@@ -302,7 +302,7 @@ void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle)
 }
 
 //Takes pointer to Handle and free's all elements within the Linked List
-void Free_DLL(DLL_Handle_t* DLL_Handle)
+void Free(DLL_Handle_t* DLL_Handle)
 {
 	if(DLL_Handle->ListLength > 0)
 	{
@@ -321,5 +321,23 @@ void Free_DLL(DLL_Handle_t* DLL_Handle)
 	free(DLL_Handle);
 }
 
+void Free(DLL_Handle_t* DLL_Handle,Free_* Free)
+{
+	if(DLL_Handle->ListLength > 0)
+	{
+		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
+		while(Node->Next != NULL)
+		{
+			free(Node->GivenStruct);
+			Node = (DLL_Node_t*)Node->Next;
+			free(Node->Prev);
+		}
+		free(Node->GivenStruct);
+		free(Node);
+
+	}
+	free(DLL_Handle->Mutex);
+	free(DLL_Handle);
+}
 
 #endif // DoublyLinkedList_C

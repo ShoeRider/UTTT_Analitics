@@ -23,9 +23,12 @@
 
 
 typedef void *(*RunTimeFunction)(void *);
+typedef void (*Print_)(void *);
+typedef void (*Free_)(void *);
+
 
 #define ReturnVoid(X) return ((void*) X)
-#define LoopForever for(;;){}
+
 #define BreakDef int myvariable;
 #define InBreak scanf("%d",&myvariable);
 #define Break printf("%d",&NULL);

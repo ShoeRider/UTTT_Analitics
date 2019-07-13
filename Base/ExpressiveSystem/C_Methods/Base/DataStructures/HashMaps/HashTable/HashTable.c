@@ -101,7 +101,6 @@ int _Scan(HashTable_t* HashTable,int UniqueHash)
 	int OverlapedStartIndex = Index;
 	while(true)
 	{
-		printf("%d,%d\n",Index,OverlapedStartIndex );
 		if(!HashTable->Table[Index].Accessed)
 		{
 			return Index;
@@ -155,20 +154,7 @@ int Exists(HashTable_t* HashTable,int UniqueHash)
 	}
 }
 
-//Get(HashTable_t* HashTable,int UniqueHash)
-//Retruns:
-// [0-MaxInteger] : Index in HashTable->Table[Index]
-// -1             : No Entry Exists
-// -2             : Array Full/Unexpected Error
-void* Get(HashTable_t* HashTable,int UniqueHash)
-{
-	int Index = Exists(HashTable,UniqueHash);
-	if (Index>=0)
-	{
-		return (void*)(&HashTable->Table[Index])->GivenStruct;
-	}
-	return NULL;
-}
+
 
 //Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 //Retruns:
@@ -178,7 +164,6 @@ void* Get(HashTable_t* HashTable,int UniqueHash)
 int Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 {
 	int Index = _Scan(HashTable,UniqueHash);
-	printf("\n\nIndex:%d\n\n",Index);
 	if (Index<0)
 	{
 		return Index;
@@ -216,12 +201,39 @@ int Add(HashTable_t* HashTable, char* String,void* GivenStruct)
 {
 	//String
 	int hash = (int) ElfHash(String);
-	printf("\n\n%d\n\n",hash);
 	return Add(HashTable,hash,GivenStruct);
 }
 
 
-//Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
+//Get(HashTable_t* HashTable,int Hash)
+//Retruns:
+// Void* : Success
+// NULL  : Something went wrong
+void* Get(HashTable_t* HashTable,int Hash)
+{
+	int Index = Exists(HashTable,Hash);
+	if (Index>=0)
+	{
+		return (&HashTable->Table[Index])->GivenStruct;
+	}
+	return NULL;
+}
+
+//Get(HashTable_t* HashTable, char* String)
+//Retruns:
+// [0-MaxInteger] : Index in HashTable->Table[Index]
+// -1             : UniqueTag Already Exists
+// -2             : Array Full, Unexpected Error
+void* Get(HashTable_t* HashTable, char* String)
+{
+	//String
+	int hash = (int) ElfHash(String);
+	return Get(HashTable,hash);
+}
+
+
+
+//Pop(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 //Retruns:
 // Void* : Success
 // NULL  : Something went wrong
@@ -237,26 +249,33 @@ void* Pop(HashTable_t* HashTable,int Hash)
 	return NULL;
 }
 
-int Remove_Index(HashTable_t* HashTable,int Index)
+//Pop(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
+//Retruns:
+// [0-MaxInteger] : Index in HashTable->Table[Index]
+// -1             : UniqueTag Already Exists
+// -2             : Array Full, Unexpected Error
+void* Pop(HashTable_t* HashTable, char* String)
 {
-	return 0;
+	//String
+	int hash = (int) ElfHash(String);
+	return Pop(HashTable,hash);
 }
 
-int Remove_Hash(HashTable_t* HashTable, int UniqueHash)
-{
-	//int Index = UniqueHash % HashTable->ArraySize;
-	return 0;
-}
 
 
 
-bool Print(HashTable_t* HashTable)
+//Print(HashTable_t* HashTable)
+//Retruns:
+// [0-MaxInteger] : Index in HashTable->Table[Index]
+// -1             : UniqueTag Already Exists
+// -2             : Array Full, Unexpected Error
+void Print(HashTable_t* HashTable)
 {
 	for(int x=0;x<HashTable->ArraySize;x++)
 	{
 		printf("Index:%d, Accessed: %d, UniqueTag: %d, UniqueTag: %p\n",x, HashTable->Table[x].Accessed, HashTable->Table[x].UniqueHash,HashTable->Table[x].GivenStruct);
 	}
-	return true;
+
 }
 
 

@@ -48,6 +48,7 @@ void AddStrings_HashTable_T()
 	Add(HashTable,"Test1",(void*)10);
 	Add(HashTable,"Test52",(void*)11);
 	Add(HashTable,"Test53",(void*)11);
+	printf("%p\n",Pop(HashTable,"Test53"));
 	Print(HashTable);
 	Free_HashTable_t(HashTable);
 }

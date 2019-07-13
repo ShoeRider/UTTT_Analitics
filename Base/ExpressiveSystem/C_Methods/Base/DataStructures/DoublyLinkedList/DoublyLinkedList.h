@@ -217,5 +217,6 @@ DLL_Node_t* PopLast(DLL_Handle_t* Head);
 
 //void RemoveFirst_Node_From_Handle_T(DLL_Handle_t* Head);
 void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle);
-void Free_DLL(DLL_Handle_t* DLL_Handle);
+void Free(DLL_Handle_t* DLL_Handle);
+void Free(DLL_Handle_t* DLL_Handle,Free_* Free);
 #endif //DoublyLinkedList_H

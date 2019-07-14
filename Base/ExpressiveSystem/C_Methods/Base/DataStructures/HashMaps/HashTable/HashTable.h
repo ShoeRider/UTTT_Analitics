@@ -12,6 +12,7 @@ typedef struct Hash_t
   bool Accessed; // Stores a boolean value if this element has ever been set.
   bool InUse;
   int UniqueHash;
+  void* Identifier;
   void* GivenStruct;
 
   DLL_Node_t* DLL_Node;
@@ -22,7 +23,8 @@ typedef struct HashTable_t
 {
   Hash_t* Table;
   int ArraySize;
-  int ElementsAdded;
+  int Entries;
+  int UsedCells;
 
   //RunTimeFunction* Hash_Structure;
   DLL_Handle_t* Elements; //DLL_Node Points to Hash_t
@@ -47,7 +49,7 @@ Hash_t* PULL_HashTable(HashTable_t* HashTable,int UniqueTag);
 Hash_t* Add(HashTable_t* HashTable,void* Structure,int UniqueTag);
 Hash_t* Find(HashTable_t* HashTable,int UniqueTag);
 */
-void Free_HashTable_t(HashTable_t*HashTable);
+void Free(HashTable_t*HashTable);
 
 void HashTable_T(int CallSign);
 #endif //HashTable_H

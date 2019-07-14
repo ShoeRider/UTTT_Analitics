@@ -3,8 +3,11 @@
 
 #include "DoublyLinkedList/DoublyLinkedList.c"
 #include "DoublyLinkedList/DoublyLinkedList_T.c"
+#include "Strings/Strings.h"
+//#include "Strings/Strings.c"
+
 #include "HashMaps/HashMaps.h"
 
-#include "MMath.cu"
+#include "Math/Math.h"
 
 #endif //DataStructures_H

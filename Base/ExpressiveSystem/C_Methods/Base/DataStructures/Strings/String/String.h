@@ -18,6 +18,16 @@
 * @note None
 */
 
+typedef struct String_t
+{
+  char* Array;
+  int IndexSize;
+  int X;
+  int Y;
+} String_t;
+
+
+
 typedef struct _2D_CMatrix_t
 {
   char* Array;

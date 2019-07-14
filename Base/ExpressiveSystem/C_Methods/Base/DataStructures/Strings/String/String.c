@@ -2,7 +2,7 @@
 #define StringField_C
 
 
-#include "StringField.h"
+#include "String.h"
 
 // Code Implementation File Information ///////////////////////////////////////
 /**
@@ -25,6 +25,11 @@ void StringFields_V()
 	printf("Character Ops Version \tV:3.00\n");
 }
 
+
+int Size(char* String)
+{
+	return 0;
+}
 
 
 

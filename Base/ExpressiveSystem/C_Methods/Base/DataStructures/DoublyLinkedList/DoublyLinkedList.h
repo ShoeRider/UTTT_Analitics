@@ -220,7 +220,7 @@ void* PopLast(DLL_Handle_t* Head);
 void* Pop(DLL_Handle_t* Head,DLL_Node_t* Node);
 
 //void RemoveFirst_Node_From_Handle_T(DLL_Handle_t* Head);
-void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle);
+void Free_DirectStructure(DLL_Handle_t* DLL_Handle);
 void Free(DLL_Handle_t* DLL_Handle);
 void Free(DLL_Handle_t* DLL_Handle,Free_* Free);
 #endif //DoublyLinkedList_H

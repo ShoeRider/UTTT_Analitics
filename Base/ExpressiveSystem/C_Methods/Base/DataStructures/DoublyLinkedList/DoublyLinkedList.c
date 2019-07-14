@@ -303,7 +303,7 @@ void Print(DLL_Handle_t* Handle)
 
 
 
-void Free_DLL_KeepGivenStructures(DLL_Handle_t* DLL_Handle)
+void Free_DirectStructure(DLL_Handle_t* DLL_Handle)
 {
 	if(DLL_Handle->ListLength > 0)
 	{

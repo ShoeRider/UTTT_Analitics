@@ -7,7 +7,6 @@
 
 #include "Base/Base.c"
 #include "Base/DataStructures/DataStructures.h"
-#include "Base/PrimativeObjects/PrimativeObjects.h"
 #include "Base/NNOperations/NNOperations.h"
 //#include "Base/Games/Games.h"
 #include "Base/ParallelComponents/ParallelComponents.h"

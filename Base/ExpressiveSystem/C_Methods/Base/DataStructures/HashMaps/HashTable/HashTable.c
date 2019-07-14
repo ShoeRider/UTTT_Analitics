@@ -35,6 +35,12 @@ void HashTable_V()
 	printf("HashTable  \t\t\tV:1.00\n");
 }
 
+Hash_t* Malloc_HashArray(int ArraySize);
+HashTable_t* Create_HashTable_t(int ArraySize);
+void Free_DirectStructure(HashTable_t* HashTable);
+
+
+//Default HashTable with: '100' elements
 HashTable_t* Create_HashTable_t()
 {
 	return Create_HashTable_t(DefaultHashSize);
@@ -45,22 +51,28 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 	HashTable_t* HashTable = (HashTable_t*) malloc(sizeof(HashTable_t));
 
 	HashTable->ArraySize       = ArraySize;
-	HashTable->ElementsAdded   = 0;
+	HashTable->Entries   = 0;
+	HashTable->UsedCells = 0;
 	HashTable->Elements        = Create_DLL_Handle_t();
-	HashTable->Table           = (Hash_t*) malloc(ArraySize*sizeof(Hash_t));
+	HashTable->Table           = Malloc_HashArray(ArraySize);
 
-
-	for(int x=0;x<HashTable->ArraySize;x++)
-	{
-			//printf("Looping through array %d\n",x );
-		HashTable->Table[x].Accessed    = false;
-		HashTable->Table[x].InUse       = false;
-		HashTable->Table[x].GivenStruct = NULL;
-		HashTable->Table[x].UniqueHash  = 0;
-					//printf("end of loop through array %d\n",x );
-	}
 	return HashTable;
 }
+
+Hash_t* Malloc_HashArray(int ArraySize)
+{
+	Hash_t*Array = (Hash_t*) malloc(ArraySize*sizeof(Hash_t));
+
+	for(int x=0;x<ArraySize;x++)
+	{
+		Array[x].Accessed    = false;
+		Array[x].InUse       = false;
+		Array[x].GivenStruct = NULL;
+		Array[x].UniqueHash  = 0;
+	}
+	return Array;
+}
+
 
 Hash_t* Create_Hash_t(void* GivenStruct,int UniqueHash)
 {
@@ -72,18 +84,33 @@ Hash_t* Create_Hash_t(void* GivenStruct,int UniqueHash)
 
 int _Extend(HashTable_t* HashTable)
 {
-	double Filled = (HashTable->ElementsAdded / HashTable->ArraySize);
-	if (Filled >= (2/3))
+	float Filled = ((float)HashTable->UsedCells / (float)HashTable->ArraySize);
+	if (Filled >= ((float)2/(float)3))
 	{
-		//Extend Hash Table Array
+		//Create New
+		int NewArraySize = HashTable->UsedCells*4;
+		HashTable_t* Temp_HashTable = Create_HashTable_t(NewArraySize);
 
-
+		//printf("Migrating Elements\n");
 		//int NewArraySize = HashTable->ArraySize*4;
 		//Hash_t* NewTable = (Hash_t*) malloc(NewArraySize*sizeof(Hash_t));
-		//DLL_Transverse(HashTable->DLL_Elements,
-			//Hash_t* Hash_Element = (Node->GivenStruct);
+		DLL_Transverse(HashTable->Elements,
+			Hash_t* Hash_Element = (Hash_t*)(Node->GivenStruct);
+			if (Hash_Element->InUse)
+			{
+				Add(Temp_HashTable,Hash_Element->UniqueHash,Hash_Element->GivenStruct);
+			}
 
-		//)
+		)
+		free(HashTable->Table);
+		printf("Migrating Table\n");
+
+		HashTable->Table     = Temp_HashTable->Table;
+		HashTable->Elements  = Temp_HashTable->Elements;
+		HashTable->Entries   = Temp_HashTable->Entries;
+		HashTable->ArraySize = Temp_HashTable->ArraySize;
+		HashTable->UsedCells = Temp_HashTable->UsedCells;
+		Free_DirectStructure(Temp_HashTable);
 	}
 
 
@@ -102,7 +129,11 @@ int _ScanAdd(HashTable_t* HashTable,int UniqueHash)
 	int OverlapedStartIndex = Index;
 	while(true)
 	{
-		if(!HashTable->Table[Index].Accessed && !HashTable->Table[Index].InUse)
+		if(!HashTable->Table[Index].InUse)
+		{
+			return Index;
+		}
+		else if(!HashTable->Table[Index].Accessed)
 		{
 			return Index;
 		}
@@ -178,16 +209,21 @@ int Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 		return Index;
 	}
 
+	if(!HashTable->Table[Index].Accessed)
+	{
+		HashTable->UsedCells++;
+	}
 	//Add to Hash Array and DLL
 	HashTable->Table[Index].Accessed    = true;
 	HashTable->Table[Index].InUse       = true;
 	HashTable->Table[Index].UniqueHash  = UniqueHash;
 	HashTable->Table[Index].GivenStruct = GivenStruct;
+	HashTable->Entries++;
 
 	HashTable->Table[Index].DLL_Node
-	 							= Add(HashTable->Elements,(void*)&HashTable->Table[Index]);
+	 						= Add(HashTable->Elements,(void*)&HashTable->Table[Index]);
 
-	HashTable->ElementsAdded++;
+	HashTable->Entries++;
 	_Extend(HashTable);
 	return Index;
 }
@@ -259,7 +295,7 @@ int Remove(HashTable_t* HashTable,int UniqueHash)
 		HashTable->Table[Index].UniqueHash  = 0;
 		HashTable->Table[Index].GivenStruct = NULL;
 		HashTable->Table[Index].InUse       = false;
-
+		HashTable->Entries--;
 		Pop(HashTable->Elements,HashTable->Table[Index].DLL_Node);
 	}
 	return Index;
@@ -313,21 +349,28 @@ void Print(HashTable_t* HashTable)
 }
 
 
+void Free_DirectStructure(HashTable_t* HashTable)
+{
+	Hash_t* FreeHash = HashTable->Table;
+	Free_DirectStructure(HashTable->Elements);
 
+	free(HashTable->Table);
+	free(HashTable);
+}
 
-void Free_HashTable_t(HashTable_t* HashTable)
+void Free(HashTable_t* HashTable)
 {
 	Hash_t* FreeHash = HashTable->Table;
 	for(int x=0;x<HashTable->ArraySize;x++)
 	{
 		if(FreeHash[x].GivenStruct != NULL)
 		{
-			//free(FreeHash[x].GivenStruct);
+			free(FreeHash[x].GivenStruct);
 		}
 	}
-	Free_DLL_KeepGivenStructures(HashTable->Elements);
+	Free_DirectStructure(HashTable->Elements);
 
-	free(FreeHash);
+	free(HashTable->Table);
 	free(HashTable);
 }
 

@@ -39,24 +39,48 @@
 void MallocFree_HashTable_t()
 {
 	HashTable_t* HashTable  = Create_HashTable_t();
-	Free_HashTable_t(HashTable);
+	Free(HashTable);
 }
+
+
+//Needs work
+#define HashVoid(GivenStruct) _HashVoid((unsigned long)GivenStruct,sizeof(*GivenStruct))
+float _HashVoid(unsigned long pointerValue,int Size)
+{
+
+	pointerValue++;
+	printf("Size :%d\n",Size);
+	printf("Pointer:%lu\n",pointerValue);
+	printf("Pointer:%p\n",(void*)&pointerValue);
+	return 0.0;
+}
+
+void MallocFree_HashTable0_t()
+{
+	HashTable_t* HashTable  = Create_HashTable_t();
+	printf("Pointer:%p\n",HashTable);
+
+	Add(HashTable,4,(void*)10);
+	Free(HashTable);
+}
+
 
 void AddStrings_HashTable_T()
 {
-	HashTable_t* HashTable  = Create_HashTable_t(5);
+	HashTable_t* HashTable  = Create_HashTable_t(10);
 	Add(HashTable,4,(void*)10);
-	//
+	Print(HashTable);
 	Add(HashTable,9,(void*)11);
 	Add(HashTable,0,(void*)11);
-	Print(HashTable);
+
 
 	printf("%p\n",Pop(HashTable,4));
+	Add(HashTable,4,(void*)10);
 	printf("%p\n",Pop(HashTable,9));
 	Print(HashTable);
 
 	Print(HashTable);
-	Free_HashTable_t(HashTable);
+	Free(HashTable);
 }
 
 
@@ -79,7 +103,7 @@ void HashTable_TT()
   }
   else if (SelectedTest == 2)
   {
-
+		MallocFree_HashTable0_t();
   }
   else if (SelectedTest == 3)
   {

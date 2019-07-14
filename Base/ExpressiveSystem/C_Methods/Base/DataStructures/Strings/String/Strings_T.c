@@ -1,8 +1,8 @@
-#ifndef StringFields_C
-#define StringFields_C
+#ifndef String_T_C
+#define String_T_C
 
 
-#include "StringField.h"
+#include "String.h"
 
 // Code Implementation File Information ///////////////////////////////////////
 /**
@@ -41,4 +41,4 @@ void StringFields_T()
 
 }
 
-#endif // StringFields_C
+#endif // String_C

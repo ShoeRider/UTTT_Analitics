@@ -211,8 +211,6 @@ void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node);
 
 
 
-//View Functions
-void ViewString_DLL(DLL_Handle_t* File_DLL);
 
 //free Functions
 void* PopFirst(DLL_Handle_t* Head);

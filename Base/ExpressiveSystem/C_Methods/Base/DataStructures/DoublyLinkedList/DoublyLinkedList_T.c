@@ -44,14 +44,7 @@ void MallocFree_DoublyLinkedList_t()
 
 void AddStrings_DoublyLinkedList_t()
 {
-	DLL_Handle_t* DLL_Handle  = Create_DLL_Handle_t();
-	char* String ="SomeString";
-	Add(DLL_Handle,String);
-	Print(DLL_Handle);
-	void* Pointer = PopFirst(DLL_Handle);
-	printf("%p\n",Pointer);
-	Print(DLL_Handle);
-	Free(DLL_Handle);
+
 }
 
 

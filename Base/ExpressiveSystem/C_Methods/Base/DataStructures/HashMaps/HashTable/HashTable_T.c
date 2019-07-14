@@ -67,20 +67,22 @@ void MallocFree_HashTable0_t()
 
 void AddStrings_HashTable_T()
 {
-	HashTable_t* HashTable  = Create_HashTable_t(10);
+	HashTable_t* HashTable  = Create_HashTable_t(4);
 	Add(HashTable,4,(void*)10);
+	Add(HashTable,5,(void*)10);
 	Print(HashTable);
-	Add(HashTable,9,(void*)11);
-	Add(HashTable,0,(void*)11);
+	Add(HashTable,14,(void*)11);
+		Print(HashTable);
+	Add(HashTable,1,(void*)11);
 
 
 	printf("%p\n",Pop(HashTable,4));
-	Add(HashTable,4,(void*)10);
+	Add(HashTable,7,(void*)10);
 	printf("%p\n",Pop(HashTable,9));
 	Print(HashTable);
 
 	Print(HashTable);
-	Free(HashTable);
+	Free_DirectStructure(HashTable);
 }
 
 

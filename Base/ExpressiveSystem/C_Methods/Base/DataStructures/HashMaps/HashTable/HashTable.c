@@ -98,6 +98,7 @@ int _Extend(HashTable_t* HashTable)
 			Hash_t* Hash_Element = (Hash_t*)(Node->GivenStruct);
 			if (Hash_Element->InUse)
 			{
+				printf("Adding/Moving <%d,%p>",Hash_Element->UniqueHash,Hash_Element->GivenStruct);
 				Add(Temp_HashTable,Hash_Element->UniqueHash,Hash_Element->GivenStruct);
 			}
 
@@ -105,12 +106,17 @@ int _Extend(HashTable_t* HashTable)
 		free(HashTable->Table);
 		printf("Migrating Table\n");
 
+		printf("(%p,%p)\n",HashTable->Table,Temp_HashTable->Table);
+		//free(HashTable->Table);
 		HashTable->Table     = Temp_HashTable->Table;
+		Free_DirectStructure(HashTable->Elements);
 		HashTable->Elements  = Temp_HashTable->Elements;
 		HashTable->Entries   = Temp_HashTable->Entries;
 		HashTable->ArraySize = Temp_HashTable->ArraySize;
 		HashTable->UsedCells = Temp_HashTable->UsedCells;
-		Free_DirectStructure(Temp_HashTable);
+		printf("(%p,%p)\n",HashTable->Table,Temp_HashTable->Table);
+		free(Temp_HashTable);
+
 	}
 
 
@@ -225,6 +231,7 @@ int Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
 
 	HashTable->Entries++;
 	_Extend(HashTable);
+	printf("(%p)\n",HashTable->Table);
 	return Index;
 }
 
@@ -241,7 +248,7 @@ unsigned long ElfHash ( char *s )
     return h;
 }
 
-//Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct)
+//Add(HashTable_t* HashTable,char* String,void* GivenStruct)
 //Retruns:
 // [0-MaxInteger] : Index in HashTable->Table[Index]
 // -1             : UniqueTag Already Exists
@@ -363,9 +370,9 @@ void Free(HashTable_t* HashTable)
 	Hash_t* FreeHash = HashTable->Table;
 	for(int x=0;x<HashTable->ArraySize;x++)
 	{
-		if(FreeHash[x].GivenStruct != NULL)
+		if(HashTable->Table[x].GivenStruct != NULL)
 		{
-			free(FreeHash[x].GivenStruct);
+			free(HashTable->Table[x].GivenStruct);
 		}
 	}
 	Free_DirectStructure(HashTable->Elements);

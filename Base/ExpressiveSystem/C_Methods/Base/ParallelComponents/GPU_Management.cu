@@ -60,7 +60,7 @@ void warmUpGPU()
   errCode=cudaMalloc((unsigned int**)&dev_tmp, sizeof(unsigned int));
 	if(errCode != cudaSuccess)
 	{
-		printf("\nError: dev_tmp error with code:%s\n",errCode);
+		printf("\nError: dev_tmp error with code:%d\n",errCode);
 	}
 	warmup<<<1,256>>>(dev_tmp);
 

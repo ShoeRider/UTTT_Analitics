@@ -59,6 +59,9 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 	return HashTable;
 }
 
+
+
+
 Hash_t* Malloc_HashArray(int ArraySize)
 {
 	Hash_t*Array = (Hash_t*) malloc(ArraySize*sizeof(Hash_t));

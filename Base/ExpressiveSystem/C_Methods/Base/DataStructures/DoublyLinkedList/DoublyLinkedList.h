@@ -45,7 +45,7 @@ typedef struct DLL_Handle_t
 
 
 
-#define DLL_TransversedNode(Code)
+
 
 #define DLL_Transverse(DLL_Handle,Code)                   \
 if(DLL_Handle != NULL)                                    \

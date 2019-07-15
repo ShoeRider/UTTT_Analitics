@@ -83,6 +83,7 @@ void AddStrings_HashTable_T()
 
 	Print(HashTable);
 	Free_DirectStructure(HashTable);
+
 }
 
 

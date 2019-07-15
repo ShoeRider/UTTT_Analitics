@@ -26,7 +26,7 @@ Test: SimTest $(ALLOBJS)
 	@echo $@
 	@echo $(ALLOBJS)
 	#$(CC) $(LFLAGS) SimTest.o $(ALLOBJS) -O3 -o $@ -lm
-	nvcc -arch=compute_61 -code=sm_61 -lcuda -Xcompiler -fopenmp SimTest.o $(ALLOBJS) -o $@
+	nvcc -arch=compute_61 -code=sm_61 -lcuda -Xcompiler -fopenmp -Xptxas -O3,-v SimTest.o $(ALLOBJS) -o $@
 
 SimTest :SimTest.cu Sim.h $(ALLHDR)
 	@echo "@"

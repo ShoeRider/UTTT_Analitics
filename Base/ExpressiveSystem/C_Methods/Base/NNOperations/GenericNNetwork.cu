@@ -99,10 +99,10 @@ NNLayerInstance_t* Create_NNLayerInstance_t(NNLayer_t* NNLayer)
 
 void Free_NNLayerInstance_t(NNLayerInstance_t* NNLayerInstance)
 {
-  Free_FMatrix_t(NNLayerInstance->Input);
-  Free_FMatrix_t(NNLayerInstance->Output);
-  Free_FMatrix_t(NNLayerInstance->Desired);
-  Free_FMatrix_t(NNLayerInstance->Desired);
+  Free(NNLayerInstance->Input);
+  Free(NNLayerInstance->Output);
+  Free(NNLayerInstance->Desired);
+  Free(NNLayerInstance->Desired);
 
   //Free_FPDI_t_DLL(NNLayerInstance->Forward_FPDI_DLL);
   //Free_FPDI_t_DLL(NNLayerInstance->Back_FPDI_DLL);

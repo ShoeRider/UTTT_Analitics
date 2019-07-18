@@ -58,7 +58,7 @@ void FMatrix_t_MinMaxClip(float Clip,FMatrix_t* FMatrix)
 }
 
 
-IMatrix_t* CreateIntegerMatrix(int x,int y)
+IMatrix_t* Create_IMatrix_t(int x,int y)
 {
   IMatrix_t* Matrix =(IMatrix_t*) malloc(sizeof(IMatrix_t));
 
@@ -70,7 +70,7 @@ IMatrix_t* CreateIntegerMatrix(int x,int y)
   return Matrix;
 }
 
-void CopyIntegerMatrix(IMatrix_t* IMatrix0,IMatrix_t* IMatrix1)
+void Copy(IMatrix_t* IMatrix0,IMatrix_t* IMatrix1)
 {
   for (int i = 0; i < IMatrix0->X; i++)
   {
@@ -81,9 +81,10 @@ void CopyIntegerMatrix(IMatrix_t* IMatrix0,IMatrix_t* IMatrix1)
   }
 }
 
-IMatrix_t* MakeCopyIntegerMatrix(IMatrix_t* IMatrix0)
+
+IMatrix_t* Copy(IMatrix_t* IMatrix0)
 {
-  IMatrix_t* IMatrix1 = CreateIntegerMatrix(IMatrix0->Y,IMatrix0->Y);
+  IMatrix_t* IMatrix1 = Create_IMatrix_t(IMatrix0->Y,IMatrix0->Y);
   for (int i = 0; i < IMatrix0->X; i++)
   {
     for (int j = 0; j < IMatrix0->Y; j++)
@@ -105,6 +106,27 @@ int GetSum_IMatrix(IMatrix_t* IMatrix)
     }
   }
   return Sum;
+}
+
+bool Equivalent(IMatrix_t*Matrix0,IMatrix_t*Matrix1)
+{
+  if((Matrix0->X)   != (Matrix1->X) ||
+     (Matrix0->Y)   != (Matrix1->Y)
+   )
+   {
+     return false;
+   }
+   for(int i = 0; i < Matrix0->X ;i++)
+   {
+     for(int j = 0; j < Matrix0->Y ;j++)
+     {
+        if((*(Matrix0->Array+i*Matrix0->Y+j)) != (*(Matrix1->Array+i*Matrix1->Y+j)))
+        {
+          return false;
+        }
+     }
+   }
+   return true;
 }
 
 IMatrix_t* CreateIntegerIdentityMatrix(int x,int y)
@@ -391,7 +413,7 @@ void LayerMultiplication(FMatrix_t* WeightMatrix,FMatrix_t** Given_PropigatedAct
   //PrintFloatMatrix(NewPropigatedActivation);
 
   //PrintFloatMatrix(*Given_PropigatedActivation);
-  Free_FMatrix_t((PropigatedActivation));
+  Free((PropigatedActivation));
   *Given_PropigatedActivation = NewPropigatedActivation;
 
   //PrintFloatMatrix(*Given_PropigatedActivation);
@@ -447,7 +469,7 @@ void NN_MaskedLayerMultiplication(FMatrix_t* WeightMatrix,FMatrix_t** Given_Prop
   //PrintFloatMatrix(NewPropigatedActivation);
 
   //PrintFloatMatrix(*Given_PropigatedActivation);
-  Free_FMatrix_t((PropigatedActivation));
+  Free((PropigatedActivation));
   *Given_PropigatedActivation = NewPropigatedActivation;
 
   //PrintFloatMatrix(*Given_PropigatedActivation);
@@ -524,7 +546,7 @@ void MaskedSigmoid_FMatrix_t(FMatrix_t* PropigatedActivation,FMatrix_t* DropOutM
   //printf("exiting with Proper PropigatedActivation structure\n");
 }
 
-void Free_FMatrix_t(FMatrix_t* Matrix)
+void Free(FMatrix_t* Matrix)
 {
   if (Matrix != NULL)
   {
@@ -537,7 +559,7 @@ void Free_FMatrix_t(FMatrix_t* Matrix)
   }
 }
 //void Free_DLL_FMatrix_t(DLL_Handle_t* DLL_Handle);
-QDefineFree_DLL_GivenStruct(Free_FMatrix_t,FMatrix_t)
+QDefineFree_DLL_GivenStruct(Free,FMatrix_t)
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
@@ -659,7 +681,7 @@ int RandomSelect_IMatrixIndex(IMatrix_t* IMatrix)
       }
     }
   }
-  //PrintIntegerMatrix(IMatrix);
+  //Print(IMatrix);
   //PrintInt(SelectedNode)
   //Get Sum
   return SelectedNode;
@@ -778,7 +800,7 @@ void MultiplyFMatrices(FMatrix_t* Matrix0,FMatrix_t* Matrix1,FMatrix_t* Result)
 
 
 
-void PrintIntegerMatrix(IMatrix_t* Matrix)
+void Print(IMatrix_t* Matrix)
 {
   int XAxis, YAxis;
   printf("Print Matrix:\n");
@@ -853,17 +875,12 @@ void PrintFloatMatrix(FMatrix_t* Matrix)
 
 
 
-void FreeMatrix(IMatrix_t* Matrix)
+void Free(IMatrix_t* Matrix)
 {
   free(Matrix->Array);
   free(Matrix);
 }
 
-void Free_IMatrix(IMatrix_t* Matrix)
-{
-  free(Matrix->Array);
-  free(Matrix);
-}
 
 
 
@@ -1005,10 +1022,10 @@ bool MakeCopyFMatrix_t_T()
   FMatrix_t* Matrix1 = MakeCopyFMatrix(Matrix0);
 
   PrintFloatMatrix(Matrix0);
-  Free_FMatrix_t(Matrix0);
+  Free(Matrix0);
 
   PrintFloatMatrix(Matrix1);
-  Free_FMatrix_t(Matrix1);
+  Free(Matrix1);
 
   return 1;
 }
@@ -1031,16 +1048,16 @@ bool Test_MultiplyMatrix()
   //PrintMatrix(SMatrix);
   //system("gnome-terminal -e \"rm -f Test.txt \"");
   //SaveMatrix("Test.txt",IMatrix);
-  Free_FMatrix_t(Matrix0);
-  Free_FMatrix_t(Matrix1);
-  Free_FMatrix_t(Matrix2);
+  Free(Matrix0);
+  Free(Matrix1);
+  Free(Matrix2);
   return 1;
 }
 
 void RandomSelect_T()
 {
   IMatrix_t* IMatrix0 = CreateIntegerIdentityMatrix(2,2);
-  PrintIntegerMatrix(IMatrix0);
+  Print(IMatrix0);
   for(int x=0; x<100;x++)
   {
     int y = RandomSelect_IMatrixIndex(IMatrix0);
@@ -1049,10 +1066,10 @@ void RandomSelect_T()
     PrintLines(2)
   }
 
-  //PrintIntegerMatrix(IMatrix1);
+  //Print(IMatrix1);
 
-  FreeMatrix(IMatrix0);
-  //FreeMatrix(IMatrix1);
+  Free(IMatrix0);
+  //Free(IMatrix1);
 }
 
 

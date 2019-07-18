@@ -36,7 +36,7 @@ typedef struct DLL_Node_t
 //structure also holds
 typedef struct DLL_Handle_t
 {
-	int ListLength;
+	int Length;
   DLL_Node_t *First;
   DLL_Node_t *Last;
   Mutex_t* Mutex;
@@ -50,7 +50,7 @@ typedef struct DLL_Handle_t
 #define DLL_Transverse(DLL_Handle,Code)                   \
 if(DLL_Handle != NULL)                                    \
 {                                                         \
-  if(DLL_Handle->ListLength > 0)                          \
+  if(DLL_Handle->Length > 0)                          \
   {                                                       \
     DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;    \
     while(Node->Next != NULL)                             \
@@ -62,10 +62,32 @@ if(DLL_Handle != NULL)                                    \
   }                                                       \
 }                                                         \
 
+#define DLL_TransverseFree(DLL_Handle,Code)            \
+if(DLL_Handle != NULL)                                    \
+{                                                         \
+  if(DLL_Handle->Length > 0)                          \
+  {                                                       \
+    DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;    \
+    while(Node->Next != NULL)                             \
+    {                                                     \
+      Code                                                \
+      Node = (DLL_Node_t*)Node->Next;                     \
+      free(Node->Prev);                                        \
+    }                                                     \
+    Code                                                  \
+    free(Node);                                                \
+  }                                                       \
+  free(DLL_Handle->Mutex);                                      \
+  free(DLL_Handle);                                             \
+}                                                         \
+
+
+
+
 #define DLL_TransverseBackward(DLL_Handle,Code)           \
 if(DLL_Handle != NULL)                                    \
 {                                                         \
-  if(DLL_Handle->ListLength > 0)                          \
+  if(DLL_Handle->Length > 0)                          \
   {                                                       \
     DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->Last;     \
     while(Node->Prev != NULL)                             \
@@ -80,8 +102,8 @@ if(DLL_Handle != NULL)                                    \
 #define q2DLL_Transverse(DLL_Handle0,DLL_Handle1,Code)    \
 if(DLL_Handle0 != NULL && DLL_Handle1 != NULL)            \
 {                                                         \
-  if(DLL_Handle0->ListLength > 0 &&                       \
-     DLL_Handle1->ListLength > 0)                         \
+  if(DLL_Handle0->Length > 0 &&                       \
+     DLL_Handle1->Length > 0)                         \
   {                                                       \
     DLL_Node_t* Node0 = (DLL_Node_t*)DLL_Handle0->First;  \
     DLL_Node_t* Node1 = (DLL_Node_t*)DLL_Handle1->First;  \
@@ -99,7 +121,7 @@ if(DLL_Handle0 != NULL && DLL_Handle1 != NULL)            \
 #define DLL_MethodTransverse(DLL_Handle,Method,Structure) \
 if(DLL_Handle != NULL)                                    \
 {                                                         \
-  if(DLL_Handle->ListLength > 0)                          \
+  if(DLL_Handle->Length > 0)                          \
   {                                                       \
     DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;    \
     while(Node->Next != NULL)                             \
@@ -117,7 +139,7 @@ if(DLL_Handle != NULL)                                    \
 #define qGetNUM_MethodSUM_DLL(DLL_Handle,Method,Sum,Structure)   \
 if(DLL_Handle != NULL)                                    \
 {                                                         \
-  if(DLL_Handle->ListLength > 0)                          \
+  if(DLL_Handle->Length > 0)                          \
   {                                                       \
     DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;    \
     while(Node->Next != NULL)                             \
@@ -134,7 +156,7 @@ if(DLL_Handle != NULL)                                    \
 #define QDefineFree_DLL_GivenStruct(DLL_Handle,Method,Structure)  \
 void DLL_##Method##_##Structure(DLL_Handle_t* DLL_Handle)       \
 {                                                               \
-  if(DLL_Handle->ListLength > 0)                                \
+  if(DLL_Handle->Length > 0)                                \
   {                                                             \
     DLL_Node_t* Node1 = (DLL_Node_t*)DLL_Handle->First;         \
     while(Node1->Next != NULL)                                  \
@@ -162,7 +184,7 @@ void DLL_##Method##_##Structure(DLL_Handle_t* DLL_Handle)       \
 #define QDefineFree_DLL_GivenStruct(FreeMethod,Structure)       \
 void Free_##Structure##_DLL(DLL_Handle_t* DLL_Handle)              \
 {                                                               \
-  if(DLL_Handle->ListLength > 0)                                \
+  if(DLL_Handle->Length > 0)                                \
   {                                                             \
     DLL_Node_t* Node1 = (DLL_Node_t*)DLL_Handle->First;         \
     while(Node1->Next != NULL)                                  \

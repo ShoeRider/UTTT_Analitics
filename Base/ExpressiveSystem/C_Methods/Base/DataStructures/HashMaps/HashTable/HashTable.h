@@ -11,7 +11,11 @@ typedef struct Hash_t
   Mutex_t Mutex;
   bool Accessed; // Stores a boolean value if this element has ever been set.
   bool InUse;
+
+//TODO include multiple hashvalues for redundant uniqueness.
+  int UniqueHashes;
   int UniqueHash;
+
   void* Identifier;
   void* GivenStruct;
 
@@ -22,6 +26,8 @@ typedef struct Hash_t
 typedef struct HashTable_t
 {
   Hash_t* Table;
+  int UniqueHashes;
+
   int ArraySize;
   int Entries;
   int UsedCells;
@@ -30,7 +36,19 @@ typedef struct HashTable_t
   DLL_Handle_t* Elements; //DLL_Node Points to Hash_t
 } HashTable_t;
 
-
+/*
+#define Free_HashTable(HashTable,Code)   \
+for(int x=0;x<HashTable->ArraySize;x++) \
+{ \
+	if(HashTable->Table[x].GivenStruct != NULL) \
+	{ \	//HashTable->Table[x].GivenStruct;
+		Code \
+	} \
+} \
+Free_DirectStructure(HashTable->Elements); \
+free(HashTable->Table); \
+free(HashTable); \
+*/
 
 void HashTable_V();
 
@@ -41,6 +59,8 @@ Hash_t* Create_Hash_t(void* GivenStruct,int UniqueHash);
 
 int Add(HashTable_t* HashTable,int UniqueHash,void* GivenStruct);
 
+
+void* Pop(HashTable_t* HashTable,int Hash);
 void Print(HashTable_t* HashTable);
 /*float GetNewIndex(HashTable_t* HashTable,float UniqueTag);
 int GetItemIndex(HashTable_t* HashTable,int UniqueTag);

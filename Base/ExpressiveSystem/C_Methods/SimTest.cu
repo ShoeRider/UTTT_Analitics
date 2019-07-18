@@ -73,6 +73,7 @@ void TerminalUnitTesting(bool Print, int CallSign)
   printf("7: NNOperations_T:\n");
   printf("8: GPU_Management:\n");
   printf("10: MCHT_T:\n");
+  printf("11: TTT_T:\n");
   printf("===================\n");
   GatherTerminalInt("Select the Test Program you wish to Use:",&Option);
   printf("\n\n");
@@ -117,9 +118,9 @@ void TerminalUnitTesting(bool Print, int CallSign)
   {
      MCHS_T(CallSign);
   }
-  else if (Option == 100)
+  else if (Option == 11)
   {
-
+    TTT_T(CallSign);
   }
 }
 

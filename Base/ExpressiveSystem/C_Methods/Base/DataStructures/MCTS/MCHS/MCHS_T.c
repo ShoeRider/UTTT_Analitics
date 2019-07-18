@@ -5,11 +5,6 @@
 
 
 
-void MallocFree_MCHT_t()
-{
-	MCHS_t* MCHS  = Create_MCHS_t(10,NULL);
-	Free(MCHS);
-}
 
 void MCHS_TT()
 {
@@ -21,7 +16,6 @@ void MCHS_TT()
   GatherTerminalInt("Please Select Test:",&SelectedTest);
   if (SelectedTest == 0)
   {
-		MallocFree_MCHT_t();
   }
   else if (SelectedTest == 1)
   {

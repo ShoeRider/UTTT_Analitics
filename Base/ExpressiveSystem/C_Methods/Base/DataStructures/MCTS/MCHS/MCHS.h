@@ -2,20 +2,7 @@
 #define MCHS_H
 
 
-//#include "../../Simulation/Games/TickTackToe/TickTackToe.h"
-// Program Header Information ////////////////////////////////////////
-/**
 
-* @file
-*
-* @brief Header file for
-* instantiate's The Structues:
-*
-* @details Specifies:
-*
-*
-* @note None
-*/
 
 //SESB_t (Selection, Expansion, Simulation, and BackPropigation function pointers)
 
@@ -28,39 +15,39 @@ typedef int (*PositionValue_f)(void *);
 
 typedef void (*Free_f)(void *);
 
-typedef struct PRHS_fl
+typedef struct MCHS__FL_t
 {
-  PossibleBreakOuts_f* PossibleBreakOuts;
+  PossibleBreakOuts_f PossibleBreakOuts;
     //Returns DLL_Handle of Possible Moves
 
-  RollOut_f*           RollOut;
-    //Takes (void*Simulation)
+  RollOut_f           RollOut;
+    //Takes (void*GivenStruct)
     //Returns integer representing a 'desire' value of the rollout.
        // for example: Win(1)/Tie(0)/Loss(-1)
 
-  Equivalent_f*        Equivalent;
-  //Takes (void*Simulation,void*Simulation)
+  Equivalent_f        Equivalent;
+  //Takes (void*GivenStruct,void*GivenStruct)
   //Returns boolean value if the two simulations are equalvalent.
 
-  Hash_f*              Hash;
-    //Takes (void* Simulation)
-    //Returns int: of the Given Simulation's Hash
+  Hash_f              Hash;
+    //Takes (void* GivenStruct)
+    //Returns int: of the Given GivenStruct's Hash
     //
 
-  StopCondition_f*     StopCondition;
-    //Takes (void*Simulation)
-    //Returns integer representing if the Simulation has stoped.
+  StopCondition_f     StopCondition;
+    //Takes (void*GivenStruct)
+    //Returns integer representing if the GivenStruct has stoped.
        //for example: 1(Stop), 0(Continue)
 
-  PositionValue_f*   PositionValue;
-  //Takes (void*Simulation)
+  PositionValue_f   PositionValue;
+  //Takes (void*GivenStruct)
   //Returns integer representing a 'desire' value of the rollout.
      // for example: Win(1)/Tie(0)/Loss(-1)
 
-  Free_f*              Free;
-  //Takes (void*Simulation)
+  Free_              Free;
+  //Takes (void*GivenStruct)
   //and free's the structure.
-}PRHS_fl;
+}MCHS__FL_t;
 
 
 
@@ -76,7 +63,8 @@ typedef struct MCHS_Node_t
   int PosibleMoves;
   MCHS_Node_t* Parrent;
 
-  void* Simulation;
+  int UniqueHash;
+  void* GivenStruct;
   bool ContinueSimulation;
   bool LeafNode;
   DLL_Handle_t* ChildNodes; // To MCTS_Node
@@ -93,7 +81,7 @@ typedef struct MCHS_t
   MCHS_Node_t* Node0;
 
   void* RollOutSimulation;
-  PRHS_fl* PRHS;
+  MCHS__FL_t* MCHS_FL;
 
 } MCHS_t;
 

@@ -280,9 +280,8 @@ void* Get(HashTable_t* HashTable,int Hash)
 
 //Get(HashTable_t* HashTable, char* String)
 //Retruns:
-// [0-MaxInteger] : Index in HashTable->Table[Index]
-// -1             : UniqueTag Already Exists
-// -2             : Array Full, Unexpected Error
+// Void* : Success
+// NULL  : Something went wrong
 void* Get(HashTable_t* HashTable, char* String)
 {
 	//String
@@ -359,9 +358,24 @@ void Print(HashTable_t* HashTable)
 }
 
 
+
 void Free_DirectStructure(HashTable_t* HashTable)
 {
-	Hash_t* FreeHash = HashTable->Table;
+	Free_DirectStructure(HashTable->Elements);
+
+	free(HashTable->Table);
+	free(HashTable);
+}
+
+void Free(HashTable_t* HashTable,Free_ Free_GivenStruct)
+{
+	for(int x=0;x<HashTable->ArraySize;x++)
+	{
+		if(HashTable->Table[x].GivenStruct != NULL)
+		{
+			Free_GivenStruct(HashTable->Table[x].GivenStruct);
+		}
+	}
 	Free_DirectStructure(HashTable->Elements);
 
 	free(HashTable->Table);
@@ -370,18 +384,7 @@ void Free_DirectStructure(HashTable_t* HashTable)
 
 void Free(HashTable_t* HashTable)
 {
-	Hash_t* FreeHash = HashTable->Table;
-	for(int x=0;x<HashTable->ArraySize;x++)
-	{
-		if(HashTable->Table[x].GivenStruct != NULL)
-		{
-			free(HashTable->Table[x].GivenStruct);
-		}
-	}
-	Free_DirectStructure(HashTable->Elements);
-
-	free(HashTable->Table);
-	free(HashTable);
+	Free(HashTable,free);
 }
 
 

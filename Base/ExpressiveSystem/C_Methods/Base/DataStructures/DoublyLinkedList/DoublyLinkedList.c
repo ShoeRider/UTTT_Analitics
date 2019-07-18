@@ -90,7 +90,7 @@ void Set(DLL_Node_t* Node,void* GivenStruct)
 DLL_Handle_t* Create_DLL_Handle_t()
 {
 	DLL_Handle_t* DLL_Handle = (DLL_Handle_t*)malloc(sizeof(DLL_Handle_t));
-	DLL_Handle->ListLength = 0;
+	DLL_Handle->Length = 0;
 
 	DLL_Handle->First = NULL;
 	DLL_Handle->Last = NULL;
@@ -107,16 +107,16 @@ void* PopFirst(DLL_Handle_t* Head)
 {
 	//Doesnt Delete First Node Just Removes It !!
 	DLL_Node_t* Removing = Head->First;
-	if(Head->ListLength == 0)								//If Head Has no Nodes, nothing to remove
+	if(Head->Length == 0)								//If Head Has no Nodes, nothing to remove
 	{
 		//do nothing
 		return NULL;
 	}
-	else if(Head->ListLength == 1)								//If Head Has no Nodes, nothing to remove
+	else if(Head->Length == 1)								//If Head Has no Nodes, nothing to remove
 	{
 		Head->First = NULL;
 		Head->Last = NULL;
-		Head->ListLength = 0;
+		Head->Length = 0;
 	}
 	else
 	{
@@ -125,7 +125,7 @@ void* PopFirst(DLL_Handle_t* Head)
 
 		Removing->Next = NULL;
 		Temp->Prev = NULL;
-		Head->ListLength--;
+		Head->Length--;
 	}
 
 
@@ -146,16 +146,16 @@ void* PopLast(DLL_Handle_t* Head)
 {//TODO Test
 	//Doesnt Delete First Node Just Removes It !!
 	DLL_Node_t* Removing = Head->Last;
-	if(Head->ListLength == 0)							//If Head Has no Nodes, nothing to remove
+	if(Head->Length == 0)							//If Head Has no Nodes, nothing to remove
 	{
 		//do nothing
 		return NULL;
 	}
-	else if(Head->ListLength == 1)				//Head Has a single Nodes,
+	else if(Head->Length == 1)				//Head Has a single Nodes,
 	{
 		Head->First = NULL;
 		Head->Last = NULL;
-		Head->ListLength = 0;
+		Head->Length = 0;
 	}
 	else
 	{
@@ -164,7 +164,7 @@ void* PopLast(DLL_Handle_t* Head)
 
 		Removing->Next = NULL;
 		Temp->Prev = NULL;
-		Head->ListLength--;
+		Head->Length--;
 	}
 
 
@@ -188,11 +188,11 @@ void Add(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
 	DLL_Node_t* Temp = NULL;
 
-	if(Head->ListLength == 0)								//If Head Has no Nodes, Add Single Node
+	if(Head->Length == 0)								//If Head Has no Nodes, Add Single Node
 	{
 		Head->First = (DLL_Node_t* )Node;
 		Head->Last = (DLL_Node_t* )Node;
-		Head->ListLength = 1;
+		Head->Length = 1;
 	}
 	else
 	{
@@ -200,7 +200,7 @@ void Add(DLL_Handle_t* Head,DLL_Node_t* Node)
 		Temp = (DLL_Node_t* ) Head->Last;
 		Head->Last = (DLL_Node_t* )Node;
 		Temp->Next = (DLL_Node_t* )Node;
-		Head->ListLength++;
+		Head->Length++;
 	}
 }
 
@@ -215,11 +215,11 @@ void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node)
 {
 	DLL_Node_t* Temp = NULL;
 
-	if(Head->ListLength == 0)								//If Head Has no Nodes, Add Single Node
+	if(Head->Length == 0)								//If Head Has no Nodes, Add Single Node
 	{
 		Head->First = (DLL_Node_t* )Node;
 		Head->Last = (DLL_Node_t* )Node;
-		Head->ListLength = 1;
+		Head->Length = 1;
 	}
 	else
 	{
@@ -227,7 +227,7 @@ void AddToStart(DLL_Handle_t* Head,DLL_Node_t* Node)
 		Temp = (DLL_Node_t* ) Head->First;
 		Head->First = (DLL_Node_t* )Node;
 		Temp->Prev = (DLL_Node_t* )Node;
-		Head->ListLength++;
+		Head->Length++;
 	}
 }
 
@@ -253,7 +253,7 @@ void* Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
 	}
 	else
 	{
-		Head->ListLength--;
+		Head->Length--;
 
 		DLL_Node_t* Prev = (Node->Prev);
 		DLL_Node_t* Next = (Node->Next);
@@ -276,13 +276,13 @@ void* Pop(DLL_Handle_t* Head,DLL_Node_t* Node)
 void Print(DLL_Handle_t* Handle)
 {
 	printf("DLL Handle Located At:%p\n",Handle);
-	if (Handle->ListLength == 0)
+	if (Handle->Length == 0)
 	{
 		printf("No Nodes added at this time.\n");
 	}
 	else
 	{
-	  if(Handle->ListLength > 0)
+	  if(Handle->Length > 0)
 	  {
 	    DLL_Node_t* Node = (DLL_Node_t*)Handle->First;
 			int NodeItteration = 0;
@@ -305,7 +305,7 @@ void Print(DLL_Handle_t* Handle)
 
 void Free_DirectStructure(DLL_Handle_t* DLL_Handle)
 {
-	if(DLL_Handle->ListLength > 0)
+	if(DLL_Handle->Length > 0)
 	{
 		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
 		while(Node->Next != NULL)
@@ -322,7 +322,7 @@ void Free_DirectStructure(DLL_Handle_t* DLL_Handle)
 //Takes pointer to Handle and free's all elements within the Linked List
 void Free(DLL_Handle_t* DLL_Handle)
 {
-	if(DLL_Handle->ListLength > 0)
+	if(DLL_Handle->Length > 0)
 	{
 		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
 		while(Node->Next != NULL)
@@ -339,18 +339,18 @@ void Free(DLL_Handle_t* DLL_Handle)
 	free(DLL_Handle);
 }
 
-void Free(DLL_Handle_t* DLL_Handle,Free_* Free)
+void Free(DLL_Handle_t* DLL_Handle,Free_ Free)
 {
-	if(DLL_Handle->ListLength > 0)
+	if(DLL_Handle->Length > 0)
 	{
 		DLL_Node_t* Node = (DLL_Node_t*)DLL_Handle->First;
 		while(Node->Next != NULL)
 		{
-			free(Node->GivenStruct);
+			Free(Node->GivenStruct);
 			Node = (DLL_Node_t*)Node->Next;
 			free(Node->Prev);
 		}
-		free(Node->GivenStruct);
+		Free(Node->GivenStruct);
 		free(Node);
 
 	}

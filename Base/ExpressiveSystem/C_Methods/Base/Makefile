@@ -5,7 +5,7 @@ include Base.inc
 
 all: SubDirs
 
-SUBDIRS = DataStructures ParallelComponents NNOperations
+SUBDIRS = DataStructures NNOperations
 
 #Calls all subdir makefiles
 .PHONY: SubDirs $(SUBDIRS)

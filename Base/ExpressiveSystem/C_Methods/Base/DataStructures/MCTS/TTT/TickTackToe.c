@@ -197,7 +197,7 @@ HashTable_t* PossibleBreakOuts(TTT_t* TTT)
 //DLL_Handle_t* TTT_PossibleBreakOuts(void* GivenStruct)
 //Short: TypeCast Calls PossibleBreakOuts,
 //returns a DoublyLinkedList of all posible Game Outcomes
-HashTable_t* TTT_PossibleBreakOuts(void* GivenStruct)
+DLL_Handle_t* TTT_PossibleBreakOuts(void* GivenStruct)
 {
   return PossibleBreakOuts((TTT_t*)(GivenStruct));
 }

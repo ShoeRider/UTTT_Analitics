@@ -132,6 +132,8 @@ for(int NewLines = 0; NewLines < X; NewLines++)     \
 	}                                                   \
 
 
+#define Get_2dMatrixValue(Matrix,i,j) (*(Matrix->Array+i*Matrix->Y+j))
+
 #define qSet_2D_Matrix_Elements(Varible,As)           \
 	for(int i = 0; i < Varible->X ;i++)                 \
 	{                                                   \

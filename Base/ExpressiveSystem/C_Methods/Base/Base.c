@@ -24,6 +24,9 @@ void Random_FloatMatrix(int Quantity,float* Array)
   }
 }
 
+//void GatherTerminalInt(const char* Prompt, int* IntValue)
+//Example:
+//   GatherTerminalInt("Please enter an integer:",&Integer);
 void GatherTerminalInt(const char* Prompt, int* IntValue)
 {
   int num, nitems;

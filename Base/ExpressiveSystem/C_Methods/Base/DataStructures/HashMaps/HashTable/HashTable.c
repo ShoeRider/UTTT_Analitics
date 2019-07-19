@@ -51,8 +51,9 @@ HashTable_t* Create_HashTable_t(int ArraySize)
 	HashTable_t* HashTable = (HashTable_t*) malloc(sizeof(HashTable_t));
 
 	HashTable->ArraySize       = ArraySize;
-	HashTable->Entries   = 0;
-	HashTable->UsedCells = 0;
+	HashTable->Entries         = 0;
+	HashTable->UsedCells       = 0;
+
 	HashTable->Elements        = Create_DLL_Handle_t();
 	HashTable->Table           = Malloc_HashArray(ArraySize);
 

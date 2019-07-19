@@ -26,10 +26,13 @@ typedef struct Hash_t
 typedef struct HashTable_t
 {
   Hash_t* Table;
+  int*    PageTable;
+  int Entries;
+
   int UniqueHashes;
 
   int ArraySize;
-  int Entries;
+
   int UsedCells;
 
   //RunTimeFunction* Hash_Structure;

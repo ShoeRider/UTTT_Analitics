@@ -37,7 +37,7 @@ typedef struct MCHS__FL_t
   StopCondition_f     StopCondition;
     //Takes (void*GivenStruct)
     //Returns integer representing if the GivenStruct has stoped.
-       //for example: 1(Stop), 0(Continue)
+       //for example: 0(Continue), else(Stop)
 
   PositionValue_f   PositionValue;
   //Takes (void*GivenStruct)

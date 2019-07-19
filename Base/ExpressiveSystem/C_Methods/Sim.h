@@ -9,5 +9,5 @@
 #include "Base/DataStructures/DataStructures.h"
 #include "Base/NNOperations/NNOperations.h"
 //#include "Base/Games/Games.h"
-#include "Base/ParallelComponents/ParallelComponents.h"
+//#include "Base/ParallelComponents/ParallelComponents.h"
 #endif //SIM_H

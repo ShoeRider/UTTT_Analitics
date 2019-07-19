@@ -6,8 +6,6 @@
 //Forward declaration
 
 
-
-
 void MallocFree_MCHT_t()
 {
   printf("Create_MCHS_TTT_FL\n");
@@ -45,6 +43,20 @@ void TTT_PossibleBreakOuts()
   Free(Handle,(Free_)Free_TTT_t);
 }
 
+void TTT_Move()
+{
+  TTT_t* TTT = Create_TTT_t();
+  int Move;
+  while(TTT->Winner==-1)
+  {
+    Print(TTT);
+    GatherTerminalInt("Please enter Move:",&Move);
+    MakeMove(TTT,Move);
+  }
+
+
+  Free(TTT);
+}
 
 
 //TickTackToe Test Terminal
@@ -74,7 +86,10 @@ void TTT_TT()
   }
   else if (SelectedTest == 5)
   {
-    printf("Computer(MCTS_NN) for TTT Not Implemented Yet\n");
+     TTT_Move();
+  }
+  else if (SelectedTest == 6)
+  {
   }
 }
 
@@ -93,8 +108,6 @@ void TTT_T(int CallSign)
   {
     TTT_TT();
   }
-
-
 }
 
 #endif // TickTackToe_C_T

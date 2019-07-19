@@ -19,8 +19,8 @@ typedef struct TTT_t
   int Winner;
   //-1: represents no Winner/Game is still ongoing.
   //0: represents a tie
-  //1: represent an X
-  //2: represent an O
+  //1: represent X as the winner
+  //2: represent O as the winner
 
   int MovesMade;
 } TTT_t;

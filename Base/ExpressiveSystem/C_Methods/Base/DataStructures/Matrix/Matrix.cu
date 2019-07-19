@@ -57,8 +57,7 @@ void FMatrix_t_MinMaxClip(float Clip,FMatrix_t* FMatrix)
   }
 }
 
-
-IMatrix_t* Create_IMatrix_t(int x,int y)
+IMatrix_t* Create_IMatrix_t(int x,int y,int set)
 {
   IMatrix_t* Matrix =(IMatrix_t*) malloc(sizeof(IMatrix_t));
 
@@ -68,6 +67,10 @@ IMatrix_t* Create_IMatrix_t(int x,int y)
   qSet_2D_Matrix_Elements(Matrix,0)
 
   return Matrix;
+}
+IMatrix_t* Create_IMatrix_t(int x,int y)
+{
+  return Create_IMatrix_t(x,y,0);
 }
 
 void Copy(IMatrix_t* IMatrix0,IMatrix_t* IMatrix1)

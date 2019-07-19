@@ -38,24 +38,109 @@ void Free_TTT_t(void*TTT)
   Free((TTT_t*)TTT);
 }
 
+//int Winner_TTT(void* Board_Struct)
+//-1: represents no Winner/Game is still ongoing.
+//0: represents a tie
+//1: represent X as the winner
+//2: represent O as the winner
 int WinCondition(TTT_t* TTT)
 {
-  
-  return 0;
+  if(TTT->Winner != -1)
+  {
+    return TTT->Winner;
+  }
+
+  //Starting Checks from Center
+  if(Get_2dMatrixValue(TTT->Board,1,1) != 0)
+  {
+    if(Get_2dMatrixValue(TTT->Board,1,0) == Get_2dMatrixValue(TTT->Board,1,1)
+    && Get_2dMatrixValue(TTT->Board,1,0) == Get_2dMatrixValue(TTT->Board,1,2))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,1,1);
+      return TTT->Winner;
+    }
+    if(Get_2dMatrixValue(TTT->Board,0,1) == Get_2dMatrixValue(TTT->Board,1,1)
+    && Get_2dMatrixValue(TTT->Board,0,1) == Get_2dMatrixValue(TTT->Board,2,1))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,1,1);
+      return TTT->Winner;
+    }
+    //Diagnal
+    if(Get_2dMatrixValue(TTT->Board,0,0) == Get_2dMatrixValue(TTT->Board,1,1)
+    && Get_2dMatrixValue(TTT->Board,0,0) == Get_2dMatrixValue(TTT->Board,2,2))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,1,1);
+      return TTT->Winner;
+    }
+    //Diagnal
+    if(Get_2dMatrixValue(TTT->Board,0,2) == Get_2dMatrixValue(TTT->Board,1,1)
+    && Get_2dMatrixValue(TTT->Board,0,2) == Get_2dMatrixValue(TTT->Board,2,0))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,1,1);
+      return TTT->Winner;
+    }
+  }
+
+  //Starting from upper left square
+  if(Get_2dMatrixValue(TTT->Board,0,0) != 0)
+  {
+    if(Get_2dMatrixValue(TTT->Board,0,0) == Get_2dMatrixValue(TTT->Board,0,1)
+    && Get_2dMatrixValue(TTT->Board,0,0) == Get_2dMatrixValue(TTT->Board,0,2))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,0,0);
+      return TTT->Winner;
+    }
+    if(Get_2dMatrixValue(TTT->Board,0,0) == Get_2dMatrixValue(TTT->Board,1,0)
+    && Get_2dMatrixValue(TTT->Board,0,0) == Get_2dMatrixValue(TTT->Board,2,0))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,0,0);
+      return TTT->Winner;
+    }
+  }
+
+  //Starting from bottom right square
+  if(Get_2dMatrixValue(TTT->Board,2,2) != 0)
+  {
+    if(Get_2dMatrixValue(TTT->Board,2,2) == Get_2dMatrixValue(TTT->Board,0,2)
+    && Get_2dMatrixValue(TTT->Board,2,2) == Get_2dMatrixValue(TTT->Board,1,2))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,2,2);
+      return TTT->Winner;
+    }
+    if(Get_2dMatrixValue(TTT->Board,2,2) == Get_2dMatrixValue(TTT->Board,2,1)
+    && Get_2dMatrixValue(TTT->Board,2,2) == Get_2dMatrixValue(TTT->Board,2,0))
+    {
+      TTT->Winner = Get_2dMatrixValue(TTT->Board,2,2);
+      return TTT->Winner;
+    }
+  }
+  if (TTT->MovesMade == 9)
+  {
+    TTT->Winner = 0;
+    return TTT->Winner;
+  }
+  return TTT->Winner;
 }
+
+int TTT_StopCondition(void* GivenStruct)
+{
+  TTT_t* TTT = (TTT_t*)GivenStruct;
+  return WinCondition(TTT);
+}
+
+
+
 
 //int MakeMove(TTT_t*TTT,int Move)
 //Returns: integer
-//-1: Invalid Move
-//0: Move Made
-//1: GameOver
+//-2: Invalid Move
+//-1: Game Still ongoing
+//0: represents a tie
+//1: represent X as the winner
+//2: represent O as the winner
 int MakeMove(TTT_t*TTT,int Move)
 {
-  int Row = Move%3;
-  int Col = Move/3;
-  printf("Row:%d\n",Row);
-  printf("Col:%d\n",Col);
-  if((*(TTT->Board->Array+Move)) != 0)
+  if(0 <= Move && Move < 9 && (*(TTT->Board->Array+Move)) == 0)
   {
     (*(TTT->Board->Array+Move)) = TTT->Player;
     Print(TTT->Board);
@@ -69,19 +154,21 @@ int MakeMove(TTT_t*TTT,int Move)
       TTT->Player=1;
     }
 
-    return 0;
+    return WinCondition(TTT);
   }
-  return -1;
+  return -2;
 }
 
-
-//Returns "IMatrix_t* Board = CreateIntegerMatrix(3,3)" with a 'Dropout' filter for valid moves
-//Returns 1 in position if move is valid
-DLL_Handle_t* TTT_PossibleBreakOuts(void* GivenStruct)
+void Print(TTT_t*TTT)
 {
-  TTT_t* TTT = (TTT_t*)(GivenStruct);
-  DLL_Handle_t* PossibleMoves = Create_DLL_Handle_t();
+  Print(TTT->Board);
+}
 
+//Returns DLL_Handle (DoublyLinkedList Handle) containing each Possible Move
+//returns a DoublyLinkedList of all posible Game Outcomes
+HashTable_t* PossibleBreakOuts(TTT_t* TTT)
+{
+  HashTable_t* PossibleMoves = Create_HashTable_t();
 
   int PositionValue,Move;
   DLL_Node_t* NewNode;
@@ -107,6 +194,14 @@ DLL_Handle_t* TTT_PossibleBreakOuts(void* GivenStruct)
   return PossibleMoves;
 }
 
+//DLL_Handle_t* TTT_PossibleBreakOuts(void* GivenStruct)
+//Short: TypeCast Calls PossibleBreakOuts,
+//returns a DoublyLinkedList of all posible Game Outcomes
+HashTable_t* TTT_PossibleBreakOuts(void* GivenStruct)
+{
+  return PossibleBreakOuts((TTT_t*)(GivenStruct));
+}
+
 
 bool TTT_Equivalent(void*GivenStruct0,void*GivenStruct1)
 {
@@ -124,12 +219,29 @@ bool TTT_Equivalent(void*GivenStruct0,void*GivenStruct1)
   return true;
 }
 
+int TTT_RollOut(TTT_t*TTT)
+{
+  DLLHandle_t* PossibleMoves;
+  while(TTT->Winner == -1)
+  {
+    PossibleMoves = PossibleBreakOuts(TTT);
+    PossibleMoves->Length;
+  }
+  return
+}
+
+bool Equivalent(TTT_t*TTT0,TTT_t*TTT1)
+{
+  return TTT_Equivalent((void*)TTT0,(void*)TTT1);
+}
+
+
 MCHS__FL_t* Create_MCHS_TTT_FL()
 {
   MCHS__FL_t* MCHS_FL = (MCHS__FL_t*) malloc(sizeof(MCHS__FL_t));
   MCHS_FL->Free               = Free_TTT_t;
-  MCHS_FL->PossibleBreakOuts = TTT_PossibleBreakOuts;
-  //MCHS_FL->
+  MCHS_FL->PossibleBreakOuts  = TTT_PossibleBreakOuts;
+  MCHS_FL->StopCondition      = TTT_StopCondition;
   return MCHS_FL;
 }
 

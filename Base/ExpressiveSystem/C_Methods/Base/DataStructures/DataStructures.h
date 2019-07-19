@@ -7,7 +7,7 @@
 //#include "Strings/Strings.c"
 
 #include "HashMaps/HashMaps.h"
-#include "Array/Array.c"
+#include "Array/Array.h"
 #include "Matrix/Matrix.cu"
 
 #include "MCTS/MCTS.h"

@@ -74,6 +74,8 @@ void TerminalUnitTesting(bool Print, int CallSign)
   printf("8: GPU_Management:\n");
   printf("10: MCHT_T:\n");
   printf("11: TTT_T:\n");
+  printf("12: ExtensibleArray:\n");
+  printf("13: :\n");
   printf("===================\n");
   GatherTerminalInt("Select the Test Program you wish to Use:",&Option);
   printf("\n\n");
@@ -120,7 +122,11 @@ void TerminalUnitTesting(bool Print, int CallSign)
   }
   else if (Option == 11)
   {
-    TTT_T(CallSign);
+    //TTT_T(CallSign);
+  }
+  else if (Option == 12)
+  {
+    ExtensibleArray_T(CallSign);
   }
 }
 

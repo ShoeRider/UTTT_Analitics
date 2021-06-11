@@ -1,15 +1,16 @@
 # -*- MakeFile -*-
 
-all:
-	nvcc -o ./MCTS ./SRC/MCTS.cu
-	./MCTS
+all: Test
+	#nvcc -o ./MCTS ./SRC/MCTS.cu
+	#//./MCTS
 
 
 #Compile and run tests within ./Tests Folder
 Test:
-	nvcc -o ./MCTS_Test ./Tests/MCTS_Tests.cu
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./MCTS_Tests ./Tests/MCTS_Tests.cu
 	@echo "Running(Tests) ..."
-	./MCTS_Test
+	valgrind --leak-check=yes ./MCTS_Tests
 
 
 .PHONY: clean $(SUBDIRS)

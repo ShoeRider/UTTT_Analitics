@@ -7,6 +7,20 @@
 
 #include "Game.cu"
 
+struct TTT_Move : public GameMove
+{
+
+  public:
+    int Row;
+    int Col;
+      TTT_Move(int GivenRow,int GivenCol){
+        Row = GivenRow;
+        Col = GivenCol;
+      }
+      ~TTT_Move(){}
+};
+
+
 class TTT : public Game
 {
 private:
@@ -30,7 +44,10 @@ public:
     }
     ~TTT(){}
     void SetUpBoard();
-    bool Move(int Row,int Col);
+    bool Move(GameMove* Move);
+    //bool ValidMove(int Row,int Col);
+    bool ValidMove(GameMove* Move);
+    bool TestForWinner();
 
     std::string GenerateStringRepresentation();
     //void DisplayInTerminal();
@@ -51,29 +68,47 @@ void TTT::SetUpBoard()
 }
 
 // Provide implementation for the first method
-bool TTT::Move(int Row,int Col)
+bool TTT::ValidMove(GameMove* Move)
+{
+  TTT_Move* TTTMove = dynamic_cast<TTT_Move*>(Move);
+
+  if (Board[TTTMove->Row][TTTMove->Col] == ' ')
+  {
+    //Valid Move
+    return true;
+  }
+  else
+  {
+    //Invalid Move
+    return false;
+  }
+}
+
+// Provide implementation for the first method
+bool TTT::Move(GameMove* Move)
 {
   char PlayerMove;
   switch(Player) {
     case 1:
       PlayerMove = 'X';
+      Player = 2;
       break;
     case 2:
       PlayerMove = 'O';
+      Player = 1;
       break;
   }
-  
-  if (Board[Row][Col] != ' ')
+
+  if (this->ValidMove(Move))
   {
-    Board[Row][Col] = PlayerMove;
+    TTT_Move* TTTMove = dynamic_cast<TTT_Move*>(Move);
+    Board[TTTMove->Row][TTTMove->Col] = PlayerMove;
     return true;
   }
-  else
-  {
-    return false;
-  }
-
+  return false;
 }
+
+
 
 
 std::string TTT::GenerateStringRepresentation()
@@ -92,7 +127,11 @@ std::string TTT::GenerateStringRepresentation()
   return Game;
 }
 
-
+// Provide implementation for the first method
+bool TTT::TestForWinner()
+{
+  return false;
+}
 
 void TTT::RollOut()
 {

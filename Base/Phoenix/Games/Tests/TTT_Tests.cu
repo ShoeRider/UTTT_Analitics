@@ -11,6 +11,10 @@ int main() {
  f->PlayAsHuman();
 
  std::cout << f->GenerateStringRepresentation();
+ f->Move(0,0);
+ std::cout << f->GenerateStringRepresentation();
+ f->Move(0,1);
+ std::cout << f->GenerateStringRepresentation();
  delete f;
  return 0;
 }

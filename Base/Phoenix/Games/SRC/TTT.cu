@@ -1,10 +1,19 @@
+/*
+Anthony M Schroeder
+
+
+Purpose:
+Implement Tic Tac Toe through Game interface. Using standard rules.
+
+
+*/
 #ifndef TTT_CU
 #define TTT_CU
 
 
 #include <iostream>
 #include <string>
-
+#include <list>
 #include "Game.cu"
 
 struct TTT_Move : public GameMove
@@ -21,39 +30,55 @@ struct TTT_Move : public GameMove
 };
 
 
+
+
 class TTT : public Game
 {
 protected:
 
 
 public:
-  int Player;
-  int Players;
-  int Winner;
+  Player Draw    = Player(-1,'C');
+  Player Player0 = Player( 0,'X');
+  Player Player1 = Player( 1,'Y');
+  std::list<Player> Players;
+
+
+  Player*  CurrentPlayer;
+  Player*  WinningPlayer;
+
   int MovesRemaining;
   char Board[3][3];
-    TTT(){
+
+  TTT(){
+    std::list<Player> Players {Player0, Player1};
+      //Players.push_back(Player1);
+
       //Declares the winner:
-      //0   - No Winner
+      //-2   - Cats Game
+      //-1   - No Winner
       //1,2 - Player 1 or 2
-      //3   - Cats Game
-      Winner  = 0;
-      Player  = 1;
+      WinningPlayer  = NULL;
+      CurrentPlayer  = &(Players.front());
+      //Player         = 1;
       //Players = 2;
       MovesRemaining = 9;
       this->SetUpBoard();
     }
-    ~TTT(){}
+
+    ~TTT(){
+      delete &Draw;
+      delete &Players;
+    }
     void SetUpBoard();
     bool Move(GameMove* Move);
     //bool ValidMove(int Row,int Col);
     bool ValidMove(GameMove* Move);
-    bool TestForWinner();
+    Player* TestForWinner();
 
     //bool PossibleMoves();
     std::string GenerateStringRepresentation();
-    std::string DeclareWinner(int Player);
-    std::string DeclareWinner(char PlayerMove);
+    void DeclareWinner(Player* Winner);
     //void DisplayInTerminal();
     void RollOut();
     void PlayAsHuman();
@@ -74,6 +99,11 @@ void TTT::SetUpBoard()
 // Provide implementation for the first method
 bool TTT::ValidMove(GameMove* Move)
 {
+  if(MovesRemaining == 0 ){
+    DeclareWinner(&Draw);
+    return false;
+  }
+
   TTT_Move* TTTMove = dynamic_cast<TTT_Move*>(Move);
 
   if (Board[TTTMove->Row][TTTMove->Col] == ' ')
@@ -91,22 +121,12 @@ bool TTT::ValidMove(GameMove* Move)
 // Provide implementation for the first method
 bool TTT::Move(GameMove* Move)
 {
-  char PlayerMove;
-  switch(Player) {
-    case 1:
-      PlayerMove = 'X';
-      Player = 2;
-      break;
-    case 2:
-      PlayerMove = 'O';
-      Player = 1;
-      break;
-  }
 
   if (this->ValidMove(Move))
   {
+    MovesRemaining--;
     TTT_Move* TTTMove = dynamic_cast<TTT_Move*>(Move);
-    Board[TTTMove->Row][TTTMove->Col] = PlayerMove;
+    Board[TTTMove->Row][TTTMove->Col] = CurrentPlayer->GameRepresentation;
     return true;
   }
   return false;
@@ -132,29 +152,24 @@ std::string TTT::GenerateStringRepresentation()
 }
 
 
-std::string TTT::DeclareWinner(int Player)
+void TTT::DeclareWinner(Player* GivenWinner)
 {
-  std::string WinnerText = "\nPlayer:" + std::to_string(Player) + " Has Won!\n";
-  return WinnerText;
+  if(WinningPlayer == NULL){
+    Player* Winner = dynamic_cast<Player*>(GivenWinner);
+    WinningPlayer=Winner;
+  }
 }
 
-std::string TTT::DeclareWinner(char WinningPlayer)
+// Returns True/False If Winner is found
+Player* TTT::TestForWinner()
 {
-  switch(WinningPlayer){
-    case 'X':
-      Player = 1;
-      break;
-    case 'O':
-      Player = 2;
-      break;
+  if(
+    WinningPlayer == NULL ||
+    WinningPlayer == &Draw
+  ){
+    return WinningPlayer;
   }
 
-  return this->DeclareWinner(Player);
-}
-
-// Provide implementation for the first method
-bool TTT::TestForWinner()
-{
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
     if(
@@ -171,7 +186,8 @@ bool TTT::TestForWinner()
       --------
        | | |
       */
-      this->DeclareWinner(Board[Row_Col][0]);
+
+      this->DeclareWinner(&Players.front());
 
     }
     else if(
@@ -188,7 +204,7 @@ bool TTT::TestForWinner()
       --------
       X| | |
       */
-      this->DeclareWinner(Board[0][Row_Col]);
+      this->DeclareWinner(&Players.front());
 
     }
   }
@@ -208,7 +224,7 @@ Winning Diagonal Method Found. Example:
   --------
    | |X|
   */
-  this->DeclareWinner(Board[0][0] == Board[1][1]);
+      this->DeclareWinner(&Players.front());
 
   }
   else if(
@@ -225,10 +241,10 @@ Winning Diagonal Method Found. Example:
   --------
   X| | |
   */
-  this->DeclareWinner(Board[0][2]);
+      this->DeclareWinner(&Players.front());
   }
 
-  return false;
+  return WinningPlayer;
 }
 
 

@@ -18,12 +18,26 @@ Using a method called: Pure Virtual Functions.
 
 
 //Game Move interface. Used as a place holder for child classes holding
-//   game move data
+//   game move data.
 struct GameMove
 {
   public:
       GameMove(){}
       virtual ~GameMove()= default;
+};
+
+//Player interface. Used as a place holder for child classes holding
+//   game Player data.
+struct Player
+{
+  public:
+  int PlayerNumber;
+  char GameRepresentation;
+  Player(int GivenPlayer,char GivenGameRepresentation){
+    PlayerNumber = GivenPlayer;
+    GameRepresentation = GivenGameRepresentation;
+  }
+  ~Player(){}
 };
 
 
@@ -56,7 +70,7 @@ protected:
 
       //When instantiating a unique pointer to avoid a dangling pointer:
       //use: "make_unique", this removes the possibility for exception safety.
-      //std::unique_ptr<Game> = std::make_shared<Game>()
+      //std::shared_ptr<Game> = std::make_shared<Game>()
       //virtual std::shared_ptr<Game> CopyGame()        = 0;
       virtual std::string GenerateStringRepresentation() = 0;
 
@@ -64,8 +78,8 @@ protected:
       //virtual void ConfigurePlayers()   = 0;
       //virtual std::string GameHash()        = 0;
       virtual void PlayAsHuman()        = 0;
-      virtual bool TestForWinner()      = 0;
-      virtual std::string DeclareWinner(int Player) = 0;
+      virtual Player* TestForWinner()   = 0;
+      //virtual std::string DeclareWinner(int Player) = 0;
       //virtual void StepSimulation() = 0;
       //virtual void CopySimulation() = 0;
       //virtual void SaveSimulation() = 0;

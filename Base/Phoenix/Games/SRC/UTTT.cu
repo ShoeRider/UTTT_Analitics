@@ -3,7 +3,7 @@ Anthony M Schroeder
 
 
 Purpose:
-Implement Ultimate Tick Tack Toe through Game interface. Using rules To be
+Implement Ultimate Tic Tac Toe through Game interface. Using rules To be
 described...
 
 
@@ -55,8 +55,27 @@ class UTTT_SubGame : public TTT
 {
   public:
     bool Move(GameMove* Move);
-
+    std::string DeclareWinner(char WinningPlayer);
 };
+
+std::string UTTT_SubGame::DeclareWinner(char WinningPlayer)
+{
+  if(WinningPlayer != -1){
+    return std::to_string(WinningPlayer);
+  }
+
+  switch(WinningPlayer){
+    case 'X':
+      Player = 1;
+      break;
+    case 'O':
+      Player = 2;
+      break;
+  }
+
+  return this->DeclareWinner(Player);
+}
+
 bool UTTT_SubGame::Move(GameMove* Move)
 {
 
@@ -96,7 +115,7 @@ public:
 
   int NextMove_Row;
   int NextMove_Col;
-  TTT* Boards[3][3];
+  TTT Boards[3][3];
 
     UTTT(){
       //Declares the winner:
@@ -111,9 +130,13 @@ public:
       MovesRemaining = 81;
       this->SetUpBoards();
     }
-    ~UTTT(){}
+    ~UTTT(){
+      this->FreeBoards();
+    }
 
     void SetUpBoards();
+    void FreeBoards();
+
     bool Move(GameMove* Move);
     //bool ValidMove(int Row,int Col);
     bool ValidMove(GameMove* Move);
@@ -128,16 +151,15 @@ public:
     void PlayAsHuman();
 };
 
-// Provide implementation for the first method
+
 void UTTT::SetUpBoards()
 {
-  for (int Row = 0; Row < 3; Row++)
-  {
-    for (int Col = 0; Col < 3; Col++)
-    {
-        Boards[Row][Col] = new TTT();
-    }
-  }
+
+}
+
+void UTTT::FreeBoards()
+{
+
 }
 
 // Provide implementation for the first method
@@ -148,14 +170,14 @@ bool UTTT::ValidMove(GameMove* Move)
     NextMove_Row != -1 ||
     NextMove_Col != -1
   ){
-
+    return Boards[UTTTMove->Row][UTTTMove->Col].ValidMove(UTTTMove);
   }
 
   if(
     UTTTMove->Row == NextMove_Row &&
     UTTTMove->Col == NextMove_Col
   ){
-    return true;
+    return Boards[UTTTMove->Row][UTTTMove->Col].ValidMove(UTTTMove);
   }
 
   return false;
@@ -169,11 +191,11 @@ bool UTTT::Move(GameMove* Move)
   switch(Player) {
     case 1:
       PlayerCharacter = 'X';
-      Player = 2;
+      Player = 2; //Swap to player 2 for next move.
       break;
     case 2:
       PlayerCharacter = 'O';
-      Player = 1;
+      Player = 1; //Swap to player 1 for next move.
       break;
   }
 
@@ -181,7 +203,7 @@ bool UTTT::Move(GameMove* Move)
   {
     UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
     UTTTMove->Player = PlayerCharacter;
-    return Boards[UTTTMove->Row][UTTTMove->Col]->Move(Move);
+    return Boards[UTTTMove->Row][UTTTMove->Col].Move(Move);
   }
   return false;
 }
@@ -223,9 +245,9 @@ bool UTTT::TestForWinner()
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
     if(
-      Boards[Row_Col][0]->Winner == Boards[Row_Col][1]->Winner &&
-      Boards[Row_Col][0]->Winner == Boards[Row_Col][2]->Winner &&
-      Boards[Row_Col][0]->Winner != ' '
+      Boards[Row_Col][0].Winner == Boards[Row_Col][1].Winner &&
+      Boards[Row_Col][0].Winner == Boards[Row_Col][2].Winner &&
+      Boards[Row_Col][0].Winner != ' '
     )
     {
       /*
@@ -236,13 +258,13 @@ bool UTTT::TestForWinner()
       --------
        | | |
       */
-      this->DeclareWinner(Boards[Row_Col][0]->Winner);
+      this->DeclareWinner(Boards[Row_Col][0].Winner);
 
     }
     else if(
-      Boards[0][Row_Col]->Winner == Boards[1][Row_Col]-> Winner &&
-      Boards[0][Row_Col]->Winner == Boards[2][Row_Col]-> Winner &&
-      Boards[0][Row_Col]->Winner != ' '
+      Boards[0][Row_Col].Winner == Boards[1][Row_Col].Winner &&
+      Boards[0][Row_Col].Winner == Boards[2][Row_Col].Winner &&
+      Boards[0][Row_Col].Winner != ' '
     )
     {
       /*
@@ -253,16 +275,16 @@ bool UTTT::TestForWinner()
       --------
       X| | |
       */
-      this->DeclareWinner(Boards[0][Row_Col]->Winner);
+      this->DeclareWinner(Boards[0][Row_Col].Winner);
 
     }
   }
 
 
   if(
-    Boards[0][0]->Winner == Boards[1][1]->Winner &&
-    Boards[0][0]->Winner == Boards[2][2]->Winner &&
-    Boards[0][0]->Winner != ' '
+    Boards[0][0].Winner == Boards[1][1].Winner &&
+    Boards[0][0].Winner == Boards[2][2].Winner &&
+    Boards[0][0].Winner != ' '
   )
   {
 /*
@@ -273,13 +295,13 @@ Winning Diagonal Method Found. Example:
   --------
    | |X|
   */
-  this->DeclareWinner(Boards[0][0] == Boards[1][1]);
+  this->DeclareWinner(Boards[0][0].Winner);
 
   }
   else if(
-    Boards[0][2]->Winner == Boards[1][1]->Winner &&
-    Boards[0][2]->Winner == Boards[2][0]->Winner &&
-    Boards[0][2]->Winner != ' '
+    Boards[0][2].Winner == Boards[1][1].Winner &&
+    Boards[0][2].Winner == Boards[2][0].Winner &&
+    Boards[0][2].Winner != ' '
   )
   {
 /*
@@ -290,7 +312,7 @@ Winning Diagonal Method Found. Example:
   --------
   X| | |
   */
-  this->DeclareWinner(Boards[0][2]->Winner);
+  this->DeclareWinner(Boards[0][2].Winner);
   }
 
   return false;

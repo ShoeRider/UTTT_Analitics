@@ -16,6 +16,7 @@ Using a method called: Pure Virtual Functions.
 #include <iostream>
 #include <memory>
 
+#include <list>
 
 //Game Move interface. Used as a place holder for child classes holding
 //   game move data.
@@ -31,13 +32,11 @@ struct GameMove
 struct Player
 {
   public:
-  int PlayerNumber;
-  char GameRepresentation;
-  Player(int GivenPlayer,char GivenGameRepresentation){
-    PlayerNumber = GivenPlayer;
-    GameRepresentation = GivenGameRepresentation;
-  }
-  ~Player(){}
+    int PlayerNumber;
+    char GameRepresentation;
+
+    Player(){}
+    virtual ~Player(){}
 };
 
 
@@ -48,8 +47,10 @@ private:
 protected:
 
   public:
+      std::list<Player*> Players;
+
       Game(){}
-      ~Game(){}
+      virtual ~Game(){}
 
         //The following Methods use the 'Pure Virtual Function' method,
         //  where "= 0" part makes this method pure virtual,
@@ -85,6 +86,13 @@ protected:
       //virtual void SaveSimulation() = 0;
       //virtual void ReadSimulation() = 0;
       virtual void RollOut()            = 0;
+
+      virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {
+        for (Player* i : GivenPlayers) { // c++11 range-based for loop
+            //printf("%p\n",i);
+            Players.push_back(i);
+          }
+      };
 };
 
 

@@ -12,16 +12,6 @@ int main() {
 
  std::cout << f->GenerateStringRepresentation();
 
-
-
- delete f;
- return 0;
-}
-
-#endif //TTT_Tests_CU
-
-/*
-
  GameMove *GM = new TTT_Move(0,0);
  f->Move(GM);
  std::cout << f->GenerateStringRepresentation();
@@ -37,5 +27,15 @@ int main() {
  std::cout << f->GenerateStringRepresentation();
  delete GM;
 
+
  f->TestForWinner();
+ delete f;
+ return 0;
+}
+
+#endif //TTT_Tests_CU
+
+/*
+
+
  */

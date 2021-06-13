@@ -5,6 +5,7 @@ all: Test
 	#./MCTS
 
 UTTT_Test:
+	#rm UTTT_Test
 	@echo "Compiling(Tests) ..."
 	nvcc -o ./UTTT_Test ./Tests/UTTT_Tests.cu
 	@echo "Running(Tests) ..."
@@ -15,7 +16,7 @@ Test:
 	@echo "Compiling(Tests) ..."
 	nvcc -o ./TTT_Test ./Tests/TTT_Tests.cu
 	@echo "Running(Tests) ..."
-	valgrind --leak-check=yes ./TTT_Test
+	valgrind --leak-check=yes -s ./TTT_Test
 
 
 .PHONY: clean $(SUBDIRS)

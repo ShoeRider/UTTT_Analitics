@@ -23,14 +23,15 @@ struct TTT_Move : public GameMove
 
 class TTT : public Game
 {
-private:
+protected:
+
+
+public:
   int Player;
   int Players;
   int Winner;
   int MovesRemaining;
   char Board[3][3];
-
-public:
     TTT(){
       //Declares the winner:
       //0   - No Winner
@@ -49,7 +50,10 @@ public:
     bool ValidMove(GameMove* Move);
     bool TestForWinner();
 
+    //bool PossibleMoves();
     std::string GenerateStringRepresentation();
+    std::string DeclareWinner(int Player);
+    std::string DeclareWinner(char PlayerMove);
     //void DisplayInTerminal();
     void RollOut();
     void PlayAsHuman();
@@ -127,11 +131,107 @@ std::string TTT::GenerateStringRepresentation()
   return Game;
 }
 
+
+std::string TTT::DeclareWinner(int Player)
+{
+  std::string WinnerText = "\nPlayer:" + std::to_string(Player) + " Has Won!\n";
+  return WinnerText;
+}
+
+std::string TTT::DeclareWinner(char WinningPlayer)
+{
+  switch(WinningPlayer){
+    case 'X':
+      Player = 1;
+      break;
+    case 'O':
+      Player = 2;
+      break;
+  }
+
+  return this->DeclareWinner(Player);
+}
+
 // Provide implementation for the first method
 bool TTT::TestForWinner()
 {
+  for (int Row_Col = 0; Row_Col < 3; Row_Col++)
+  {
+    if(
+      Board[Row_Col][0] == Board[Row_Col][1] &&
+      Board[Row_Col][0] == Board[Row_Col][2] &&
+      Board[Row_Col][0] != ' '
+    )
+    {
+      /*
+      Winning Row Method Found. Example:
+      X|X|X|
+      --------
+       | | |
+      --------
+       | | |
+      */
+      this->DeclareWinner(Board[Row_Col][0]);
+
+    }
+    else if(
+      Board[0][Row_Col] == Board[1][Row_Col] &&
+      Board[0][Row_Col] == Board[2][Row_Col] &&
+      Board[0][Row_Col] != ' '
+    )
+    {
+      /*
+      Winning Column Method Found. Example:
+      X| | |
+      --------
+      X| | |
+      --------
+      X| | |
+      */
+      this->DeclareWinner(Board[0][Row_Col]);
+
+    }
+  }
+
+
+  if(
+    Board[0][0] == Board[1][1] &&
+    Board[0][0] == Board[2][2] &&
+    Board[0][0] != ' '
+  )
+  {
+/*
+Winning Diagonal Method Found. Example:
+  X| | |
+  --------
+   |X| |
+  --------
+   | |X|
+  */
+  this->DeclareWinner(Board[0][0] == Board[1][1]);
+
+  }
+  else if(
+    Board[0][2] == Board[1][1] &&
+    Board[0][2] == Board[2][0] &&
+    Board[0][2] != ' '
+  )
+  {
+/*
+Winning Diagonal Method Found. Example:
+   | |X|
+  --------
+   |X| |
+  --------
+  X| | |
+  */
+  this->DeclareWinner(Board[0][2]);
+  }
+
   return false;
 }
+
+
 
 void TTT::RollOut()
 {

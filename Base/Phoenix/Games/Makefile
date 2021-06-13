@@ -4,6 +4,11 @@ all: Test
 	#nvcc -o ./MCTS ./SRC/MCTS.cu
 	#./MCTS
 
+UTTT_Test:
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./UTTT_Test ./Tests/UTTT_Tests.cu
+	@echo "Running(Tests) ..."
+	valgrind --leak-check=yes ./UTTT_Test
 
 #Compile and run tests within ./Tests Folder
 Test:

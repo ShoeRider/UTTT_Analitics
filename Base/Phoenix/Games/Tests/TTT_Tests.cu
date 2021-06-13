@@ -11,10 +11,19 @@ int main() {
  f->PlayAsHuman();
 
  std::cout << f->GenerateStringRepresentation();
- f->Move(0,0);
+
+
+ GameMove *GM = new TTT_Move(0,0);
+ f->Move(GM);
  std::cout << f->GenerateStringRepresentation();
- f->Move(0,1);
+ delete GM;
+
+ GM = new TTT_Move(0,1);
+ f->Move(GM);
  std::cout << f->GenerateStringRepresentation();
+ delete GM;
+
+
  delete f;
  return 0;
 }

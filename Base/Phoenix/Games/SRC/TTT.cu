@@ -20,6 +20,7 @@ struct TTT_Move : public GameMove
 {
 
   public:
+  char Board[3][3];
     int Row;
     int Col;
       TTT_Move(int GivenRow,int GivenCol){
@@ -51,15 +52,16 @@ public:
   char Board[3][3];
 
   TTT(){
-    std::list<Player> Players {Player0, Player1};
+    std::list<Player*> Players {&Player0, &Player1};
       //Players.push_back(Player1);
 
       //Declares the winner:
       //-2   - Cats Game
       //-1   - No Winner
       //1,2 - Player 1 or 2
-      WinningPlayer  = NULL;
-      CurrentPlayer  = &(Players.front());
+      this->WinningPlayer  = NULL;
+      this->CurrentPlayer  = (Players.front());
+
       //Player         = 1;
       //Players = 2;
       MovesRemaining = 9;
@@ -121,12 +123,12 @@ bool TTT::ValidMove(GameMove* Move)
 // Provide implementation for the first method
 bool TTT::Move(GameMove* Move)
 {
+  //TTT_Move* TTTMove = dynamic_cast<TTT_Move*>(Move);
 
   if (this->ValidMove(Move))
   {
     MovesRemaining--;
-    TTT_Move* TTTMove = dynamic_cast<TTT_Move*>(Move);
-    Board[TTTMove->Row][TTTMove->Col] = CurrentPlayer->GameRepresentation;
+    Board[0][0] = CurrentPlayer->GameRepresentation;
     return true;
   }
   return false;

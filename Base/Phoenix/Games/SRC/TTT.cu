@@ -36,12 +36,13 @@ struct TTT_Player : public Player
     int PlayerNumber;
     char GameRepresentation;
     bool HumanPlayer;
+    TTT_Player(){}
   TTT_Player(int GivenPlayer,char GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
   }
   ~TTT_Player(){}
-  GameMove* MakeMove();
+  virtual GameMove* MakeMove();
 };
 
 GameMove* TTT_Player::MakeMove()
@@ -312,15 +313,19 @@ void TTT::RollOut()
 
 void TTT::PlayGame()
 {
-  Player* Currentplayer = Players.front();
-  GameMove* Move         = (*Currentplayer).MakeMove();
-  this->Move(Move);
-  delete Move;
-  
-  std::cout << this->GenerateStringRepresentation();
-  while(false){
+  GameMove* Move;
+  Player* Currentplayer;
 
+  TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  while(TTTPlayer == NULL){
+    Currentplayer = Players.front();
 
+    Move          = (*Currentplayer).MakeMove();
+    this->Move(Move);
+    delete Move;
+
+    std::cout << this->GenerateStringRepresentation();
+    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
 }
 

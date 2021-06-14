@@ -14,18 +14,28 @@ described...
 
 #include <iostream>
 #include <string>
+#include <list>
 
 
-
-#include "TTT.cu"
 #include "Game.cu"
+#include "TTT.cu"
 
 
 
 /*
 
 */
-
+struct UTTT_Player : public Player
+{
+  public:
+    int PlayerNumber;
+    char GameRepresentation;
+  UTTT_Player(int GivenPlayer,char GivenGameRepresentation){
+    PlayerNumber = GivenPlayer;
+    GameRepresentation = GivenGameRepresentation;
+  }
+  ~UTTT_Player(){}
+};
 
 struct UTTT_Move : public GameMove
 {
@@ -33,7 +43,7 @@ struct UTTT_Move : public GameMove
   public:
     int Row;
     int Col;
-    char Player;
+    UTTT_Player* Player;
 
     int SubRow;
     int SubCol;
@@ -55,25 +65,16 @@ class UTTT_SubGame : public TTT
 {
   public:
     bool Move(GameMove* Move);
-    std::string DeclareWinner(char WinningPlayer);
+    Player* DeclareWinner(TTT_Player* GivenWinner);
 };
 
-std::string UTTT_SubGame::DeclareWinner(char WinningPlayer)
+Player* UTTT_SubGame::DeclareWinner(TTT_Player* GivenWinner)
 {
-  if(WinningPlayer != -1){
-    return std::to_string(WinningPlayer);
+  if(WinningPlayer == NULL){
+    //Player* Winner = static_cast<Player*>(GivenWinner);
+    WinningPlayer=GivenWinner;
   }
-
-  switch(WinningPlayer){
-    case 'X':
-      Player = 1;
-      break;
-    case 'O':
-      Player = 2;
-      break;
-  }
-
-  return this->DeclareWinner(Player);
+  return static_cast<Player*>(WinningPlayer);
 }
 
 bool UTTT_SubGame::Move(GameMove* Move)
@@ -82,8 +83,8 @@ bool UTTT_SubGame::Move(GameMove* Move)
 
   if (this->ValidMove(Move))
   {
-    UTTT_Move* TTTMove = dynamic_cast<UTTT_Move*>(Move);
-    Board[TTTMove->Row][TTTMove->Col] = TTTMove->Player;
+    UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
+    Board[UTTTMove->SubRow][UTTTMove->SubCol] = UTTTMove->Player->GameRepresentation;
     return true;
   }
   return false;
@@ -108,25 +109,27 @@ class UTTT : public Game
 
 public:
 
-  int Player;
-  int Players;
-  int Winner;
-  int MovesRemaining;
+  UTTT_Player Draw    = UTTT_Player(-1,'C');
+  UTTT_Player Player0 = UTTT_Player(0,'X');
+  UTTT_Player Player1 = UTTT_Player(1,'Y');
+
+  std::list<UTTT_Player*> Players;
+
+
+  UTTT_Player*  WinningPlayer;
+
 
   int NextMove_Row;
   int NextMove_Col;
   TTT Boards[3][3];
+  int MovesRemaining;
 
-    UTTT(){
-      //Declares the winner:
-      //0   - No Winner
-      //1,2 - Player 1 or 2
-      //3   - Cats Game
-      Winner  = 0;
-      Player  = 1;
-      //Players = 2;
-      NextMove_Row = -1;
-      NextMove_Col = -1;
+  UTTT(){
+      this->DeclarePlayers({&Player0,&Player1});
+      this->WinningPlayer  = NULL;
+
+      NextMove_Row   = -1;
+      NextMove_Col   = -1;
       MovesRemaining = 81;
       this->SetUpBoards();
     }
@@ -138,10 +141,9 @@ public:
     void FreeBoards();
 
     bool Move(GameMove* Move);
-    //bool ValidMove(int Row,int Col);
-    bool ValidMove(GameMove* Move);
-    bool TestForWinner();
 
+    bool ValidMove(GameMove* Move);
+    Player* TestForWinner();
     bool PossibleMoves();
     std::string GenerateStringRepresentation();
     std::string DeclareWinner(int Player);
@@ -149,6 +151,10 @@ public:
     //void DisplayInTerminal();
     void RollOut();
     void PlayAsHuman();
+    void DeclarePlayers(std::list<Player*> GivenPlayers);
+    void SetUpBoard();
+    Player* DeclareWinner(UTTT_Player* Winner);
+
 };
 
 
@@ -181,33 +187,39 @@ bool UTTT::ValidMove(GameMove* Move)
   }
 
   return false;
-
 }
+
 
 // Provide implementation for the first method
 bool UTTT::Move(GameMove* Move)
 {
-  char PlayerCharacter;
-  switch(Player) {
-    case 1:
-      PlayerCharacter = 'X';
-      Player = 2; //Swap to player 2 for next move.
-      break;
-    case 2:
-      PlayerCharacter = 'O';
-      Player = 1; //Swap to player 1 for next move.
-      break;
-  }
-
+  UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
+  UTTTMove->Player = Players.front();
   if (this->ValidMove(Move))
   {
-    UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
-    UTTTMove->Player = PlayerCharacter;
-    return Boards[UTTTMove->Row][UTTTMove->Col].Move(Move);
+    MovesRemaining--;
+
+    // move first element to the end
+    Boards[UTTTMove->Row][UTTTMove->Col].Move(Move);
+
+
+    Players.splice(Players.end(),        // destination position
+                   Players,              // source list
+                   Players.begin());     // source position
+
+    return true;
   }
   return false;
 }
-
+/*
+if (this->ValidMove(Move))
+{
+  UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
+  UTTTMove->Player = PlayerCharacter;
+  return Boards[UTTTMove->Row][UTTTMove->Col].Move(Move);
+}
+return false;
+*/
 
 
 
@@ -219,35 +231,25 @@ std::string UTTT::GenerateStringRepresentation()
 }
 
 
-std::string UTTT::DeclareWinner(int Player)
+Player* UTTT::DeclareWinner(UTTT_Player* GivenWinner)
 {
-  std::string WinnerText = "\nPlayer:" + std::to_string(Player) + " Has Won!\n";
-  return WinnerText;
-}
-
-std::string UTTT::DeclareWinner(char WinningPlayer)
-{
-  switch(WinningPlayer){
-    case 'X':
-      Player = 1;
-      break;
-    case 'O':
-      Player = 2;
-      break;
+  if(WinningPlayer == NULL){
+    //Player* Winner = static_cast<Player*>(GivenWinner);
+    WinningPlayer=GivenWinner;
   }
-
-  return this->DeclareWinner(Player);
+  return static_cast<Player*>(WinningPlayer);
 }
 
 // Provide implementation for the first method
-bool UTTT::TestForWinner()
+
+Player* UTTT::TestForWinner()
 {
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
     if(
-      Boards[Row_Col][0].Winner == Boards[Row_Col][1].Winner &&
-      Boards[Row_Col][0].Winner == Boards[Row_Col][2].Winner &&
-      Boards[Row_Col][0].Winner != ' '
+      Boards[Row_Col][0].WinningPlayer == Boards[Row_Col][1].WinningPlayer &&
+      Boards[Row_Col][0].WinningPlayer == Boards[Row_Col][2].WinningPlayer &&
+      Boards[Row_Col][0].WinningPlayer != NULL
     )
     {
       /*
@@ -258,13 +260,13 @@ bool UTTT::TestForWinner()
       --------
        | | |
       */
-      this->DeclareWinner(Boards[Row_Col][0].Winner);
+      this->DeclareWinner(Boards[Row_Col][0].WinningPlayer);
 
     }
     else if(
-      Boards[0][Row_Col].Winner == Boards[1][Row_Col].Winner &&
-      Boards[0][Row_Col].Winner == Boards[2][Row_Col].Winner &&
-      Boards[0][Row_Col].Winner != ' '
+      Boards[0][Row_Col].WinningPlayer == Boards[1][Row_Col].WinningPlayer &&
+      Boards[0][Row_Col].WinningPlayer == Boards[2][Row_Col].WinningPlayer &&
+      Boards[0][Row_Col].WinningPlayer != NULL
     )
     {
       /*
@@ -275,16 +277,16 @@ bool UTTT::TestForWinner()
       --------
       X| | |
       */
-      this->DeclareWinner(Boards[0][Row_Col].Winner);
+      this->DeclareWinner(Boards[0][Row_Col].WinningPlayer);
 
     }
   }
 
 
   if(
-    Boards[0][0].Winner == Boards[1][1].Winner &&
-    Boards[0][0].Winner == Boards[2][2].Winner &&
-    Boards[0][0].Winner != ' '
+    Boards[0][0].WinningPlayer == Boards[1][1].WinningPlayer &&
+    Boards[0][0].WinningPlayer == Boards[2][2].WinningPlayer &&
+    Boards[0][0].WinningPlayer != NULL
   )
   {
 /*
@@ -295,13 +297,13 @@ Winning Diagonal Method Found. Example:
   --------
    | |X|
   */
-  this->DeclareWinner(Boards[0][0].Winner);
+  this->DeclareWinner(Boards[0][0].WinningPlayer);
 
   }
   else if(
-    Boards[0][2].Winner == Boards[1][1].Winner &&
-    Boards[0][2].Winner == Boards[2][0].Winner &&
-    Boards[0][2].Winner != ' '
+    Boards[0][2].WinningPlayer == Boards[1][1].WinningPlayer &&
+    Boards[0][2].WinningPlayer == Boards[2][0].WinningPlayer &&
+    Boards[0][2].WinningPlayer != NULL
   )
   {
 /*
@@ -312,7 +314,7 @@ Winning Diagonal Method Found. Example:
   --------
   X| | |
   */
-  this->DeclareWinner(Boards[0][2].Winner);
+  this->DeclareWinner(Boards[0][2].WinningPlayer);
   }
 
   return false;

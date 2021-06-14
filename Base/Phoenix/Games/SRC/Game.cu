@@ -33,10 +33,12 @@ struct Player
 {
   public:
     int PlayerNumber;
-    char GameRepresentation;
-
+    void (*ExternalSimulation)();
+    bool HumanPlayer;
     Player(){}
     virtual ~Player(){}
+
+    virtual GameMove* MakeMove()=0;
 };
 
 
@@ -78,7 +80,7 @@ protected:
       //virtual void DisplayInTerminal(int Depth) = 0;
       //virtual void ConfigurePlayers()   = 0;
       //virtual std::string GameHash()        = 0;
-      virtual void PlayAsHuman()        = 0;
+      virtual void PlayGame()           = 0;
       virtual Player* TestForWinner()   = 0;
       //virtual std::string DeclareWinner(int Player) = 0;
       //virtual void StepSimulation() = 0;
@@ -86,6 +88,7 @@ protected:
       //virtual void SaveSimulation() = 0;
       //virtual void ReadSimulation() = 0;
       virtual void RollOut()            = 0;
+      virtual void DisplayWinner()            = 0;
 
       virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {
         for (Player* i : GivenPlayers) { // c++11 range-based for loop
@@ -93,7 +96,9 @@ protected:
             Players.push_back(i);
           }
       };
+
 };
+
 
 
 #endif //GAME_CU

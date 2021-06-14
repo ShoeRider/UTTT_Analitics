@@ -3,32 +3,29 @@
 
 #include "../SRC/TTT.cu"
 
+/*
+Game *f = new TTT();
 
+  GM = new TTT_Move(2,2);
+  f->Move(GM);
+  std::cout << f->GenerateStringRepresentation();
+  delete GM;
+
+
+
+f->DisplayWinner();
+*/
 
 int main() {
  //std::cout << "Hello World!";
  Game *f = new TTT();
- f->PlayAsHuman();
-
- std::cout << f->GenerateStringRepresentation();
-
- GameMove *GM = new TTT_Move(0,0);
- f->Move(GM);
- std::cout << f->GenerateStringRepresentation();
- delete GM;
-
- GM = new TTT_Move(0,1);
- f->Move(GM);
- std::cout << f->GenerateStringRepresentation();
- delete GM;
-
- GM = new TTT_Move(0,2);
- f->Move(GM);
- std::cout << f->GenerateStringRepresentation();
- delete GM;
+ f->PlayGame();
 
 
- f->TestForWinner();
+
+ Player* Winner = f->TestForWinner();
+ f->DisplayWinner();
+
  delete f;
  return 0;
 }

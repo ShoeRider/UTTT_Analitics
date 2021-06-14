@@ -35,12 +35,29 @@ struct TTT_Player : public Player
   public:
     int PlayerNumber;
     char GameRepresentation;
+    bool HumanPlayer;
   TTT_Player(int GivenPlayer,char GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
   }
   ~TTT_Player(){}
+  GameMove* MakeMove();
 };
+
+GameMove* TTT_Player::MakeMove()
+{
+   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
+   int X,Y;
+   std::cout << "Please Enter X Axis: ";
+   std::cin >> X;
+   std::cout << "Please Enter Y Axis: ";
+   std::cin >> Y;
+   TTT_Move* TTTMove = new TTT_Move(X,Y);
+   GameMove* Move = static_cast<GameMove*>(TTTMove);
+
+   return Move;
+}
+
 
 
 class TTT : public Game
@@ -54,8 +71,6 @@ public:
   TTT_Player Player1 = TTT_Player(1,'Y');
 
   std::list<TTT_Player*> Players;
-
-  TTT_Player*  CurrentPlayer;
   TTT_Player*  WinningPlayer;
 
   int MovesRemaining;
@@ -63,27 +78,23 @@ public:
 
   TTT(){
       this->DeclarePlayers({&Player0,&Player1});
-
-      //Players.push_back(Player0);
-      //Players.push_back(Player1);
-
-      //Declares the winner:
-      //-2   - Cats Game
-      //-1   - No Winner
-      //1,2 - Player 1 or 2
       this->WinningPlayer  = NULL;
 
-      this->CurrentPlayer  = Players.front();
-
-
-      //Player         = 1;
-      //Players = 2;
-      MovesRemaining = 9;
+      MovesRemaining       = 9;
       this->SetUpBoard();
     }
+    TTT(std::list<Player*> GivenPlayers){
+        this->DeclarePlayers(GivenPlayers);
 
+        this->WinningPlayer  = NULL;
+
+        MovesRemaining       = 9;
+        this->SetUpBoard();
+      }
     ~TTT(){
     }
+    Player* GetWinner();
+    void DisplayWinner();
     void DeclarePlayers(std::list<Player*> GivenPlayers);
     void SetUpBoard();
     bool Move(GameMove* Move);
@@ -96,7 +107,7 @@ public:
     Player* DeclareWinner(TTT_Player* Winner);
     //void DisplayInTerminal();
     void RollOut();
-    void PlayAsHuman();
+    void PlayGame();
 };
 
 
@@ -154,18 +165,13 @@ bool TTT::Move(GameMove* Move)
   if (this->ValidMove(Move))
   {
     MovesRemaining--;
-    //CurrentPlayer  = Players.front();
 
     // move first element to the end
-    Board[TTTMove->Row][TTTMove->Col] = Player0.GameRepresentation;
-    //Board[0][0] = CurrentPlayer->GameRepresentation;
-
+    Board[TTTMove->Row][TTTMove->Col] = Players.front()->GameRepresentation;
 
     Players.splice(Players.end(),        // destination position
                    Players,              // source list
                    Players.begin());     // source position
-    //CurrentPlayer  = Players.front();
-
     return true;
   }
   return false;
@@ -197,15 +203,25 @@ Player* TTT::DeclareWinner(TTT_Player* GivenWinner)
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
   }
-  return static_cast<Player*>(WinningPlayer);
+  return GetWinner();
 }
+
+void TTT::DisplayWinner(){
+  if(WinningPlayer!=NULL){
+    printf("Player %d Has won!",WinningPlayer->PlayerNumber);
+  }
+};
+
+Player* TTT::GetWinner(){
+  return static_cast<Player*>(WinningPlayer);
+};
 
 // Returns True/False If Winner is found
 Player* TTT::TestForWinner()
 {
   if(
-    WinningPlayer == NULL ||
-    WinningPlayer == &Draw
+    WinningPlayer == &Draw ||
+    WinningPlayer != NULL
   ){
     return WinningPlayer;
   }
@@ -227,7 +243,7 @@ Player* TTT::TestForWinner()
        | | |
       */
 
-      this->DeclareWinner(Players.front());
+      return this->DeclareWinner(Players.front());
 
     }
     else if(
@@ -244,7 +260,7 @@ Player* TTT::TestForWinner()
       --------
       X| | |
       */
-      this->DeclareWinner(Players.front());
+      return this->DeclareWinner(Players.front());
 
     }
   }
@@ -264,7 +280,7 @@ Winning Diagonal Method Found. Example:
   --------
    | |X|
   */
-      this->DeclareWinner(Players.front());
+      return this->DeclareWinner(Players.front());
 
   }
   else if(
@@ -281,7 +297,7 @@ Winning Diagonal Method Found. Example:
   --------
   X| | |
   */
-      this->DeclareWinner(Players.front());
+      return this->DeclareWinner(Players.front());
   }
 
   return WinningPlayer;
@@ -294,9 +310,18 @@ void TTT::RollOut()
 
 }
 
-void TTT::PlayAsHuman()
+void TTT::PlayGame()
 {
+  Player* Currentplayer = Players.front();
+  GameMove* Move         = (*Currentplayer).MakeMove();
+  this->Move(Move);
+  delete Move;
+  
+  std::cout << this->GenerateStringRepresentation();
+  while(false){
 
+
+  }
 }
 
 #endif //TTT_CU

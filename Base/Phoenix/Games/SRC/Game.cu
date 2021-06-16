@@ -17,6 +17,7 @@ Using a method called: Pure Virtual Functions.
 #include <memory>
 
 #include <list>
+#include "Game.h"
 
 //Game Move interface. Used as a place holder for child classes holding
 //   game move data.
@@ -27,6 +28,16 @@ struct GameMove
       virtual ~GameMove()= default;
 };
 
+
+GameMove* get(std::list<GameMove*> _list, int _i){
+    std::list<GameMove*>::iterator it = _list.begin();
+    for(int i=0; i<_i; i++){
+        ++it;
+    }
+    return *it;
+}
+
+
 //Player interface. Used as a place holder for child classes holding
 //   game Player data.
 struct Player
@@ -36,9 +47,9 @@ struct Player
     void (*ExternalSimulation)();
     bool HumanPlayer;
     Player(){}
-    virtual ~Player(){}
+    virtual GameMove* MakeMove(Game* GivenGame)=0;
+    virtual ~Player(){};
 
-    virtual GameMove* MakeMove()=0;
 };
 
 
@@ -59,9 +70,9 @@ protected:
         //  and also makes this class abstract.
 
       //virtual bool ValidMove(int Row,int Col) = 0;
-      //virtual bool PossibleMoves()                = 0;
-      virtual bool ValidMove(GameMove* Move)      = 0;
-      virtual bool Move(GameMove* Move)           = 0;
+      virtual std::list<GameMove*> PossibleMoves() = 0;
+      virtual bool ValidMove(GameMove* Move)       = 0;
+      virtual bool Move(GameMove* Move)            = 0;
       //virtual void AvaliableMoves(int Depth) = 0;
 
       //Use: unique_ptr<Game>
@@ -75,7 +86,7 @@ protected:
       //use: "make_unique", this removes the possibility for exception safety.
       //std::shared_ptr<Game> = std::make_shared<Game>()
       //virtual std::shared_ptr<Game> CopyGame()        = 0;
-      virtual std::string GenerateStringRepresentation() = 0;
+      virtual std::string Generate_StringRepresentation() = 0;
 
       //virtual void DisplayInTerminal(int Depth) = 0;
       //virtual void ConfigurePlayers()   = 0;
@@ -99,6 +110,13 @@ protected:
 
 };
 
+Game* get(std::list<Game*> _list, int _i){
+    std::list<Game*>::iterator it = _list.begin();
+    for(int i=0; i<_i; i++){
+        ++it;
+    }
+    return *it;
+}
 
 
 #endif //GAME_CU

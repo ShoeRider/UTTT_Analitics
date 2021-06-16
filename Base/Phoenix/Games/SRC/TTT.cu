@@ -14,13 +14,14 @@ Implement Tic Tac Toe through Game interface. Using standard rules.
 #include <iostream>
 #include <string>
 #include <list>
+#include <cstdlib>
+
 #include "Game.cu"
 
 struct TTT_Move : public GameMove
 {
 
   public:
-  char Board[3][3];
     int Row;
     int Col;
       TTT_Move(int GivenRow,int GivenCol){
@@ -42,12 +43,13 @@ struct TTT_Player : public Player
     GameRepresentation = GivenGameRepresentation;
   }
   ~TTT_Player(){}
-  virtual GameMove* MakeMove();
+  virtual GameMove* MakeMove(Game* GivenGame);
 };
 
-GameMove* TTT_Player::MakeMove()
+GameMove* TTT_Player::MakeMove(Game* GivenGame)
 {
    //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
+
    int X,Y;
    std::cout << "Please Enter X Axis: ";
    std::cin >> X;
@@ -59,6 +61,15 @@ GameMove* TTT_Player::MakeMove()
    return Move;
 }
 
+void Free_TTTMoveList(std::list<GameMove*> GameMoves)
+{
+  //std::list<GameMove*> Moves = PossibleMoves();
+  for (GameMove* GMove : GameMoves) { // c++11 range-based for loop
+      TTT_Move* Move = static_cast<TTT_Move*>(GMove);
+      delete Move;
+    }
+}
+
 
 
 class TTT : public Game
@@ -67,6 +78,10 @@ protected:
 
 
 public:
+  /*
+  Please note the following:
+  Currentplayer = Players.front();
+  */
   TTT_Player Draw    = TTT_Player(-1,'C');
   TTT_Player Player0 = TTT_Player(0,'X');
   TTT_Player Player1 = TTT_Player(1,'Y');
@@ -99,12 +114,13 @@ public:
     void DeclarePlayers(std::list<Player*> GivenPlayers);
     void SetUpBoard();
     bool Move(GameMove* Move);
-    //bool ValidMove(int Row,int Col);
+
     bool ValidMove(GameMove* Move);
     Player* TestForWinner();
 
-    //bool PossibleMoves();
-    std::string GenerateStringRepresentation();
+    std::list<GameMove*> PossibleMoves();
+    std::list<Game*>     PossibleGames();
+    std::string Generate_StringRepresentation();
     Player* DeclareWinner(TTT_Player* Winner);
     //void DisplayInTerminal();
     void RollOut();
@@ -181,7 +197,7 @@ bool TTT::Move(GameMove* Move)
 
 
 
-std::string TTT::GenerateStringRepresentation()
+std::string TTT::Generate_StringRepresentation()
 {
   std::string Game = "";
   for (int Row = 0; Row < 3; Row++)
@@ -305,10 +321,65 @@ Winning Diagonal Method Found. Example:
 }
 
 
+std::list<GameMove*> TTT::PossibleMoves()
+{
+  std::list<GameMove*>Moves;
+
+  //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
+  for (int Row = 0; Row < 3; Row++)
+  {
+    for (int Col = 0; Col < 3; Col++)
+    {
+        if (Board[Row][Col] == ' ')
+        {
+          TTT_Move* TTTMove = new TTT_Move(Row,Col);
+          GameMove* Move = static_cast<GameMove*>(TTTMove);
+          Moves.push_back(Move);
+        }
+    }
+  }
+  return Moves;
+}
+std::list<Game*> TTT::PossibleGames()
+{
+  std::list<GameMove*> Moves = PossibleMoves();
+  std::list<Game*>Games;
+  TTT* Branch;
+  for (GameMove* GMove : Moves) { // c++11 range-based for loop
+       Branch = new TTT(*this);
+       Branch->Move(GMove);
+       Games.push_back(Branch);
+    }
+
+  return Games;
+}
+
+
+
+
+
 
 void TTT::RollOut()
 {
+  GameMove* Move;
+  int Range;
 
+  TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  while(TTTPlayer == NULL){
+
+    std::list<GameMove*>GameMoves = PossibleMoves();
+    Range = GameMoves.size();
+    printf("Range:%d\n",Range);
+    Move          = get(GameMoves,(rand() % (Range)));
+    this->Move(Move);
+    printf("Freeing memory\n");
+    Free_TTTMoveList(GameMoves);
+    //delete &GameMoves;
+    //delete Move;
+
+    std::cout << this->Generate_StringRepresentation();
+    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  }
 }
 
 void TTT::PlayGame()
@@ -320,11 +391,11 @@ void TTT::PlayGame()
   while(TTTPlayer == NULL){
     Currentplayer = Players.front();
 
-    Move          = (*Currentplayer).MakeMove();
+    Move          = (*Currentplayer).MakeMove(this);
     this->Move(Move);
     delete Move;
 
-    std::cout << this->GenerateStringRepresentation();
+    std::cout << this->Generate_StringRepresentation();
     TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
 }

@@ -36,7 +36,7 @@ struct UTTT_Player : public TTT_Player
     GameRepresentation = GivenGameRepresentation;
   }
   ~UTTT_Player(){}
-  GameMove* MakeMove();
+  GameMove* MakeMove(Game* GivenGame);
 };
 
 
@@ -65,7 +65,16 @@ struct UTTT_Move : public GameMove
       ~UTTT_Move(){}
 };
 
-GameMove* UTTT_Player::MakeMove()
+void Free_UTTTMoveList(std::list<GameMove*> GameMoves)
+{
+  //std::list<GameMove*> Moves = PossibleMoves();
+  for (GameMove* GMove : GameMoves) { // c++11 range-based for loop
+      UTTT_Move* Move = static_cast<UTTT_Move*>(GMove);
+      delete Move;
+    }
+}
+
+GameMove* UTTT_Player::MakeMove(Game* GivenGame)
 {
   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
   int Row,Col,SubRow,SubCol;
@@ -104,7 +113,6 @@ Player* UTTT_SubGame::DeclareWinner(UTTT_Player* GivenWinner)
 
 bool UTTT_SubGame::Move(GameMove* Move)
 {
-
 
   if (this->ValidMove(Move))
   {
@@ -146,7 +154,7 @@ public:
 
   int NextMove_Row;
   int NextMove_Col;
-  TTT Boards[3][3];
+  UTTT_SubGame Boards[3][3];
   int MovesRemaining;
 
   UTTT(){
@@ -170,8 +178,10 @@ public:
     bool ValidMove(GameMove* Move);
     Player* TestForWinner();
     void DisplayWinner();
-    bool PossibleMoves();
-    std::string GenerateStringRepresentation();
+    std::list<GameMove*> PossibleMoves();
+    std::list<Game*>     PossibleGames();
+    std::string Generate_GameRowRepresentation(int Row);
+    std::string Generate_StringRepresentation();
 
     //void DisplayInTerminal();
     void RollOut();
@@ -206,10 +216,12 @@ void UTTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 // Provide implementation for the first method
 bool UTTT::ValidMove(GameMove* Move)
 {
+  std::cout << "NextMove_Row:" << NextMove_Row <<"\n";
+  std::cout << "NextMove_Col:" << NextMove_Col <<"\n";
   UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
   if(
-    NextMove_Row != -1 ||
-    NextMove_Col != -1
+    NextMove_Row == -1 ||
+    NextMove_Col == -1
   ){
     return Boards[UTTTMove->Row][UTTTMove->Col].ValidMove(UTTTMove);
   }
@@ -237,7 +249,8 @@ bool UTTT::Move(GameMove* Move)
     // move first element to the end
     Boards[UTTTMove->Row][UTTTMove->Col].Move(Move);
 
-
+    NextMove_Row = UTTTMove->Row;
+    NextMove_Col = UTTTMove->Col;
     Players.splice(Players.end(),        // destination position
                    Players,              // source list
                    Players.begin());     // source position
@@ -257,12 +270,44 @@ return false;
 */
 
 
-
-std::string UTTT::GenerateStringRepresentation()
+std::string UTTT::Generate_GameRowRepresentation(int Row)
 {
-  std::string Game = "";
+  /*
+  Here is a graph of the individual smaller games.
+  X|X|X|
+  --------
+   | | |
+  --------
+   | | |
+  */
+  std::string GameRep = "";
+  for (int SubRow = 0; SubRow < 3; SubRow++)
+  {
+    for (int Col = 0; Col < 3; Col++)
+    {
+        for (int SubCol = 0; SubCol < 3; SubCol++)
+        {
+            char GameCharacter = Boards[Row][Col].Board[SubRow][SubCol];
+            GameRep.append(&GameCharacter);
+            GameRep.append("|");
+        }
+        GameRep.append("   ");
+    }
+    GameRep.append("\n---------------------------\n");
+  }
+  return GameRep;
 
-  return Game;
+}
+
+std::string UTTT::Generate_StringRepresentation()
+{
+  std::string GameRep = "";
+  for (int Row = 0; Row < 3; Row++)
+  {
+    GameRep.append(Generate_GameRowRepresentation(Row));
+    GameRep.append("---------------------------\n");
+  }
+  return GameRep;
 }
 
 
@@ -361,11 +406,67 @@ Winning Diagonal Method Found. Example:
   return WinningPlayer;
 }
 
+std::list<GameMove*> UTTT::PossibleMoves()
+{
+  std::list<GameMove*>Moves;
+  if(
+    NextMove_Row == -1 ||
+    NextMove_Col == -1
+  ){
+    for (int Row = 0; Row < 3; Row++)
+    {
+      for (int Col = 0; Col < 3; Col++)
+      {
+        for (GameMove* GMove : Boards[Row][Col].PossibleMoves()) { // c++11 range-based for loop
+
+             Moves.push_back(GMove);
+          }
+      }
+    }
+    return Moves;
+  }
+  else{
+    return Boards[NextMove_Row][NextMove_Col].PossibleMoves();
+  }
+
+}
+std::list<Game*> UTTT::PossibleGames()
+{
+  std::list<GameMove*> Moves = PossibleMoves();
+  std::list<Game*>Games;
+/*  TTT* Branch;
+  for (GameMove* GMove : Moves) { // c++11 range-based for loop
+       Branch = new UTTT(*this);
+       Branch->Move(GMove);
+       Games.push_back(Branch);
+    }
+    */
+
+  return Games;
+}
 
 
 void UTTT::RollOut()
 {
+  GameMove* Move;
+  int Range;
 
+  TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  while(TTTPlayer == NULL){
+
+    std::list<GameMove*>GameMoves = PossibleMoves();
+    Range = GameMoves.size();
+    printf("Range:%d\n",Range);
+    Move          = get(GameMoves,(rand() % (Range)));
+    this->Move(Move);
+    printf("Freeing memory\n");
+    Free_TTTMoveList(GameMoves);
+    //delete &GameMoves;
+    //delete Move;
+
+    std::cout << this->Generate_StringRepresentation();
+    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  }
 }
 
 void UTTT::PlayGame()
@@ -377,11 +478,11 @@ void UTTT::PlayGame()
   while(TTTPlayer == NULL){
     Currentplayer = Players.front();
 
-    Move          = (*Currentplayer).MakeMove();
+    Move          = (*Currentplayer).MakeMove(this);
     this->Move(Move);
     delete Move;
 
-    std::cout << this->GenerateStringRepresentation();
+    std::cout << this->Generate_StringRepresentation();
     TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
 }

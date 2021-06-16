@@ -4,9 +4,10 @@
 
 
 
-#include "Game.cu"
+struct GameMove;
+struct Player;
 
-
+class Game;
 
 
 #endif //Game_H

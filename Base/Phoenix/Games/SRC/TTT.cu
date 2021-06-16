@@ -87,7 +87,7 @@ public:
   TTT_Player Player1 = TTT_Player(1,'Y');
 
   std::list<TTT_Player*> Players;
-  TTT_Player*  WinningPlayer;
+  Player*  WinningPlayer;
 
   int MovesRemaining;
   char Board[3][3];
@@ -118,10 +118,10 @@ public:
     bool ValidMove(GameMove* Move);
     Player* TestForWinner();
 
-    std::list<GameMove*> PossibleMoves();
-    std::list<Game*>     PossibleGames();
+    virtual std::list<GameMove*> PossibleMoves();
+    virtual std::list<Game*>     PossibleGames();
     std::string Generate_StringRepresentation();
-    Player* DeclareWinner(TTT_Player* Winner);
+    Player* DeclareWinner(Player* Winner);
     //void DisplayInTerminal();
     void RollOut();
     void PlayGame();
@@ -155,6 +155,7 @@ void TTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 // Provide implementation for the first method
 bool TTT::ValidMove(GameMove* Move)
 {
+  printf("TTT MovesRemaining:%d\n",MovesRemaining);
   if(MovesRemaining == 0 ){
     DeclareWinner(&Draw);
     return false;
@@ -162,14 +163,19 @@ bool TTT::ValidMove(GameMove* Move)
 
   TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
 
+  printf("TTTMove->Row:%d\n",TTTMove->Row);
+  printf("TTTMove->Col:%d\n",TTTMove->Col);
+  printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
   if (Board[TTTMove->Row][TTTMove->Col] == ' ')
   {
     //Valid Move
+      printf("TTT Valid Move\n");
     return true;
   }
   else
   {
     //Invalid Move
+      printf("TTT InValid Move\n");
     return false;
   }
 }
@@ -214,7 +220,7 @@ std::string TTT::Generate_StringRepresentation()
 }
 
 
-Player* TTT::DeclareWinner(TTT_Player* GivenWinner)
+Player* TTT::DeclareWinner(Player* GivenWinner)
 {
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);

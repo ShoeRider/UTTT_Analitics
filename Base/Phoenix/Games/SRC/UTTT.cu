@@ -45,22 +45,22 @@ struct UTTT_Move : public GameMove
 {
 
   public:
-    int Row;
-    int Col;
+    int GameRow;
+    int GameCol;
     UTTT_Player* Player;
 
-    int SubRow;
-    int SubCol;
+    int Row;
+    int Col;
     UTTT_Move(
+      int GivenGameRow,
+      int GivenGameCol,
       int GivenRow,
-      int GivenCol,
-      int GivenSubRow,
-      int GivenSubCol
+      int GivenCol
       ){
+          GameRow = GivenGameRow;
+          GameCol = GivenGameCol;
           Row = GivenRow;
           Col = GivenCol;
-          SubRow = GivenSubRow;
-          SubCol = GivenSubCol;
       }
       ~UTTT_Move(){}
 };
@@ -77,16 +77,16 @@ void Free_UTTTMoveList(std::list<GameMove*> GameMoves)
 GameMove* UTTT_Player::MakeMove(Game* GivenGame)
 {
   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
-  int Row,Col,SubRow,SubCol;
-  std::cout << "Please Enter Row: ";
-  std::cin >> Row;
+  int GameRow,GameCol,Row,Col;
+  std::cout << "Please Enter GameRow: ";
+  std::cin >> GameRow;
   std::cout << "Please Enter Col Axis: ";
+  std::cin >> GameCol;
+  std::cout << "Please Enter Row Axis: ";
+  std::cin >> Row;
+  std::cout << "Please Enter Col: ";
   std::cin >> Col;
-  std::cout << "Please Enter SubRow Axis: ";
-  std::cin >> SubRow;
-  std::cout << "Please Enter SubCol: ";
-  std::cin >> SubCol;
-   UTTT_Move* UTTTMove = new UTTT_Move(Row,Col,SubRow,SubCol);
+   UTTT_Move* UTTTMove = new UTTT_Move(GameRow,GameCol,Row,Col);
    GameMove* Move = static_cast<GameMove*>(UTTTMove);
 
    return Move;
@@ -96,10 +96,32 @@ GameMove* UTTT_Player::MakeMove(Game* GivenGame)
 class UTTT_SubGame : public TTT
 {
   public:
+    UTTT_Player Draw    = UTTT_Player(-1,'C');
     bool Move(GameMove* Move);
-    Player* DeclareWinner(UTTT_Player* GivenWinner);
+    Player* DeclareWinner(Player* GivenWinner);
+    std::list<GameMove*> PossibleMoves();
+    bool ValidMove(GameMove* Move);
 };
 
+std::list<GameMove*> UTTT_SubGame::PossibleMoves()
+{
+  std::list<GameMove*>Moves;
+
+  //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
+  for (int Row = 0; Row < 3; Row++)
+  {
+    for (int Col = 0; Col < 3; Col++)
+    {
+        if (Board[Row][Col] == ' ')
+        {
+          UTTT_Move* TTTMove = new UTTT_Move(-1,-1,Row,Col);
+          GameMove* Move = static_cast<GameMove*>(TTTMove);
+          Moves.push_back(Move);
+        }
+    }
+  }
+  return Moves;
+}
 /*
 Player* UTTT_SubGame::DeclareWinner(UTTT_Player* GivenWinner)
 {
@@ -117,12 +139,40 @@ bool UTTT_SubGame::Move(GameMove* Move)
   if (this->ValidMove(Move))
   {
     UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
-    Board[UTTTMove->SubRow][UTTTMove->SubCol] = UTTTMove->Player->GameRepresentation;
+    Board[UTTTMove->Row][UTTTMove->Col] = UTTTMove->Player->GameRepresentation;
     return true;
   }
   return false;
 }
 
+// Provide implementation for the first method
+bool UTTT_SubGame::ValidMove(GameMove* Move)
+{
+  printf("TTT MovesRemaining:%d\n",MovesRemaining);
+  if(MovesRemaining == 0 ){
+    //TODO Re-Implement DRAW DECLARATION
+    //DeclareWinner(&Draw);
+    return false;
+  }
+
+  UTTT_Move* TTTMove = static_cast<UTTT_Move*>(Move);
+
+  printf("TTTMove->Row:%d\n",TTTMove->Row);
+  printf("TTTMove->Col:%d\n",TTTMove->Col);
+  printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
+  if (Board[TTTMove->Row][TTTMove->Col] == ' ')
+  {
+    //Valid Move
+      printf("TTT Valid Move\n");
+    return true;
+  }
+  else
+  {
+    //Invalid Move
+      printf("TTT InValid Move\n");
+    return false;
+  }
+}
 
 
 
@@ -216,21 +266,20 @@ void UTTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 // Provide implementation for the first method
 bool UTTT::ValidMove(GameMove* Move)
 {
-  std::cout << "NextMove_Row:" << NextMove_Row <<"\n";
-  std::cout << "NextMove_Col:" << NextMove_Col <<"\n";
+
   UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
   if(
     NextMove_Row == -1 ||
     NextMove_Col == -1
   ){
-    return Boards[UTTTMove->Row][UTTTMove->Col].ValidMove(UTTTMove);
+    return Boards[UTTTMove->GameRow][UTTTMove->GameCol].ValidMove(Move);
   }
 
   if(
-    UTTTMove->Row == NextMove_Row &&
-    UTTTMove->Col == NextMove_Col
+    UTTTMove->GameRow == NextMove_Row &&
+    UTTTMove->GameCol == NextMove_Col
   ){
-    return Boards[UTTTMove->Row][UTTTMove->Col].ValidMove(UTTTMove);
+    return Boards[UTTTMove->GameRow][UTTTMove->GameCol].ValidMove(Move);
   }
 
   return false;
@@ -241,22 +290,32 @@ bool UTTT::ValidMove(GameMove* Move)
 bool UTTT::Move(GameMove* Move)
 {
   UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
+  printf("UTTTMove:%p\n",&UTTTMove);
+  printf("UTTTMove->GameRow:%d\n",UTTTMove->GameRow);
+  printf("UTTTMove->GameCol:%d\n",UTTTMove->GameCol);
+
   UTTTMove->Player = Players.front();
+  printf("UTTTMove->Row:%d\n",UTTTMove->Row);
+  printf("UTTTMove->Col:%d\n",UTTTMove->Col);
+
+  int stop;
+  std::cin >> stop;
   if (this->ValidMove(Move))
   {
     MovesRemaining--;
 
     // move first element to the end
-    Boards[UTTTMove->Row][UTTTMove->Col].Move(Move);
+    Boards[UTTTMove->GameRow][UTTTMove->GameCol].Move(Move);
 
     NextMove_Row = UTTTMove->Row;
     NextMove_Col = UTTTMove->Col;
     Players.splice(Players.end(),        // destination position
                    Players,              // source list
                    Players.begin());     // source position
-
+    printf("valid Move");
     return true;
   }
+  printf("Invalid Move");
   return false;
 }
 /*
@@ -418,7 +477,11 @@ std::list<GameMove*> UTTT::PossibleMoves()
       for (int Col = 0; Col < 3; Col++)
       {
         for (GameMove* GMove : Boards[Row][Col].PossibleMoves()) { // c++11 range-based for loop
+             UTTT_Move* UTTT_GMove = static_cast<UTTT_Move*>(GMove);
+             UTTT_GMove->GameRow = Row;
+             UTTT_GMove->GameCol = Col;
 
+             GMove = static_cast<GameMove*>(UTTT_GMove);
              Moves.push_back(GMove);
           }
       }
@@ -426,7 +489,18 @@ std::list<GameMove*> UTTT::PossibleMoves()
     return Moves;
   }
   else{
-    return Boards[NextMove_Row][NextMove_Col].PossibleMoves();
+
+    for (GameMove* GMove : Boards[NextMove_Row][NextMove_Col].PossibleMoves()) { // c++11 range-based for loop
+         UTTT_Move* UTTT_GMove = static_cast<UTTT_Move*>(GMove);
+         UTTT_GMove->GameRow = NextMove_Row;
+         UTTT_GMove->GameCol = NextMove_Col;
+
+         GMove = static_cast<GameMove*>(UTTT_GMove);
+         Moves.push_back(GMove);
+      }
+    printf("UTTT_:NextMove_Row:%d\n",NextMove_Row);
+    printf("UTTT_:NextMove_Col:%d\n",NextMove_Col);
+    return Moves;
   }
 
 }
@@ -458,6 +532,7 @@ void UTTT::RollOut()
     Range = GameMoves.size();
     printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
+    printf("Move:%p\n",Move);
     this->Move(Move);
     printf("Freeing memory\n");
     Free_TTTMoveList(GameMoves);

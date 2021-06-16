@@ -1,11 +1,10 @@
 # -*- MakeFile -*-
 
-all: Test
+all: Test UTTT_Test
 	#nvcc -o ./MCTS ./SRC/MCTS.cu
 	#./MCTS
 
 UTTT_Test:
-	#rm UTTT_Test
 	@echo "Compiling(Tests) ..."
 	nvcc -o ./UTTT_Test ./Tests/UTTT_Tests.cu
 	@echo "Running(Tests) ..."

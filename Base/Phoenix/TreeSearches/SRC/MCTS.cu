@@ -10,6 +10,9 @@
 
 #include "TreeSearch.cu"
 
+#include "../../Games/SRC/Game.cu"
+#include "../../Games/SRC/TTT.cu"
+#include "../../Games/SRC/UTTT.cu"
 class MCTS_Node
 {
 private:
@@ -27,7 +30,6 @@ public:
 
     ~MCTS_Node(){}
     double     Find_UCB1();
-    MCTS_Node* Find_Highest_UCB1();
     int        AddChildren(std::list<void*> PossibleMoves);
 
 };
@@ -43,21 +45,7 @@ double MCTS_Node::Find_UCB1(){
   return (ValueSum/NodeVisits + ExploreBy*sqrt(log((float)Parent->NodeVisits)/NodeVisits));
 }
 
-MCTS_Node* MCTS_Node::Find_Highest_UCB1(){
-  double     HighestValue = -DBL_MAX;
-  double     NodesValue;
-  MCTS_Node* HighestNode  = NULL;
 
-  for (MCTS_Node Node : Children){
-      NodesValue = Node.Find_UCB1();
-      if (HighestValue < NodesValue)
-      {
-        HighestNode = &Node;
-      }
-  }
-  //Note: Doesnt account for NULL Node
-  return HighestNode;
-}
 
 //For each element within a list of PossibleInstances(Different Game States)
 //Add as different Childeren
@@ -75,36 +63,56 @@ int MCTS_Node::AddChildren(std::list<void*> PossibleInstances){
 
 
 
-class MCTS : public SimulationTreeSearch
+class MCTS : public TreeSimulation
 {
-private:
-    int Nodes;
-    MCTS_Node* TransversedNode;
-    MCTS_Node* HeadNode;
-
 public:
+  int Nodes;
+  MCTS_Node* TransversedNode;
+  MCTS_Node* HeadNode;
+  std::list<MCTS_Node*>MCTS_List;
+
+  Game* SimulatedGame;
     MCTS(){}
     ~MCTS(){}
     void Search(int Depth);
+    MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
+    void GetPossibleMoves();
 
-    void Give_MLMethodPointer();
     void CreateChildren();
     void TreeTraversal();
     void CreateNode();
     void RollOut();
 };
 
+
+MCTS_Node* MCTS::Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List){
+  double     HighestValue = -DBL_MAX;
+  double     NodesValue;
+  MCTS_Node* HighestNode  = NULL;
+
+  for (MCTS_Node Node : MCTS_List){
+      NodesValue = Node.Find_UCB1();
+      if (HighestValue < NodesValue)
+      {
+        HighestNode = &Node;
+      }
+  }
+  //Note: Doesnt account for NULL Node
+  return HighestNode;
+}
+
+// Provide implementation for the first method
+void MCTS::GetPossibleMoves()
+{
+    std::list<GameMove*> Moves = SimulatedGame->PossibleMoves();
+    std::list<Game*> Games = SimulatedGame->PossibleGames();
+}
+
 // Provide implementation for the first method
 void MCTS::Search(int Depth)
 {
     std::cout << "Searching Depth:" << Depth << "\n";
 
-}
-
-// Provide implementation for the first method
-void MCTS::Give_MLMethodPointer()
-{
-    std::cout << "Hello World!";
 }
 
 

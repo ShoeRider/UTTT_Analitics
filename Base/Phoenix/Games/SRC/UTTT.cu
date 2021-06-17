@@ -100,7 +100,7 @@ class UTTT_SubGame : public TTT
     bool Move(GameMove* Move);
     Player* DeclareWinner(Player* GivenWinner);
     std::list<GameMove*> PossibleMoves();
-    bool ValidMove(GameMove* Move);
+    //bool ValidMove(GameMove* Move);
 };
 
 std::list<GameMove*> UTTT_SubGame::PossibleMoves()
@@ -145,6 +145,7 @@ bool UTTT_SubGame::Move(GameMove* Move)
   return false;
 }
 
+/*
 // Provide implementation for the first method
 bool UTTT_SubGame::ValidMove(GameMove* Move)
 {
@@ -174,6 +175,7 @@ bool UTTT_SubGame::ValidMove(GameMove* Move)
   }
 }
 
+*/
 
 
 

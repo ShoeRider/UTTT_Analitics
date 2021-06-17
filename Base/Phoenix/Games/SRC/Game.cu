@@ -71,6 +71,7 @@ protected:
 
       //virtual bool ValidMove(int Row,int Col) = 0;
       virtual std::list<GameMove*> PossibleMoves() = 0;
+      virtual std::list<Game*> PossibleGames()     = 0;
       virtual bool ValidMove(GameMove* Move)       = 0;
       virtual bool Move(GameMove* Move)            = 0;
       //virtual void AvaliableMoves(int Depth) = 0;

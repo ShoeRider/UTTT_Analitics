@@ -7,10 +7,17 @@
 
 int main() {
  //std::cout << "Hello World!";
- TreeSimulation *f = new MCTS();
- f->Search(10);
+ TTT_Player Player0 = TTT_Player(0,'X');
+ TTT_Player Player1 = TTT_Player(1,'Y');
+ Game *_Game = new TTT({&Player0,&Player1});
 
- delete f;
+ TreeSimulation *Sim = new MCTS(_Game);
+ Sim->Search(10,&Player0);
+
+ //delete &Player0;
+ //delete &Player1;
+ //delete _Game;
+ delete Sim;
  return 0;
 }
 

@@ -25,9 +25,11 @@ Free_TTTList(GameMoves);
 
 int main() {
  //std::cout << "Hello World!";
- Game *f = new TTT();
+ TTT_Player Player0 = TTT_Player(0,'X');
+ TTT_Player Player1 = TTT_Player(1,'Y');
+ Game *_Game = new TTT({&Player0,&Player1});
  //f->PlayGame();
- f->RollOut();
+ _Game->RollOut();
 
 
  /*
@@ -39,10 +41,10 @@ int main() {
 
 //RollOut()
 
- Player* Winner = f->TestForWinner();
- f->DisplayWinner();
+ Player* Winner = _Game->TestForWinner();
+ _Game->DisplayWinner();
 
- delete f;
+ delete _Game;
  return 0;
 }
 

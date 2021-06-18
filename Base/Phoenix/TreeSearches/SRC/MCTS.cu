@@ -13,26 +13,41 @@
 #include "../../Games/SRC/Game.cu"
 #include "../../Games/SRC/TTT.cu"
 #include "../../Games/SRC/UTTT.cu"
+
+
+
 class MCTS_Node
 {
 private:
 
 public:
     int    NodeVisits;
-    int    Depth;
     double ValueSum;
-    double SimulationRep;
-    bool LeafNode;
     Game* GivenGame;
 
     MCTS_Node*           Parent;
     std::list<MCTS_Node*> Children;
-    MCTS_Node(){}
+    MCTS_Node(){
+      GivenGame  = NULL;
+      Children   = {};
+      Parent     = NULL;
+      NodeVisits = 0;
+      ValueSum   = 0;
+    }
     MCTS_Node(Game* Instance){
-      GivenGame = Instance;
+      GivenGame  = Instance;
+      Children   = {};
+      Parent     = NULL;
+      NodeVisits = 0;
+      ValueSum   = 0;
     }
 
-    ~MCTS_Node(){}
+    ~MCTS_Node(){
+      for (MCTS_Node* Node : Children){
+        delete Node;
+      }
+      delete GivenGame;
+    }
     double     Find_UCB1();
     MCTS_Node* Find_MAX_UCB1_Child();
     void       RollOut();
@@ -75,7 +90,7 @@ double MCTS_Node::Find_UCB1(){
 	}
   float _NodeVisits;
   if (Parent != NULL){
-    _NodeVisits = (float)Parent->NodeVisits;
+    _NodeVisits = Parent->NodeVisits;
   }
   else{
     _NodeVisits = 0;
@@ -112,8 +127,8 @@ class MCTS : public TreeSimulation
 public:
   double Value;
   double Visits;
-  int Nodes;
   Game* GivenGame;
+  Player* GivenPlayer;
 
   //MCTS_Node* TransversedNode;
   MCTS_Node* HeadNode;
@@ -121,12 +136,20 @@ public:
   Game* SimulatedGame;
 
     MCTS(Game*_Game){
+      Value  = 0;
+      Visits = 0;
+
+      //HeadNode  = NULL;
+      HeadNode  = new MCTS_Node(_Game);
       GivenGame = _Game;
     }
-    ~MCTS(){}
+
+    ~MCTS(){
+      delete HeadNode;
+    }
     MCTS_Node* Algorithm(MCTS_Node* TransversedNode);
     double EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer);
-    void Search(int Depth);
+    void Search(int Depth,Player* GivenPlayer);
     void ParallelSearch(int Depth);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
     void GetPossibleMoves();
@@ -153,36 +176,45 @@ void MCTS::GetPossibleMoves()
 // Provide implementation for the first method
 MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 {
-
-  if(TransversedNode->Children.size()==0){
+//TransversedNode->Children.size()
+//int Leaf =TransversedNode->Children.size();
+//int Leaf = HeadNode->Children.size();
+  if(0 == 0){
     //If Node is LeafNode
-    if(TransversedNode->NodeVisits == 0){
-      TransversedNode->RollOut();
-    }
-    std::list<Game*> Games = GivenGame->PossibleGames();
-    TransversedNode->AddChildren(Games);
-    MCTS_Node* NextNode = *TransversedNode->Children.begin();
-    return Algorithm(NextNode);
+/*
+if(TransversedNode->NodeVisits == 0){
+  TransversedNode->RollOut();
+}
+std::list<Game*> Games = GivenGame->PossibleGames();
+TransversedNode->AddChildren(Games);
+MCTS_Node* NextNode = *TransversedNode->Children.begin();
+return Algorithm(NextNode);*/
+return NULL;
 
   }
   else{
-    //Not Leaf Node, Transverse TreeSearch: Find Max Child UCB1 value.
-    MCTS_Node* MAXNode = TransversedNode->Find_MAX_UCB1_Child();
-    return Algorithm(MAXNode);
+/*
+//Not Leaf Node, Transverse TreeSearch: Find Max Child UCB1 value.
+MCTS_Node* MAXNode = TransversedNode->Find_MAX_UCB1_Child();
+return Algorithm(MAXNode);*/
+return NULL;
   }
 }
 
 // Provide implementation for the first method
 double MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 {
-    Algorithm(TransversedNode);
+    Algorithm(HeadNode);
     return Value;
 }
 
 
 // Provide implementation for the first method
-void MCTS::Search(int Depth)
+void MCTS::Search(int Depth,Player* GivenPlayer)
 {
+    for (int i = 0; i < Depth; i++) {
+      EvaluateTransversal(HeadNode,GivenPlayer);
+    }
 
     std::cout << "Searching Depth:" << Depth << "\n";
 

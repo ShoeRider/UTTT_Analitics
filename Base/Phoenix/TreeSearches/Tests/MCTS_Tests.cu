@@ -7,7 +7,7 @@
 
 int main() {
  //std::cout << "Hello World!";
- SimulationTreeSearch *f = new MCTS();
+ TreeSimulation *f = new MCTS();
  f->Search(10);
 
  delete f;

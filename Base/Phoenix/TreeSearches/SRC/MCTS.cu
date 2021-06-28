@@ -14,7 +14,7 @@
 #include "../../Games/SRC/TTT.cu"
 #include "../../Games/SRC/UTTT.cu"
 
-
+#define Pause int ASDF; std::cin >> ASDF;
 
 class MCTS_Node
 {
@@ -23,21 +23,20 @@ private:
 public:
     int    NodeVisits;
     double ValueSum;
-    Game* GivenGame;
+    Game* GivenGame = NULL;
 
-    MCTS_Node*           Parent;
+    MCTS_Node*           Parent       = NULL;
+    MCTS_Node*           RollOutChild = NULL;
     std::list<MCTS_Node*> Children;
     MCTS_Node(){
       GivenGame  = NULL;
       Children   = {};
-      Parent     = NULL;
       NodeVisits = 0;
       ValueSum   = 0;
     }
     MCTS_Node(Game* Instance){
       GivenGame  = Instance;
       Children   = {};
-      Parent     = NULL;
       NodeVisits = 0;
       ValueSum   = 0;
     }
@@ -46,12 +45,18 @@ public:
       for (MCTS_Node* Node : Children){
         delete Node;
       }
+      if (RollOutChild != NULL)
+      {
+          delete RollOutChild;
+      }
       delete GivenGame;
     }
     double     Find_UCB1();
     MCTS_Node* Find_MAX_UCB1_Child();
-    void       RollOut();
+    Game*      RollOut();
     int        AddChildren(std::list<Game*> PossibleMoves);
+    void       BackPropagation(double GivenPlayer);
+    double     GetAverageValue();
 
 };
 
@@ -105,19 +110,49 @@ double MCTS_Node::Find_UCB1(){
 //Add as different Childeren
 int MCTS_Node::AddChildren(std::list<Game*> PossibleInstances){
   int ChildrenAdded = 0;
-  MCTS_Node NewNode;
+  MCTS_Node* NewNode;
   for (Game* Instance : PossibleInstances){
-      NewNode = MCTS_Node(Instance);
-      NewNode.Parent = this;
-      Children.push_back(&NewNode);
-      ChildrenAdded++;
+      if(Instance != NULL)
+      {
+        NewNode = new MCTS_Node(Instance);
+        NewNode->Parent = this;
+        Children.push_back(NewNode);
+        ChildrenAdded++;
+      }
   }
   return ChildrenAdded;
 }
 
-void MCTS_Node::RollOut(){
-  GivenGame->RollOut();
+
+Game* MCTS_Node::RollOut(){
+
+  Game* RollOutGame = GivenGame->CopyGame();
+  //TODO Check if game is finished
+  RollOutChild = new MCTS_Node(RollOutGame);
+  RollOutChild->Parent = this;
+
+  return RollOutGame->RollOut();
 }
+
+void MCTS_Node::BackPropagation(double EvaluatedValue)
+{
+  NodeVisits++;
+  ValueSum += EvaluatedValue;
+  if (Parent != NULL)
+  {
+    Parent->BackPropagation(EvaluatedValue);
+  }
+}
+
+double MCTS_Node::GetAverageValue()
+{
+  return ValueSum/NodeVisits;
+}
+
+
+
+
+
 
 
 
@@ -148,7 +183,8 @@ public:
       delete HeadNode;
     }
     MCTS_Node* Algorithm(MCTS_Node* TransversedNode);
-    double EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer);
+    void EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer);
+    //double BackPropagation(MCTS_Node* TransversedNode,double GivenPlayer);
     void Search(int Depth,Player* GivenPlayer);
     void ParallelSearch(int Depth);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
@@ -178,45 +214,82 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 {
 //TransversedNode->Children.size()
 //int Leaf =TransversedNode->Children.size();
-//int Leaf = HeadNode->Children.size();
-  if(0 == 0){
+  std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+  std::cout << "TransversedNode:" <<TransversedNode << "\n";
+  std::cout << "NodeVisits:" <<TransversedNode->NodeVisits << "\n";
+  std::cout << "Children:"   <<TransversedNode->Children.size() << "\n";
+
+  Pause;
+
+
+  if(TransversedNode->Children.size() == 0){
     //If Node is LeafNode
-/*
-if(TransversedNode->NodeVisits == 0){
-  TransversedNode->RollOut();
-}
-std::list<Game*> Games = GivenGame->PossibleGames();
-TransversedNode->AddChildren(Games);
-MCTS_Node* NextNode = *TransversedNode->Children.begin();
-return Algorithm(NextNode);*/
-return NULL;
+    std::cout << "LeafNode Detected  :"   <<TransversedNode << "\n";
+
+    if(TransversedNode->NodeVisits == 0){
+      std::cout << "About to rool out on:"   <<TransversedNode << "\n";
+
+      TransversedNode->RollOut();
+
+      return TransversedNode;
+    }
+
+    std::list<Game*> Games = GivenGame->PossibleGames();
+    if (Games.size() == 0)
+    {
+      return TransversedNode;
+    }
+    TransversedNode->AddChildren(Games);
+    std::cout << "Children:"   <<TransversedNode->Children.size() << "\n";
+    Pause;
+
+    MCTS_Node* NextNode = *TransversedNode->Children.begin();
+    std::cout << "Selecting Next Node:" <<NextNode << "\n";
+    return Algorithm(NextNode);
+    //return NULL;
 
   }
   else{
-/*
-//Not Leaf Node, Transverse TreeSearch: Find Max Child UCB1 value.
-MCTS_Node* MAXNode = TransversedNode->Find_MAX_UCB1_Child();
-return Algorithm(MAXNode);*/
-return NULL;
+
+    //Not Leaf Node, Transverse TreeSearch: Find Max Child UCB1 value.
+    MCTS_Node* MAXNode = TransversedNode->Find_MAX_UCB1_Child();
+    //TODO: Implement Node Visits within BackProp...
+    //TransversedNode->NodeVisits++;
+    return Algorithm(MAXNode);
+    //return NULL;
   }
 }
 
+
+//
+
 // Provide implementation for the first method
-double MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
+void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 {
-    Algorithm(HeadNode);
-    return Value;
+    TransversedNode = Algorithm(TransversedNode);
+    double EvaluatedValue = -1;
+    if(TransversedNode->GivenGame->WinningPlayer == GivenPlayer)
+    {
+      EvaluatedValue = 1;
+    }
+    else if( TransversedNode->GivenGame->WinningPlayer == NULL )
+    {
+      printf("Draw Game\n");
+      EvaluatedValue = 0;
+    }
+    TransversedNode->BackPropagation(EvaluatedValue);
 }
 
 
 // Provide implementation for the first method
 void MCTS::Search(int Depth,Player* GivenPlayer)
 {
+    std::cout << "Searching Depth:" << Depth << "\n";
     for (int i = 0; i < Depth; i++) {
+      printf("\tDepth: %d\n",i);
       EvaluateTransversal(HeadNode,GivenPlayer);
     }
 
-    std::cout << "Searching Depth:" << Depth << "\n";
 
 }
 

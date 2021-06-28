@@ -61,7 +61,8 @@ protected:
 
   public:
       std::list<Player*> Players;
-
+      Player*  WinningPlayer;
+      Player*  DrawPlayer;
       Game(){}
       virtual ~Game(){}
 
@@ -74,6 +75,7 @@ protected:
       virtual std::list<Game*> PossibleGames()     = 0;
       virtual bool ValidMove(GameMove* Move)       = 0;
       virtual bool Move(GameMove* Move)            = 0;
+      virtual Game* CopyGame()                     = 0;
       //virtual void AvaliableMoves(int Depth) = 0;
 
       //Use: unique_ptr<Game>
@@ -99,7 +101,7 @@ protected:
       //virtual void CopySimulation() = 0;
       //virtual void SaveSimulation() = 0;
       //virtual void ReadSimulation() = 0;
-      virtual void RollOut()            = 0;
+      virtual Game* RollOut()            = 0;
       virtual void DisplayWinner()            = 0;
 
       virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {

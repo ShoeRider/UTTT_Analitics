@@ -236,7 +236,7 @@ public:
     std::string Generate_StringRepresentation();
 
     //void DisplayInTerminal();
-    void RollOut();
+    Game* RollOut();
     void PlayGame();
     void DeclarePlayers(std::list<Player*> GivenPlayers);
     void SetUpBoard();
@@ -522,7 +522,7 @@ std::list<Game*> UTTT::PossibleGames()
 }
 
 
-void UTTT::RollOut()
+Game* UTTT::RollOut()
 {
   GameMove* Move;
   int Range;
@@ -544,6 +544,7 @@ void UTTT::RollOut()
     std::cout << this->Generate_StringRepresentation();
     TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
+  return this;
 }
 
 void UTTT::PlayGame()

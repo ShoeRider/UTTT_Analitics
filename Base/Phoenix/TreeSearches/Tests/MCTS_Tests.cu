@@ -12,7 +12,7 @@ int main() {
  Game *_Game = new TTT({&Player0,&Player1});
 
  TreeSimulation *Sim = new MCTS(_Game);
- Sim->Search(10,&Player0);
+ Sim->Search(3,&Player0);
 
  //delete &Player0;
  //delete &Player1;

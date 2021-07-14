@@ -10,9 +10,7 @@
 
 #include "TreeSearch.cu"
 
-#include "../../Games/SRC/Game.cu"
-#include "../../Games/SRC/TTT.cu"
-#include "../../Games/SRC/UTTT.cu"
+
 
 #define Pause int ASDF; std::cin >> ASDF;
 
@@ -324,15 +322,12 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
     TransversedNode = Algorithm(TransversedNode);
     double EvaluatedValue = -1;
 
-    printf("WinningPlayer:%p\n",TransversedNode->GivenGame->TestForWinner());
-    printf("WinningPlayer:%p\n",TransversedNode->GivenGame->WinningPlayer);
-    printf("GivenPlayer  :%p\n",GivenPlayer);
+
     std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
 
     if(TransversedNode->GivenGame->TestForWinner() == GivenPlayer)
     {
       EvaluatedValue = 1;
-      printf("EvaluatedValue :1\n");
     }
     else if( TransversedNode->GivenGame->WinningPlayer == NULL )
     {
@@ -346,6 +341,10 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 
 void MCTS::Search(int Depth,Player* GivenPlayer)
 {
+  /*
+    Interface to initate MCTS Tree Searches.
+    Given Depth,
+  */
     std::cout << "Searching Depth:" << Depth << "\n";
     for (int i = 0; i < Depth; i++) {
       //printf("\tDepth: %d\n",i);

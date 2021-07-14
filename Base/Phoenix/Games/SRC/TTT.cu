@@ -28,7 +28,7 @@ struct TTT_Move : public GameMove
         Row = GivenRow;
         Col = GivenCol;
       }
-      ~TTT_Move(){}
+      virtual ~TTT_Move(){}
 };
 
 struct TTT_Player : public Player
@@ -145,7 +145,6 @@ void TTT::SetUpBoard()
 
 void TTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 {
-
   for (Player* i : GivenPlayers) { // c++11 range-based for loop
       TTT_Player* TTTPlayer = static_cast<TTT_Player*>(i);
       Players.push_back(TTTPlayer);
@@ -164,19 +163,19 @@ bool TTT::ValidMove(GameMove* Move)
 
   TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
 
-  //printf("TTTMove->Row:%d\n",TTTMove->Row);
-  //printf("TTTMove->Col:%d\n",TTTMove->Col);
-  //printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
+  printf("TTTMove->Row:%d\n",TTTMove->Row);
+  printf("TTTMove->Col:%d\n",TTTMove->Col);
+  printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
   if (Board[TTTMove->Row][TTTMove->Col] == ' ')
   {
     //Valid Move
-      //printf("TTT Valid Move\n");
+    printf("TTT Valid Move\n");
     return true;
   }
   else
   {
     //Invalid Move
-      //printf("TTT InValid Move\n");
+    printf("TTT InValid Move\n");
     return false;
   }
 }

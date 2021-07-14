@@ -41,7 +41,7 @@ struct UTTT_Player : public TTT_Player
 
 
 
-struct UTTT_Move : public GameMove
+struct UTTT_Move : public TTT_Move
 {
 
   public:
@@ -51,12 +51,14 @@ struct UTTT_Move : public GameMove
 
     int Row;
     int Col;
+
     UTTT_Move(
       int GivenGameRow,
       int GivenGameCol,
       int GivenRow,
       int GivenCol
-      ){
+    ):
+    TTT_Move(GivenRow,GivenCol){
           GameRow = GivenGameRow;
           GameCol = GivenGameCol;
           Row = GivenRow;
@@ -218,6 +220,15 @@ public:
       MovesRemaining = 81;
       this->SetUpBoards();
     }
+    UTTT(std::list<Player*> GivenPlayers){
+        this->DeclarePlayers(GivenPlayers);
+
+        this->WinningPlayer  = NULL;
+        NextMove_Row   = -1;
+        NextMove_Col   = -1;
+        MovesRemaining = 81;
+        this->SetUpBoards();
+      }
     ~UTTT(){
       this->FreeBoards();
     }
@@ -237,6 +248,7 @@ public:
 
     //void DisplayInTerminal();
     Game* RollOut();
+    Game* CopyGame();
     void PlayGame();
     void DeclarePlayers(std::list<Player*> GivenPlayers);
     void SetUpBoard();
@@ -257,7 +269,6 @@ void UTTT::FreeBoards()
 
 void UTTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 {
-
   for (Player* i : GivenPlayers) { // c++11 range-based for loop
       UTTT_Player* UTTTPlayer = static_cast<UTTT_Player*>(i);
       Players.push_back(UTTTPlayer);
@@ -311,6 +322,8 @@ bool UTTT::Move(GameMove* Move)
 
     NextMove_Row = UTTTMove->Row;
     NextMove_Col = UTTTMove->Col;
+    TestForWinner();
+
     Players.splice(Players.end(),        // destination position
                    Players,              // source list
                    Players.begin());     // source position
@@ -519,6 +532,10 @@ std::list<Game*> UTTT::PossibleGames()
     */
 
   return Games;
+}
+
+Game* UTTT::CopyGame(){
+  return static_cast<Game*>(new UTTT(*this));
 }
 
 

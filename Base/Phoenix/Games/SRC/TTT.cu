@@ -192,7 +192,7 @@ bool TTT::Move(GameMove* Move)
 
     // move first element to the end
     Board[TTTMove->Row][TTTMove->Col] = Players.front()->GameRepresentation;
-
+    TestForWinner();
     Players.splice(Players.end(),        // destination position
                    Players,              // source list
                    Players.begin());     // source position
@@ -226,6 +226,8 @@ Player* TTT::DeclareWinner(Player* GivenWinner)
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
+
+    printf("WinningPlayer:%p\n",WinningPlayer);
   }
   return GetWinner();
 }
@@ -382,9 +384,10 @@ Game* TTT::RollOut(){
   GameMove* Move;
   int Range;
 
-  TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-  while(TTTPlayer == NULL){
-    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  //TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  while(WinningPlayer == NULL){
+
+    //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
     std::list<GameMove*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
     //printf("Range:%d\n",Range);
@@ -396,8 +399,9 @@ Game* TTT::RollOut(){
     //delete Move;
 
     //std::cout << this->Generate_StringRepresentation();
-    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+    //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
+  printf("WinningPlayer:%p\n",WinningPlayer);
   return this;
 }
 

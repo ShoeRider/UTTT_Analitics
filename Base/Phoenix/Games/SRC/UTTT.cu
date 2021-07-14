@@ -146,7 +146,7 @@ bool UTTT_SubGame::Move(GameMove* Move)
 }
 
 /*
-// Provide implementation for the first method
+
 bool UTTT_SubGame::ValidMove(GameMove* Move)
 {
   printf("TTT MovesRemaining:%d\n",MovesRemaining);
@@ -265,7 +265,7 @@ void UTTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 }
 
 
-// Provide implementation for the first method
+
 bool UTTT::ValidMove(GameMove* Move)
 {
 
@@ -288,7 +288,7 @@ bool UTTT::ValidMove(GameMove* Move)
 }
 
 
-// Provide implementation for the first method
+
 bool UTTT::Move(GameMove* Move)
 {
   UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
@@ -386,7 +386,7 @@ void UTTT::DisplayWinner(){
     printf("Player %d Has won!",WinningPlayer->PlayerNumber);
   }
 };
-// Provide implementation for the first method
+
 
 Player* UTTT::TestForWinner()
 {

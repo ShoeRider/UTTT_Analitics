@@ -57,7 +57,8 @@ public:
     int        AddChildren(std::list<Game*> PossibleMoves);
     void       BackPropagation(double GivenPlayer);
     double     GetAverageValue();
-
+    void       DisplayTree();
+    void       DisplayTree(int Depth);
 };
 
 MCTS_Node* get(std::list<MCTS_Node*> _list, int _i){
@@ -76,6 +77,7 @@ MCTS_Node* MCTS_Node::Find_MAX_UCB1_Child(){
 
   for (MCTS_Node* Node : Children){
       NodesValue = Node->Find_UCB1();
+
       if (HighestValue < NodesValue)
       {
         HighestNode  = Node;
@@ -101,7 +103,13 @@ double MCTS_Node::Find_UCB1(){
     _NodeVisits = 0;
   }
   //Preform UCB1 Formula
-  return (ValueSum/NodeVisits) + ExploreBy*sqrt(log(_NodeVisits/NodeVisits));
+  double Value = (ValueSum/NodeVisits) + ExploreBy*sqrt(log(_NodeVisits/NodeVisits));
+/*
+printf("Value:%f\n", Value);
+printf("\tNodeVisits:%i\n", NodeVisits);
+printf("\tValueSum:%f\n", ValueSum);
+*/
+  return Value;
 }
 
 
@@ -149,8 +157,23 @@ double MCTS_Node::GetAverageValue()
   return ValueSum/NodeVisits;
 }
 
+void MCTS_Node::DisplayTree(int Depth){
+  if(Depth>0){
+    for (MCTS_Node* Child : Children) { // c++11 range-based for loop
+         Child->Find_UCB1();
+      }
+    for (MCTS_Node* Child : Children) { // c++11 range-based for loop
+         Child->DisplayTree(Depth-1);
+      }
+  }
 
+}
+void MCTS_Node::DisplayTree(){
+  for (MCTS_Node* Child : Children) { // c++11 range-based for loop
+       Child->DisplayTree();
+    }
 
+}
 
 
 
@@ -201,7 +224,7 @@ public:
 
 
 
-// Provide implementation for the first method
+
 void MCTS::GetPossibleMoves()
 {
     std::list<GameMove*> Moves = SimulatedGame->PossibleMoves();
@@ -209,42 +232,45 @@ void MCTS::GetPossibleMoves()
 }
 
 
-// Provide implementation for the first method
+
 MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 {
 //TransversedNode->Children.size()
 //int Leaf =TransversedNode->Children.size();
-  std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+
+  //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+  /*
   std::cout << "TransversedNode:" <<TransversedNode << "\n";
   std::cout << "NodeVisits:" <<TransversedNode->NodeVisits << "\n";
   std::cout << "Children:"   <<TransversedNode->Children.size() << "\n";
+  */
 
-  Pause;
+
+  //Pause;
 
 
   if(TransversedNode->Children.size() == 0){
     //If Node is LeafNode
-    std::cout << "LeafNode Detected  :"   <<TransversedNode << "\n";
+    std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
 
     if(TransversedNode->NodeVisits == 0){
-      std::cout << "About to rool out on:"   <<TransversedNode << "\n";
+      std::cout << "About to rool out on:"   << TransversedNode << "\n";
 
       TransversedNode->RollOut();
 
       return TransversedNode;
     }
 
-    std::list<Game*> Games = GivenGame->PossibleGames();
+    std::list<Game*> Games = TransversedNode->GivenGame->PossibleGames();
     if (Games.size() == 0)
     {
       return TransversedNode;
     }
     TransversedNode->AddChildren(Games);
-    std::cout << "Children:"   <<TransversedNode->Children.size() << "\n";
-    Pause;
+
 
     MCTS_Node* NextNode = *TransversedNode->Children.begin();
-    std::cout << "Selecting Next Node:" <<NextNode << "\n";
+    //std::cout << "Selecting Next Node:" <<NextNode << "\n";
     return Algorithm(NextNode);
     //return NULL;
 
@@ -263,7 +289,7 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
 //
 
-// Provide implementation for the first method
+
 void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 {
     TransversedNode = Algorithm(TransversedNode);
@@ -281,7 +307,7 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 }
 
 
-// Provide implementation for the first method
+
 void MCTS::Search(int Depth,Player* GivenPlayer)
 {
     std::cout << "Searching Depth:" << Depth << "\n";
@@ -289,11 +315,13 @@ void MCTS::Search(int Depth,Player* GivenPlayer)
       printf("\tDepth: %d\n",i);
       EvaluateTransversal(HeadNode,GivenPlayer);
     }
+    std::cout << GivenGame->Generate_StringRepresentation();
+
 
 
 }
 
-// Provide implementation for the first method
+
 void MCTS::ParallelSearch(int Depth)
 {
     std::cout << "Searching Depth:" << Depth << "\n";

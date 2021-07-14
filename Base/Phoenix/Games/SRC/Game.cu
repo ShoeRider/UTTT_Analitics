@@ -61,8 +61,8 @@ protected:
 
   public:
       std::list<Player*> Players;
-      Player*  WinningPlayer;
-      Player*  DrawPlayer;
+      Player*  WinningPlayer = NULL;
+      Player*  DrawPlayer    = NULL;
       Game(){}
       virtual ~Game(){}
 

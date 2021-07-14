@@ -1,4 +1,4 @@
-/*
+ /*
 Anthony M Schroeder
 
 
@@ -129,7 +129,7 @@ public:
 };
 
 
-// Provide implementation for the first method
+
 void TTT::SetUpBoard()
 {
   for (int Row = 0; Row < 3; Row++)
@@ -141,7 +141,7 @@ void TTT::SetUpBoard()
   }
 }
 
-// Provide implementation for the first method
+
 
 void TTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 {
@@ -153,7 +153,7 @@ void TTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 }
 
 
-// Provide implementation for the first method
+
 bool TTT::ValidMove(GameMove* Move)
 {
   //printf("TTT MovesRemaining:%d\n",MovesRemaining);
@@ -181,7 +181,7 @@ bool TTT::ValidMove(GameMove* Move)
   }
 }
 
-// Provide implementation for the first method
+
 bool TTT::Move(GameMove* Move)
 {
   TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
@@ -323,7 +323,10 @@ Winning Diagonal Method Found. Example:
   */
       return this->DeclareWinner(Players.front());
   }
-
+  if(this->MovesRemaining == 0){
+    WinningPlayer = &Draw;
+    return WinningPlayer;
+  }
   return WinningPlayer;
 }
 
@@ -347,6 +350,7 @@ std::list<GameMove*> TTT::PossibleMoves()
   }
   return Moves;
 }
+
 std::list<Game*> TTT::PossibleGames()
 {
   std::list<GameMove*> Moves = PossibleMoves();
@@ -356,8 +360,11 @@ std::list<Game*> TTT::PossibleGames()
        Branch = new TTT(*this);
        Branch->Move(GMove);
        Games.push_back(Branch);
+       //Free each Move Structure
+       delete GMove;
     }
-
+  //printf("Freeing Moves list \n");
+  //delete &Moves;
   return Games;
 }
 
@@ -377,13 +384,13 @@ Game* TTT::RollOut(){
 
   TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   while(TTTPlayer == NULL){
-
+    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
     std::list<GameMove*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
-    printf("Range:%d\n",Range);
+    //printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
     this->Move(Move);
-    printf("Freeing memory\n");
+    //printf("Freeing memory\n");
     Free_TTTMoveList(GameMoves);
     //delete &GameMoves;
     //delete Move;

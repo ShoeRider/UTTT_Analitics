@@ -8,11 +8,11 @@
 int main() {
  //std::cout << "Hello World!";
  TTT_Player Player0 = TTT_Player(0,'X');
- TTT_Player Player1 = TTT_Player(1,'Y');
+ TTT_Player Player1 = TTT_Player(1,'O');
  Game *_Game = new TTT({&Player0,&Player1});
 
  TreeSimulation *Sim = new MCTS(_Game);
- Sim->Search(3,&Player0);
+ Sim->Search(10000,&Player0);
 
  //delete &Player0;
  //delete &Player1;

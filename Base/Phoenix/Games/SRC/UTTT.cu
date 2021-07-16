@@ -142,6 +142,13 @@ bool UTTT_SubGame::Move(GameMove* Move)
   {
     UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
     Board[UTTTMove->Row][UTTTMove->Col] = UTTTMove->Player->GameRepresentation;
+
+    if(UTTTMove->Player->GameRepresentation != Players.front()->GameRepresentation){
+      Players.splice(Players.end(),        // destination position
+                     Players,              // source list
+                     Players.begin());     // source position
+    }
+    TestForWinner();
     return true;
   }
   return false;
@@ -303,16 +310,15 @@ bool UTTT::ValidMove(GameMove* Move)
 bool UTTT::Move(GameMove* Move)
 {
   UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
-  printf("UTTTMove:%p\n",&UTTTMove);
-  printf("UTTTMove->GameRow:%d\n",UTTTMove->GameRow);
-  printf("UTTTMove->GameCol:%d\n",UTTTMove->GameCol);
+  //printf("UTTTMove:%p\n",&UTTTMove);
+  //printf("UTTTMove->GameRow:%d\n",UTTTMove->GameRow);
+  //printf("UTTTMove->GameCol:%d\n",UTTTMove->GameCol);
 
   UTTTMove->Player = Players.front();
-  printf("UTTTMove->Row:%d\n",UTTTMove->Row);
-  printf("UTTTMove->Col:%d\n",UTTTMove->Col);
+  //printf("UTTTMove->Row:%d\n",UTTTMove->Row);
+  //printf("UTTTMove->Col:%d\n",UTTTMove->Col);
 
-  int stop;
-  std::cin >> stop;
+
   if (this->ValidMove(Move))
   {
     MovesRemaining--;
@@ -346,6 +352,8 @@ return false;
 
 std::string UTTT::Generate_GameRowRepresentation(int Row)
 {
+
+  std::string GameRep = "";
   /*
   Here is a graph of the individual smaller games.
   X|X|X|
@@ -354,7 +362,6 @@ std::string UTTT::Generate_GameRowRepresentation(int Row)
   --------
    | | |
   */
-  std::string GameRep = "";
   for (int SubRow = 0; SubRow < 3; SubRow++)
   {
     for (int Col = 0; Col < 3; Col++)
@@ -369,13 +376,50 @@ std::string UTTT::Generate_GameRowRepresentation(int Row)
     }
     GameRep.append("\n---------------------------\n");
   }
+
   return GameRep;
 
 }
 
 std::string UTTT::Generate_StringRepresentation()
 {
-  std::string GameRep = "";
+
+  std::string GameRep = "Winner: ";
+
+  if (WinningPlayer != NULL){
+    //Convert from Generic Player to TTT_Player Structure
+    UTTT_Player* UTTTPlayer = static_cast<UTTT_Player*>(WinningPlayer);
+
+    GameRep += (UTTTPlayer->GameRepresentation); //Use '+=' when appending a char
+  }
+  else{
+    GameRep.append("C");
+  }
+  GameRep.append("\n");
+
+
+  for (int Row = 0; Row < 3; Row++)
+  {
+    for (int Col = 0; Col < 3; Col++)
+    {
+      //printf("%p,%p\n",Boards[Row][Col].WinningPlayer,Boards[Row][Col].TestForWinner());
+      //std::cout << Boards[Row][Col].Generate_StringRepresentation();
+      //std::cout << "\n";
+      //
+      if (Boards[Row][Col].WinningPlayer != NULL){
+        TTT_Player* TTTPlayer = static_cast<TTT_Player*>(Boards[Row][Col].WinningPlayer);
+        char position = TTTPlayer->GameRepresentation;
+        GameRep.append(&position);
+
+      }
+      else{
+        GameRep.append("C");
+      }
+        GameRep.append("|");
+    }
+    GameRep.append("\n--------\n");
+  }
+  GameRep.append("\n\n");
   for (int Row = 0; Row < 3; Row++)
   {
     GameRep.append(Generate_GameRowRepresentation(Row));
@@ -403,8 +447,21 @@ void UTTT::DisplayWinner(){
 
 Player* UTTT::TestForWinner()
 {
+  if(
+    WinningPlayer == &Draw ||
+    WinningPlayer != NULL
+  ){
+    return WinningPlayer;
+  }
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
+    if(Boards[Row_Col][0].WinningPlayer != NULL)
+    {
+      std::cout << "[Row_Col][0]" << Boards[Row_Col][0].WinningPlayer << static_cast<UTTT_Player*>(Boards[Row_Col][0].WinningPlayer)->GameRepresentation << "\n";
+      std::cout << "[Row_Col][1]" << Boards[Row_Col][1].WinningPlayer << "\n";
+      std::cout << "[Row_Col][2]" << Boards[Row_Col][2].WinningPlayer << "\n\n";
+    }
+
     if(
       Boards[Row_Col][0].WinningPlayer == Boards[Row_Col][1].WinningPlayer &&
       Boards[Row_Col][0].WinningPlayer == Boards[Row_Col][2].WinningPlayer &&
@@ -419,15 +476,18 @@ Player* UTTT::TestForWinner()
       --------
        | | |
       */
-      return static_cast<UTTT_Player*>(Boards[Row_Col][Row_Col].WinningPlayer);
+      return static_cast<UTTT_Player*>(Boards[Row_Col][Row_Col].TestForWinner());
 
     }
     else if(
-      Boards[0][Row_Col].WinningPlayer == Boards[1][Row_Col].WinningPlayer &&
-      Boards[0][Row_Col].WinningPlayer == Boards[2][Row_Col].WinningPlayer &&
-      Boards[0][Row_Col].WinningPlayer != NULL
+      Boards[0][Row_Col].TestForWinner() == Boards[1][Row_Col].TestForWinner() &&
+      Boards[0][Row_Col].TestForWinner() == Boards[2][Row_Col].TestForWinner() &&
+      Boards[0][Row_Col].TestForWinner() != NULL
     )
     {
+      std::cout << "[0][Row_Col]" << Boards[0][Row_Col].WinningPlayer << "\n";
+      std::cout << "[0][Row_Col]" << Boards[1][Row_Col].WinningPlayer << "\n";
+      std::cout << "[0][Row_Col]" << Boards[2][Row_Col].WinningPlayer << "\n\n";
       /*
       Winning Column Method Found. Example:
       X| | |
@@ -436,7 +496,7 @@ Player* UTTT::TestForWinner()
       --------
       X| | |
       */
-      return static_cast<UTTT_Player*>(Boards[0][Row_Col].WinningPlayer);
+      return static_cast<UTTT_Player*>(Boards[0][Row_Col].TestForWinner());
       //this->DeclareWinner(Boards[0][Row_Col].WinningPlayer);
 
     }
@@ -444,9 +504,9 @@ Player* UTTT::TestForWinner()
 
 
   if(
-    Boards[0][0].WinningPlayer == Boards[1][1].WinningPlayer &&
-    Boards[0][0].WinningPlayer == Boards[2][2].WinningPlayer &&
-    Boards[0][0].WinningPlayer != NULL
+    Boards[0][0].TestForWinner() == Boards[1][1].TestForWinner() &&
+    Boards[0][0].TestForWinner() == Boards[2][2].TestForWinner() &&
+    Boards[0][0].TestForWinner() != NULL
   )
   {
 /*
@@ -457,13 +517,13 @@ Winning Diagonal Method Found. Example:
   --------
    | |X|
   */
-  return static_cast<UTTT_Player*>(Boards[0][0].WinningPlayer);
+  return static_cast<UTTT_Player*>(Boards[0][0].TestForWinner());
 
   }
   else if(
-    Boards[0][2].WinningPlayer == Boards[1][1].WinningPlayer &&
-    Boards[0][2].WinningPlayer == Boards[2][0].WinningPlayer &&
-    Boards[0][2].WinningPlayer != NULL
+    Boards[0][2].TestForWinner() == Boards[1][1].TestForWinner() &&
+    Boards[0][2].TestForWinner() == Boards[2][0].TestForWinner() &&
+    Boards[0][2].TestForWinner() != NULL
   )
   {
 /*
@@ -474,7 +534,7 @@ Winning Diagonal Method Found. Example:
   --------
   X| | |
   */
-  return static_cast<UTTT_Player*>(Boards[0][2].WinningPlayer);;
+  return static_cast<UTTT_Player*>(Boards[0][2].TestForWinner());;
   }
 
   return WinningPlayer;
@@ -549,16 +609,19 @@ Game* UTTT::RollOut()
 
     std::list<GameMove*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
-    printf("Range:%d\n",Range);
+    if(Range == 0){
+      return this;
+    }
+    //printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
-    printf("Move:%p\n",Move);
+    //printf("Move:%p\n",Move);
     this->Move(Move);
-    printf("Freeing memory\n");
+    //printf("Freeing memory\n");
     Free_TTTMoveList(GameMoves);
     //delete &GameMoves;
     //delete Move;
 
-    std::cout << this->Generate_StringRepresentation();
+    //std::cout << this->Generate_StringRepresentation();
     TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
   return this;

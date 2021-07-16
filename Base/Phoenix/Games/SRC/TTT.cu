@@ -84,7 +84,7 @@ public:
   */
   TTT_Player Draw    = TTT_Player(-1,'C');
   TTT_Player Player0 = TTT_Player(0,'X');
-  TTT_Player Player1 = TTT_Player(1,'Y');
+  TTT_Player Player1 = TTT_Player(1,'O');
 
   std::list<TTT_Player*> Players;
   Player*  WinningPlayer = NULL;
@@ -163,19 +163,19 @@ bool TTT::ValidMove(GameMove* Move)
 
   TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
 
-  printf("TTTMove->Row:%d\n",TTTMove->Row);
-  printf("TTTMove->Col:%d\n",TTTMove->Col);
-  printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
+  //printf("TTTMove->Row:%d\n",TTTMove->Row);
+  //printf("TTTMove->Col:%d\n",TTTMove->Col);
+  //printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
   if (Board[TTTMove->Row][TTTMove->Col] == ' ')
   {
     //Valid Move
-    printf("TTT Valid Move\n");
+    //printf("TTT Valid Move\n");
     return true;
   }
   else
   {
     //Invalid Move
-    printf("TTT InValid Move\n");
+    //printf("TTT InValid Move\n");
     return false;
   }
 }
@@ -200,12 +200,32 @@ bool TTT::Move(GameMove* Move)
   return false;
 }
 
+void TTT::DisplayWinner(){
+  printf("WinningPlayer:%p\n",WinningPlayer);
+  if(this->WinningPlayer != NULL){
+    TTT_Player* TTTPlayer = static_cast<TTT_Player*>(WinningPlayer);
+    printf("Player %c Has won!",TTTPlayer->GameRepresentation);
+  }
 
+};
 
 
 std::string TTT::Generate_StringRepresentation()
 {
-  std::string Game = "";
+
+  std::string Game = "Winner: ";
+
+  if (WinningPlayer != NULL){
+    //Convert from Generic Player to TTT_Player Structure
+    TTT_Player* TTTPlayer = static_cast<TTT_Player*>(WinningPlayer);
+
+    Game += (TTTPlayer->GameRepresentation); //Use '+=' when appending a char
+  }
+  else{
+    Game.append("C");
+  }
+
+  Game.append("\n");
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
@@ -219,23 +239,19 @@ std::string TTT::Generate_StringRepresentation()
   return Game;
 }
 
-
 Player* TTT::DeclareWinner(Player* GivenWinner)
 {
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
-
+    std::cout << this->Generate_StringRepresentation();
     printf("WinningPlayer:%p\n",WinningPlayer);
+
   }
   return GetWinner();
 }
 
-void TTT::DisplayWinner(){
-  if(WinningPlayer!=NULL){
-    printf("Player %d Has won!",WinningPlayer->PlayerNumber);
-  }
-};
+
 
 Player* TTT::GetWinner(){
   return static_cast<Player*>(WinningPlayer);
@@ -400,7 +416,7 @@ Game* TTT::RollOut(){
     //std::cout << this->Generate_StringRepresentation();
     //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
-  printf("WinningPlayer:%p\n",WinningPlayer);
+  //printf("WinningPlayer:%p\n",WinningPlayer);
   return this;
 }
 

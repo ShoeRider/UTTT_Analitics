@@ -136,7 +136,7 @@ MCTS_Node* MCTS_Node::RollOut(){
   Game* RollOutGame = GivenGame->CopyGame();
   RollOutGame->RollOut();
 
-  printf("RO_WinningPlayer:%p\n",RollOutGame->WinningPlayer);
+  //printf("RO_WinningPlayer:%p\n",RollOutGame->WinningPlayer);
   //TODO Check if game is finished
   RollOutChild = new MCTS_Node(RollOutGame);
   RollOutChild->Parent = this;
@@ -166,6 +166,8 @@ void MCTS_Node::DisplayStats(){
 }
 
 void MCTS_Node::DisplayTree(int Depth){
+
+  std::cout << "Displaying Depth:" << Depth << "\n";
   std::cout << "Children length:" << Children.size() << "\n";
   if (Children.size() > 0){
     for (MCTS_Node* Child : Children) { // c++11 range-based for loop
@@ -273,18 +275,18 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
   if(TransversedNode->Children.size() == 0){
     //If Node is LeafNode
-    std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
+    //std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
 
     if(TransversedNode->NodeVisits == 0){
-      std::cout << "About to rool out on:"   << TransversedNode << "\n";
+      //std::cout << "About to rool out on:"   << TransversedNode << "\n";
 
       return TransversedNode->RollOut();
     }
 
 
-    std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+    //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
     std::list<Game*> Games = TransversedNode->GivenGame->PossibleGames();
-    std::cout << "Adding Children Size:" << Games.size() << "\n";
+    //std::cout << "Adding Children Size:" << Games.size() << "\n";
     if (Games.size() == 0)
     {
       return TransversedNode;
@@ -293,7 +295,7 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
 
     MCTS_Node* NextNode = *TransversedNode->Children.begin();
-    std::cout << "Selecting Next Node:" <<NextNode << "\n";
+    //std::cout << "Selecting Next Node:" <<NextNode << "\n";
     return Algorithm(NextNode);
     //return NULL;
 
@@ -326,7 +328,7 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
     double EvaluatedValue = -1;
 
 
-    std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+    //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
 
     if(TransversedNode->GivenGame->TestForWinner() == GivenPlayer)
     {

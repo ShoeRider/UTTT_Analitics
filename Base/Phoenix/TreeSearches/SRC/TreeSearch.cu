@@ -10,6 +10,8 @@ Using a method called: Pure Virtual Functions.
 (Link:https://www.tutorialspoint.com/pure-virtual-functions-and-abstract-classes-in-cplusplus)
 
 */
+#ifndef TREESEARCH_CU
+#define TREESEARCH_CU
 
 #include <string>
 #include <iostream>
@@ -35,3 +37,5 @@ class TreeSimulation
       //virtual void ReadSimulation() = 0;
 
 };
+
+#endif //TREESEARCH_CU

@@ -35,7 +35,7 @@ struct UTTT_Player : public TTT_Player
   TTT_Player(GivenPlayer,GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
-    printf("Player:%p:%c\n",this,GameRepresentation);
+    //printf("Player:%p:%c\n",this,GameRepresentation);
   }
   ~UTTT_Player(){}
   GameMove* MakeMove(Game* GivenGame);
@@ -378,10 +378,10 @@ bool UTTT::Move(GameMove* Move)
     Players.splice(Players.end(),        // destination position
                    Players,              // source list
                    Players.begin());     // source position
-    printf("valid Move");
+    //printf("valid Move");
     return true;
   }
-  printf("Invalid Move");
+  //printf("Invalid Move");
   return false;
 }
 /*
@@ -476,7 +476,7 @@ std::string UTTT::Generate_StringRepresentation()
 
 Player* UTTT::DeclareWinner(UTTT_Player* GivenWinner)
 {
-  printf("DeclareWinner:%p\n",GivenWinner);
+  //printf("DeclareWinner:%p\n",GivenWinner);
 
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);
@@ -534,7 +534,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
       --------
        | | |
       */
-      printf("Found solution\n");
+      //printf("Found solution\n");
       return DeclareWinner(static_cast<UTTT_Player*>(Boards[Row_Col][Row_Col]->TestForWinner()));
 
     }
@@ -553,7 +553,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
       --------
       X| | |
       */
-      printf("Found solution\n");
+      //printf("Found solution\n");
       return DeclareWinner(static_cast<UTTT_Player*>(Boards[0][Row_Col]->TestForWinner()));
       //this->DeclareWinner(Boards[0][Row_Col].WinningPlayer);
 
@@ -575,7 +575,7 @@ Winning Diagonal Method Found. Example:
   --------
    | |X|
   */
-  printf("Found solution\n");
+  //printf("Found solution\n");
   return DeclareWinner(static_cast<UTTT_Player*>(Boards[0][0]->TestForWinner()));
 
   }
@@ -593,32 +593,32 @@ Winning Diagonal Method Found. Example:
   --------
   X| | |
   */
-  printf("Found solution\n");
+  //printf("Found solution\n");
   return DeclareWinner(static_cast<UTTT_Player*>(Boards[0][2]->TestForWinner()));
   }
   if(this->MovesRemaining == 0){
     WinningPlayer = &Draw;
-    printf("No Remaining Moves\n");
+    //printf("No Remaining Moves\n");
     return WinningPlayer;
   }
-  printf("Reached End Returning NULL\n");
+  //printf("Reached End Returning NULL:%p\n",WinningPlayer);
   return WinningPlayer;
 }
 
 std::list<GameMove*> UTTT::PossibleMoves()
 {
-  printf("NextMove(%i,%i)\n",NextMove_Row,NextMove_Col);
+  //printf("NextMove(%i,%i)\n",NextMove_Row,NextMove_Col);
   std::list<GameMove*>Moves;
   if(
     NextMove_Row == -1 ||
     NextMove_Col == -1
   ){
-    for (int Row = 0; Row < 3; Row++)
+    for (int Row = 0; Row < 2; Row++)
     {
-      for (int Col = 0; Col < 3; Col++)
+      for (int Col = 0; Col < 2; Col++)
       {
         std::list<GameMove*> GMoves = Boards[Row][Col]->PossibleMoves();
-        printf("GMoves(%lu)\n",(GMoves.size()));
+        //printf("GMoves(%lu)\n",(GMoves.size()));
         for (GameMove* GMove : GMoves) { // c++11 range-based for loop
 
              UTTT_Move* UTTT_GMove = static_cast<UTTT_Move*>(GMove);
@@ -630,7 +630,7 @@ std::list<GameMove*> UTTT::PossibleMoves()
           }
       }
     }
-    printf("Moves(%lu)\n",(Moves.size()));
+    //printf("Moves(%lu)\n",(Moves.size()));
     return Moves;
   }
   else{
@@ -655,9 +655,10 @@ std::list<Game*> UTTT::PossibleGames()
   std::list<Game*>Games;
   UTTT* Branch;
   for (GameMove* GMove : Moves) { // c++11 range-based for loop
-       Branch = new UTTT(*this);
+       //Branch = new UTTT(*this);
+       Branch = static_cast<UTTT*>(CopyGame());
        Branch->Move(GMove);
-       Games.push_back(Branch);
+       Games.push_back(static_cast<Game*>(Branch));
        //Free each Move Structure
        delete GMove;
     }
@@ -669,8 +670,8 @@ std::list<Game*> UTTT::PossibleGames()
 
 Game* UTTT::RollOut()
 {
-  std::cout << Generate_StringRepresentation();
-  printf("Prefoming Rollout\n");
+  //std::cout << Generate_StringRepresentation();
+  //printf("Prefoming Rollout\n");
   GameMove* Move;
 
   int Range;

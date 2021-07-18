@@ -7,5 +7,6 @@ Note The current version is undergoing refactoring and doesn't work!!! Code shou
 
 In progress: 
 + Implementing HashTable to remove overlapping game branches.
++ Parallel procing to increase search time.
 + Machine learning with Neural Networks with backpropagation to help find moves faster 
 

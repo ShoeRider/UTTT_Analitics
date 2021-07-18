@@ -25,11 +25,12 @@ int main() {
  //std::cout << "Hello World!";
  UTTT_Player Player0 = UTTT_Player(0,'X');
  UTTT_Player Player1 = UTTT_Player(1,'O');
+
  Game *_Game = new UTTT({&Player0,&Player1});
+ // delete _Game;
 
  TreeSimulation *Sim = new MCTS(_Game);
- Sim->Search(1,&Player0);
-
+ Sim->Search(3,&Player0);
  delete Sim;
  return 0;
 }

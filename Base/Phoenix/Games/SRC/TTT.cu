@@ -82,17 +82,11 @@ public:
   Please note the following:
   Currentplayer = Players.front();
   */
-  TTT_Player Draw    = TTT_Player(-1,'C');
+  /*
   TTT_Player Player0 = TTT_Player(0,'X');
   TTT_Player Player1 = TTT_Player(1,'O');
-
-  std::list<TTT_Player*> Players;
-  Player*  WinningPlayer = NULL;
-
-  int MovesRemaining;
-  char Board[3][3];
-
   TTT(){
+    Pause
       this->DeclarePlayers({&Player0,&Player1});
       this->DrawPlayer     = static_cast<Player*>(&Draw);
       this->WinningPlayer  = NULL;
@@ -100,6 +94,20 @@ public:
       MovesRemaining       = 9;
       this->SetUpBoard();
     }
+  */
+  TTT_Player Draw    = TTT_Player(-1,'C');
+
+
+  std::list<TTT_Player*> Players;
+  Player*  WinningPlayer = NULL;
+
+  int MovesRemaining;
+  char Board[3][3];
+  TTT(){
+    printf("Calling Default Constructor... \n");
+    //throw "Calling Default Constructor... \n";
+  }
+
     TTT(std::list<Player*> GivenPlayers){
         this->DeclarePlayers(GivenPlayers);
 
@@ -122,7 +130,9 @@ public:
     virtual std::list<GameMove*> PossibleMoves();
     virtual std::list<Game*>     PossibleGames();
     std::string Generate_StringRepresentation();
+
     Player* DeclareWinner(Player* Winner);
+    char GetWinnersCharacter();
     //void DisplayInTerminal();
     Game* RollOut();
     void PlayGame();
@@ -139,6 +149,10 @@ void TTT::SetUpBoard()
         Board[Row][Col] = ' ';
     }
   }
+  for (Player* Player : Players) { // c++11 range-based for loop
+      ;
+      printf("Player:%p:%c\n",Player,static_cast<TTT_Player*>(Player)->GameRepresentation);
+    }
 }
 
 
@@ -244,13 +258,25 @@ Player* TTT::DeclareWinner(Player* GivenWinner)
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
-    std::cout << this->Generate_StringRepresentation();
-    printf("WinningPlayer:%p\n",WinningPlayer);
+    //std::cout << this->Generate_StringRepresentation();
+    //printf("WinningPlayer:%p\n",WinningPlayer);
 
   }
   return GetWinner();
 }
 
+
+char TTT::GetWinnersCharacter()
+{
+  Player* Winner = TestForWinner();
+  if(Winner != NULL)
+  {
+  return static_cast<TTT_Player*>(TestForWinner())->GameRepresentation;
+  }
+  else{
+    return ' ';
+  }
+}
 
 
 Player* TTT::GetWinner(){
@@ -340,6 +366,7 @@ Winning Diagonal Method Found. Example:
   */
       return this->DeclareWinner(Players.front());
   }
+
   if(this->MovesRemaining == 0){
     WinningPlayer = &Draw;
     return WinningPlayer;

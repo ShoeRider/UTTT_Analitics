@@ -273,15 +273,18 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
   if(TransversedNode->Children.size() == 0){
     //If Node is LeafNode
-    //std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
+    std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
 
     if(TransversedNode->NodeVisits == 0){
-      //std::cout << "About to rool out on:"   << TransversedNode << "\n";
+      std::cout << "About to rool out on:"   << TransversedNode << "\n";
 
       return TransversedNode->RollOut();
     }
 
+
+    std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
     std::list<Game*> Games = TransversedNode->GivenGame->PossibleGames();
+    std::cout << "Adding Children Size:" << Games.size() << "\n";
     if (Games.size() == 0)
     {
       return TransversedNode;
@@ -290,7 +293,7 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
 
     MCTS_Node* NextNode = *TransversedNode->Children.begin();
-    //std::cout << "Selecting Next Node:" <<NextNode << "\n";
+    std::cout << "Selecting Next Node:" <<NextNode << "\n";
     return Algorithm(NextNode);
     //return NULL;
 

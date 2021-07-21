@@ -60,14 +60,23 @@ public:
     void       DisplayStats();
 };
 
+/*
 MCTS_Node* get(std::list<MCTS_Node*> _list, int _i){
     std::list<MCTS_Node*>::iterator it = _list.begin();
     for(int i=0; i<_i; i++){
         ++it;
     }
     return *it;
-}
+}*/
 
+template <typename T>
+T* get(std::list<T*> _list, int _i){
+    typename std::list<T*>::iterator it = _list.begin();
+    for(int i=0; i<_i; i++){
+        ++it;
+    }
+    return *it;
+}
 
 MCTS_Node* MCTS_Node::Find_MAX_UCB1_Child(){
   double     HighestValue = -DBL_MAX;
@@ -211,10 +220,10 @@ public:
   std::list<MCTS_Node*>MCTS_List;
   Game* SimulatedGame;
 
-    MCTS(Game*_Game){
+    MCTS(Game*_Game,Player* Player){
       Value  = 0;
       Visits = 0;
-
+      GivenPlayer = Player;
       //HeadNode  = NULL;
       HeadNode  = new MCTS_Node(_Game);
       GivenGame = _Game;
@@ -226,7 +235,7 @@ public:
     MCTS_Node* Algorithm(MCTS_Node* TransversedNode);
     void EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer);
     //double BackPropagation(MCTS_Node* TransversedNode,double GivenPlayer);
-    void Search(int Depth,Player* GivenPlayer);
+    void Search(int Depth); //,Player* GivenPlayer
     void ParallelSearch(int Depth);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
     void GetPossibleMoves();
@@ -344,7 +353,7 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 
 
 
-void MCTS::Search(int Depth,Player* GivenPlayer)
+void MCTS::Search(int Depth)
 {
   /*
     Interface to initate MCTS Tree Searches.

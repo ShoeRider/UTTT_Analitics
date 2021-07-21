@@ -10,8 +10,21 @@ Test:
 	@echo "Compiling(Tests) ..."
 	nvcc -o ./MCTS_Tests ./Tests/MCTS_Tests.cu
 	@echo "Running(Tests) ..."
-	valgrind --leak-check=yes ./MCTS_Tests
-
+	#valgrind --leak-check=yes ./MCTS_Tests
+	./MCTS_Tests
+P_MCTS_Tests:
+	#rm ./TTT_Test
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./PMCTS_Tests ./Tests/PMCTS_Tests.cu
+	@echo "Running(Tests) ..."
+	valgrind --leak-check=yes --track-origins=yes -s ./PMCTS_Tests
+FAST_P_MCTS_Tests:
+	#rm ./TTT_Test
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./PMCTS_Tests ./Tests/PMCTS_Tests.cu
+	@echo "Running(Tests) ..."
+	#valgrind --leak-check=yes --track-origins=yes -s ./P_MCTS_Tests
+	./P_MCTS_Tests
 
 .PHONY: clean $(SUBDIRS)
 clean :

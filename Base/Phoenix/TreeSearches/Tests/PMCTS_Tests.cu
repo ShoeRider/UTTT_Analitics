@@ -5,6 +5,7 @@
 #include "../../Games/SRC/TTT.cu"
 #include "../../Games/SRC/UTTT.cu"
 #include "../SRC/MCTS.cu"
+#include "../SRC/PMCTS.cu"
 
 
 /*

@@ -20,7 +20,10 @@ TTT_Test:
 	nvcc -o ./TTT_Test ./Tests/TTT_Tests.cu
 	@echo "Running(Tests) ..."
 	valgrind --leak-check=yes --track-origins=yes -s ./TTT_Test
-
+TTT:
+	@echo "Compiling(Tests no valgrind) ..."
+	nvcc -o ./TTT_Test ./Tests/TTT_Tests.cu
+	./TTT_Test
 
 .PHONY: clean
 clean :

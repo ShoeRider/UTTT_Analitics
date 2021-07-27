@@ -9,6 +9,7 @@
 #include <bits/stdc++.h>
 
 #include "TreeSearch.cu"
+#include "../../Games/SRC/Game.cu"
 
 
 
@@ -22,17 +23,15 @@ public:
     int    NodeVisits;
     double ValueSum;
     Game* GivenGame = NULL;
+    Player* _Player;
 
     MCTS_Node*           Parent       = NULL;
     MCTS_Node*           RollOutChild = NULL;
     std::list<MCTS_Node*> Children;
-    MCTS_Node(){
-      GivenGame  = NULL;
-      Children   = {};
-      NodeVisits = 0;
-      ValueSum   = 0;
-    }
-    MCTS_Node(Game* Instance){
+
+    MCTS_Node(Game* Instance,Player* GivenPlayer){
+
+      _Player = GivenPlayer;
       GivenGame  = Instance;
       Children   = {};
       NodeVisits = 0;
@@ -50,10 +49,12 @@ public:
       delete GivenGame;
     }
     double     Find_UCB1();
+
     MCTS_Node* Find_MAX_UCB1_Child();
+    MCTS_Node* ReturnBestMove();
     MCTS_Node* RollOut();
     int        AddChildren(std::list<Game*> PossibleMoves);
-    void       BackPropagation(double GivenPlayer);
+    void       BackPropagation(Player* GivenPlayer);
     double     GetAverageValue();
     void       DisplayTree();
     void       DisplayTree(int Depth);
@@ -78,23 +79,7 @@ T* get(std::list<T*> _list, int _i){
     return *it;
 }
 
-MCTS_Node* MCTS_Node::Find_MAX_UCB1_Child(){
-  double     HighestValue = -DBL_MAX;
-  double     NodesValue;
-  MCTS_Node* HighestNode  = NULL;
 
-  for (MCTS_Node* Node : Children){
-      NodesValue = Node->Find_UCB1();
-
-      if (HighestValue < NodesValue)
-      {
-        HighestNode  = Node;
-        HighestValue = NodesValue;
-      }
-  }
-  //Note: Doesnt account for NULL Node
-  return HighestNode;
-}
 
 //Preform MonteCarlo's UCB1 evaluation algorithm on a given node.
 double MCTS_Node::Find_UCB1(){
@@ -120,6 +105,42 @@ printf("\tValueSum:%f\n", ValueSum);
   return Value;
 }
 
+MCTS_Node* MCTS_Node::Find_MAX_UCB1_Child(){
+  double     HighestValue = -DBL_MAX;
+  double     NodesValue;
+  MCTS_Node* HighestNode  = NULL;
+
+  for (MCTS_Node* Node : Children){
+      NodesValue = Node->Find_UCB1();
+
+      if (HighestValue < NodesValue)
+      {
+        HighestNode  = Node;
+        HighestValue = NodesValue;
+      }
+  }
+  //Note: Doesnt account for NULL Node
+  return HighestNode;
+}
+
+//Preform MonteCarlo's UCB1 evaluation algorithm on a given node.
+MCTS_Node* MCTS_Node::ReturnBestMove(){
+  double     HighestValue = -DBL_MAX;
+  double     NodesValue;
+  MCTS_Node* HighestNode  = NULL;
+
+  for (MCTS_Node* Node : Children){
+      NodesValue = Node->GetAverageValue();
+
+      if (HighestValue < NodesValue)
+      {
+        HighestNode  = Node;
+        HighestValue = NodesValue;
+      }
+  }
+  //Note: Doesnt account for NULL Node
+  return HighestNode;
+}
 
 
 //For each element within a list of PossibleInstances(Different Game States)
@@ -130,7 +151,7 @@ int MCTS_Node::AddChildren(std::list<Game*> PossibleInstances){
   for (Game* Instance : PossibleInstances){
       if(Instance != NULL)
       {
-        NewNode = new MCTS_Node(Instance);
+        NewNode = new MCTS_Node(Instance,Instance->Players.front());
         NewNode->Parent = this;
         Children.push_back(NewNode);
         ChildrenAdded++;
@@ -139,7 +160,17 @@ int MCTS_Node::AddChildren(std::list<Game*> PossibleInstances){
   return ChildrenAdded;
 }
 
+/*
+Takes the Node itself, copies itself.
+(This also copies the corresponding game state And performs Rollout on the new copy.)
+Please note: also sets the copy node's parent as the given Node. (This is
+for the BackPropagation step for attributing the Final game state's value back up the tree)
+Afterward, it returns the new copy.
 
+@param Nothing
+@return pointer to Copied Rollout Node.
+
+*/
 MCTS_Node* MCTS_Node::RollOut(){
 
   Game* RollOutGame = GivenGame->CopyGame();
@@ -147,25 +178,61 @@ MCTS_Node* MCTS_Node::RollOut(){
 
   //printf("RO_WinningPlayer:%p\n",RollOutGame->WinningPlayer);
   //TODO Check if game is finished
-  RollOutChild = new MCTS_Node(RollOutGame);
+  RollOutChild = new MCTS_Node(RollOutGame,_Player);
   RollOutChild->Parent = this;
   return RollOutChild;
 }
 
-void MCTS_Node::BackPropagation(double EvaluatedValue)
+
+/*
+BackPropagation is the final step of the MCTS. It backtracks from rollout leaf node,
+ back up the tree, attributing the final game Value to each parent node, for each
+ node it tests if the current Player is the winner of the transversal.
+ A winning state for that player recieves +1, Losing -1, tie +0
+
+@param (Player* GivenPlayer)The final winner from the rollout evaluation.
+@return Nothing(void)
+
+*/
+void MCTS_Node::BackPropagation(Player* GivenPlayer)
 {
   NodeVisits++;
+
+  printf("MCTS Node Player:%p\n",_Player);
+  printf("     GivenPlayer:%p\n",GivenPlayer);
+  printf(" Parent:%p\n",Parent);
+  //If no matching condition is found an apposing player won the RollOut game.
+  double EvaluatedValue = -1;
+  if(_Player == GivenPlayer)
+  {
+    EvaluatedValue = 1;
+  }
+  else if(GivenPlayer == NULL)
+  {
+    EvaluatedValue = 0;
+  }
   ValueSum += EvaluatedValue;
+
+  //If not the head Node, Keep transversing up the Search Tree.
   if (Parent != NULL)
   {
-    Parent->BackPropagation(EvaluatedValue);
+    Parent->BackPropagation(GivenPlayer);
   }
 }
 
+/*gets the average Value of a node.
+ this is desired over the
+O(1) vs O(1)
+
+@param Nothing
+@return pointer to Copied Rollout Node.
+
+*/
 double MCTS_Node::GetAverageValue()
 {
   return ValueSum/NodeVisits;
 }
+
 void MCTS_Node::DisplayStats(){
   std::cout << "----------------------------------------\n";
   printf("ValueSum:%f\n", ValueSum);
@@ -174,6 +241,15 @@ void MCTS_Node::DisplayStats(){
   std::cout << GivenGame->Generate_StringRepresentation();
 }
 
+/*
+DisplayTree(int Depth)
+  DisplayTree is a recursive function that displays the tree's structure, allowing for further
+  analysis of the tree search.
+
+@param (int Depth)
+@return Void
+
+*/
 void MCTS_Node::DisplayTree(int Depth){
 
   std::cout << "Displaying Depth:" << Depth << "\n";
@@ -190,6 +266,16 @@ void MCTS_Node::DisplayTree(int Depth){
   }
 }
 
+/*
+DisplayTree(int Depth)
+  DisplayTree is a recursive function that displays the tree's structure, allowing for further
+  analysis of the tree search.
+  *Shows entire TreeSearch.
+
+@param ()
+@return Void
+
+*/
 void MCTS_Node::DisplayTree(){
   for (MCTS_Node* Child : Children) { // c++11 range-based for loop
       Child->DisplayStats();
@@ -213,6 +299,8 @@ public:
   double Value;
   double Visits;
   Game* GivenGame;
+
+  std::list<Player*> _Players;
   Player* GivenPlayer;
 
   //MCTS_Node* TransversedNode;
@@ -225,18 +313,25 @@ public:
       Visits = 0;
       GivenPlayer = Player;
       //HeadNode  = NULL;
-      HeadNode  = new MCTS_Node(_Game);
+      HeadNode  = new MCTS_Node(_Game,Player);
       GivenGame = _Game;
     }
 
     ~MCTS(){
       delete HeadNode;
     }
+
     MCTS_Node* Algorithm(MCTS_Node* TransversedNode);
     void EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer);
     //double BackPropagation(MCTS_Node* TransversedNode,double GivenPlayer);
     void Search(int Depth); //,Player* GivenPlayer
+    MCTS* PruneSearch(MCTS_Node*SelectedNode);
     void ParallelSearch(int Depth);
+
+
+    MCTS* CreateBookMoves();
+    MCTS* SaveBookMoves(char* Path);
+    MCTS* OpenBookMoves(char* Path);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
     void GetPossibleMoves();
 
@@ -328,27 +423,14 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 {
 /*
   Helper Function for MCTS::Search.
-  Performs an itteration of the MCTS Algorithm on the parameter 'TransversedNode'
-  and tests if the current Player is the winner of the transversal.
+  Performs an itteration of the MCTS Algorithm on the parameter 'TransversedNode'.
   Depending on the winner of the Transversal/RollOut aggregates the appropriate
   Value through MCTS's Back Propagation.
 */
     TransversedNode = Algorithm(TransversedNode);
-    double EvaluatedValue = -1;
+    std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
 
-
-    //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
-
-    if(TransversedNode->GivenGame->TestForWinner() == GivenPlayer)
-    {
-      EvaluatedValue = 1;
-    }
-    else if( TransversedNode->GivenGame->WinningPlayer == NULL )
-    {
-      //printf("Draw Game\n");
-      EvaluatedValue = 0;
-    }
-    TransversedNode->BackPropagation(EvaluatedValue);
+    TransversedNode->BackPropagation(GivenPlayer);
 }
 
 
@@ -365,9 +447,33 @@ void MCTS::Search(int Depth)
       EvaluateTransversal(HeadNode,GivenPlayer);
     }
 
-    HeadNode->DisplayTree(1);
+    //HeadNode->DisplayTree(1);
 
 
+}
+
+MCTS* MCTS::PruneSearch(MCTS_Node*SelectedNode)
+{
+
+    return NULL;
+}
+
+MCTS* MCTS::CreateBookMoves()
+{
+
+    return NULL;
+}
+
+MCTS* MCTS::SaveBookMoves(char* Path)
+{
+
+    return NULL;
+}
+
+MCTS* MCTS::OpenBookMoves(char* Path)
+{
+
+    return NULL;
 }
 
 

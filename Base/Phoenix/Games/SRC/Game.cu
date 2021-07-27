@@ -78,17 +78,6 @@ protected:
       virtual Game* CopyGame()                     = 0;
       //virtual void AvaliableMoves(int Depth) = 0;
 
-      //Use: unique_ptr<Game>
-      //#include <memory>
-      //When instantiating a unique pointer to avoid a dangling pointer:
-      //use: "make_unique", this removes the possibility for exception safety.
-      //std::unique_ptr<Game> = std::make_unique<Game>()
-      //virtual std::unique_ptr<Game> CopyGame()        = 0;
-
-      //When instantiating a unique pointer to avoid a dangling pointer:
-      //use: "make_unique", this removes the possibility for exception safety.
-      //std::shared_ptr<Game> = std::make_shared<Game>()
-      //virtual std::shared_ptr<Game> CopyGame()        = 0;
       virtual std::string Generate_StringRepresentation() = 0;
 
       //virtual void DisplayInTerminal(int Depth) = 0;

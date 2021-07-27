@@ -44,6 +44,7 @@ std::list<PMCTS_Node*> Children;
     ValueSum   = 0;
   }
   PMCTS_Node* RollOut();
+  void       BackPropagation(double GivenPlayer);
 };
 
 
@@ -59,7 +60,15 @@ PMCTS_Node* PMCTS_Node::RollOut(){
   return RollOutChild;
 }
 
-
+void PMCTS_Node::BackPropagation(double EvaluatedValue)
+{
+  NodeVisits++;
+  ValueSum += EvaluatedValue;
+  if (Parent != NULL)
+  {
+    Parent->BackPropagation(EvaluatedValue);
+  }
+}
 
 
 
@@ -75,7 +84,7 @@ public:
     HeadNode  = new PMCTS_Node(_Game);
   }
   PMCTS_Node* DispatchAlgorithm(PMCTS_Node* TransversedNode,int Threads);
-  void DispatchByPigeonHole();
+  void DispatchByPigeonHole(PMCTS_Node* TransversedNode);
 };
 
 

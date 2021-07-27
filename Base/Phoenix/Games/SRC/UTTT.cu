@@ -206,28 +206,48 @@ bool UTTT_SubGame::ValidMove(GameMove* Move)
 
 
 
+/*
+UTTT - (Ultimate Tic Tac Toe) buisness logic.
+This class simulates UTTT (Ultimate Tic Tac Toe) and follows the Game class interface structure to allow for the easy integration of Tree Searches.
 
+@param (std::list<Player*> GivenPlayers), as the players to play the game.
+
+@relatesalso Game, TTT
+
+
+
+Long -
+Ultimate Tick Tack Toe is a simple advancement to Tick Tack Toe’s game, except
+the board is expanded to contain nine miniature tick tack toe games. For a general
+idea about the game, check out this YouTube video: https://www.youtube.com/watch?v=37PC0bGMiTI
+Note the implemented rules in my program are slightly different and will be
+added in an additional document/Tutorial.
+
+*/
 class UTTT : public Game
 {
-
-
-
 public:
 
+//Default Player Values.
   UTTT_Player Draw    = UTTT_Player(-1,'C');
   UTTT_Player Player0 = UTTT_Player(0,'X');
   UTTT_Player Player1 = UTTT_Player(1,'O');
 
+  //Players are placed in the following list as a rotating queue.
   std::list<UTTT_Player*> Players;
-  std::list<Player*> _Players;
 
-
+  //Pointer to declare the winner.
   UTTT_Player*  WinningPlayer;
 
 
+  //NextMove_Row/NextMove_Col determines where the next player must play based on the previous player’s move.
   int NextMove_Row;
   int NextMove_Col;
+
+  //Represenations of each game within the larger 3x3 game.
   UTTT_SubGame* Boards[3][3];
+
+  //MovesRemaining is a decrementing counter to determine if there are any remaining moves.
   int MovesRemaining;
 
   UTTT(){
@@ -237,25 +257,23 @@ public:
       NextMove_Row   = -1;
       NextMove_Col   = -1;
       MovesRemaining = 81;
-      this->SetUpBoard();
+      this->SetUpBoards({&Player0,&Player1});
     }
     UTTT(std::list<Player*> GivenPlayers){
-        this->_Players = GivenPlayers;
         this->DeclarePlayers(GivenPlayers);
 
         this->WinningPlayer  = NULL;
         NextMove_Row   = -1;
         NextMove_Col   = -1;
         MovesRemaining = 81;
-        this->SetUpBoard();
+        this->SetUpBoards(GivenPlayers);
       }
     ~UTTT(){
       this->FreeBoards();
       //delete Boards;
     }
 
-    void SetUpBoard();
-    void SetUpBoards();
+    void SetUpBoards(std::list<Player*> GivenPlayers);
     void FreeBoards();
 
     bool Move(GameMove* Move);
@@ -277,23 +295,27 @@ public:
 
 };
 
-void UTTT::SetUpBoard()
-{
-  SetUpBoards();
-}
+/*
+SetUpBoard
+  Generic method to initilize each sub-Game class within the 3x3 game.
 
-void UTTT::SetUpBoards()
+param (std::list<Player*> GivenPlayers), as the players to play the game.
+*/
+void UTTT::SetUpBoards(std::list<Player*> GivenPlayers)
 {
 
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
     {
-        Boards[Row][Col] =  new UTTT_SubGame(_Players);
+        Boards[Row][Col] =  new UTTT_SubGame(GivenPlayers);
     }
   }
 }
 
+/*
+FreeBoards frees all sub-games to prevent memory leaks.
+*/
 void UTTT::FreeBoards()
 {
   for (int Row = 0; Row < 3; Row++)
@@ -305,6 +327,7 @@ void UTTT::FreeBoards()
   }
 }
 
+
 void UTTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 {
   for (Player* i : GivenPlayers) { // c++11 range-based for loop
@@ -314,7 +337,9 @@ void UTTT::DeclarePlayers(std::list<Player*> GivenPlayers)
 }
 
 
-
+/*
+CopyGame creates a complete copy of the game representation(Except for Players).
+*/
 Game* UTTT::CopyGame(){
   UTTT* New_UTTT = new UTTT(*this);
   for (int Row = 0; Row < 3; Row++)
@@ -325,6 +350,12 @@ Game* UTTT::CopyGame(){
       New_UTTT->Boards[Row][Col] =  new UTTT_SubGame(*SubGame);
     }
   }
+  /*
+  TODO: Check Players List Pointers are created.
+  */
+  for (Player* i : New_UTTT->Players) { // c++11 range-based for loop
+      printf("UTTT Player List:%p\n",i);
+    }
   return static_cast<Game*>(New_UTTT);
 }
 
@@ -504,6 +535,7 @@ Player* UTTT::TestForWinner()
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
 
+
 /*
 if(Boards[Row_Col][0]->WinningPlayer != NULL)
 {
@@ -521,9 +553,9 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
 
 
     if(
-      Boards[Row_Col][0]->WinningPlayer == Boards[Row_Col][1]->WinningPlayer &&
-      Boards[Row_Col][0]->WinningPlayer == Boards[Row_Col][2]->WinningPlayer &&
-      Boards[Row_Col][0]->WinningPlayer != NULL
+      Boards[Row_Col][0]->TestForWinner() == Boards[Row_Col][1]->TestForWinner() &&
+      Boards[Row_Col][0]->TestForWinner() == Boards[Row_Col][2]->TestForWinner() &&
+      Boards[Row_Col][0]->TestForWinner() != NULL
     )
     {
       /*

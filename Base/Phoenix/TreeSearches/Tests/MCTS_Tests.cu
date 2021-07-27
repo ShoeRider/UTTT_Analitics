@@ -8,6 +8,13 @@
 
 
 /*
+TODO: Fix Rotating Winner priority.
+As of right now, Both players are attempting to give Player0 the win.
+*/
+
+
+
+/*
 //Test TTT with MCTS
 TTT_Player Player0 = TTT_Player(0,'X');
 TTT_Player Player1 = TTT_Player(1,'O');

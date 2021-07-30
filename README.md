@@ -6,6 +6,7 @@ This repository contains a simple C program to find the best strategies/moves ba
 Note The current version is undergoing refactoring and doesn't work!!! Code should be working again soon.
 
 In progress: 
++ Unit Testing Through GTest
 + Implementing HashTable to remove overlapping game branches.
 + Parallel procing to decrease search time.
 + Machine learning with Neural Networks with backpropagation to help find moves faster 

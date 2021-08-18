@@ -10,33 +10,42 @@
 
 #include "TreeSearch.cu"
 #include "../../Games/SRC/Game.cu"
+#include "../../Games/SRC/TTT.cu"
 
 
 
 #define Pause int ASDF; std::cin >> ASDF;
+
+
 
 class MCTS_Node
 {
 private:
 
 public:
-    int    NodeVisits;
+    double NodeVisits;
     double ValueSum;
     Game* GivenGame = NULL;
-    Player* _Player;
+    //Player* _Player;
+    std::list<Player*> _Players;
 
     MCTS_Node*           Parent       = NULL;
     MCTS_Node*           RollOutChild = NULL;
     std::list<MCTS_Node*> Children;
 
-    MCTS_Node(Game* Instance,Player* GivenPlayer){
-
-      _Player = GivenPlayer;
+    MCTS_Node(Game* Instance,std::list<Player*> _GivenPlayers){
+      for (Player* _Player : _GivenPlayers){
+            printf("adding Player:%p\n",(_Player));
+            _Players.push_back(_Player);
+      }
       GivenGame  = Instance;
       Children   = {};
       NodeVisits = 0;
       ValueSum   = 0;
+      printf("Creating MCTS Node w Player:%p\n",*(_Players.begin()));
+      //std::cin.get();
     }
+
 
     ~MCTS_Node(){
       for (MCTS_Node* Node : Children){
@@ -82,6 +91,7 @@ T* get(std::list<T*> _list, int _i){
 
 
 //Preform MonteCarlo's UCB1 evaluation algorithm on a given node.
+
 double MCTS_Node::Find_UCB1(){
   double ExploreBy = 1.4142;
   if(NodeVisits == 0)
@@ -105,6 +115,7 @@ printf("\tValueSum:%f\n", ValueSum);
   return Value;
 }
 
+
 MCTS_Node* MCTS_Node::Find_MAX_UCB1_Child(){
   double     HighestValue = -DBL_MAX;
   double     NodesValue;
@@ -123,7 +134,9 @@ MCTS_Node* MCTS_Node::Find_MAX_UCB1_Child(){
   return HighestNode;
 }
 
-//Preform MonteCarlo's UCB1 evaluation algorithm on a given node.
+//Preform MonteCarlo's UCB1 evaluation algorithm on a given node, and return
+//the node with the highest UCB1 Value.
+
 MCTS_Node* MCTS_Node::ReturnBestMove(){
   double     HighestValue = -DBL_MAX;
   double     NodesValue;
@@ -145,13 +158,30 @@ MCTS_Node* MCTS_Node::ReturnBestMove(){
 
 //For each element within a list of PossibleInstances(Different Game States)
 //Add as different Childeren
+
+
 int MCTS_Node::AddChildren(std::list<Game*> PossibleInstances){
   int ChildrenAdded = 0;
   MCTS_Node* NewNode;
   for (Game* Instance : PossibleInstances){
       if(Instance != NULL)
       {
-        NewNode = new MCTS_Node(Instance,Instance->Players.front());
+        std::list<Player*> ProgressedOrder = *(new std::list<Player*>(Instance->_Players));
+      /*
+      ProgressedOrder.splice(ProgressedOrder.end(),        // destination position
+                     ProgressedOrder,              // source list
+                     ProgressedOrder.begin());     // source position
+                     */
+        //std::next(ProgressedOrder, 1);
+        //GivenGame->_Players.begin()
+        TTT* _Instance = static_cast<TTT*>(Instance);
+        printf("%p\n",&(_Instance));
+        printf("Create Instance->Players:%p\n",(_Instance->_Players));
+        printf("Create Instance->Players:%p\n",&(_Instance->_Players));
+        for (Player* _Pl : _Instance->_Players){
+              printf("\t-:%p\n",(_Pl));
+        }
+        NewNode = new MCTS_Node(Instance,(_Instance->_Players));
         NewNode->Parent = this;
         Children.push_back(NewNode);
         ChildrenAdded++;
@@ -171,6 +201,7 @@ Afterward, it returns the new copy.
 @return pointer to Copied Rollout Node.
 
 */
+
 MCTS_Node* MCTS_Node::RollOut(){
 
   Game* RollOutGame = GivenGame->CopyGame();
@@ -178,7 +209,7 @@ MCTS_Node* MCTS_Node::RollOut(){
 
   //printf("RO_WinningPlayer:%p\n",RollOutGame->WinningPlayer);
   //TODO Check if game is finished
-  RollOutChild = new MCTS_Node(RollOutGame,_Player);
+  RollOutChild = new MCTS_Node(RollOutGame,_Players);
   RollOutChild->Parent = this;
   return RollOutChild;
 }
@@ -194,16 +225,15 @@ BackPropagation is the final step of the MCTS. It backtracks from rollout leaf n
 @return Nothing(void)
 
 */
+
 void MCTS_Node::BackPropagation(Player* GivenPlayer)
 {
   NodeVisits++;
 
-  printf("MCTS Node Player:%p\n",_Player);
-  printf("     GivenPlayer:%p\n",GivenPlayer);
-  printf(" Parent:%p\n",Parent);
+
   //If no matching condition is found an apposing player won the RollOut game.
   double EvaluatedValue = -1;
-  if(_Player == GivenPlayer)
+  if(*(_Players.begin()) == GivenPlayer)
   {
     EvaluatedValue = 1;
   }
@@ -211,8 +241,14 @@ void MCTS_Node::BackPropagation(Player* GivenPlayer)
   {
     EvaluatedValue = 0;
   }
+  std::cout << GivenGame->Generate_StringRepresentation();
+  printf("MCTS Node Player:%p\n",*(_Players.begin()));
+  printf("     GivenPlayer:%p\n",GivenPlayer);
+  printf("  EvaluatedValue:%f\n",EvaluatedValue);
+  printf("           Value:%f\n",ValueSum);
+  printf("          Visits:%f\n",NodeVisits);
   ValueSum += EvaluatedValue;
-
+  printf(" Parent:%p\n",Parent);
   //If not the head Node, Keep transversing up the Search Tree.
   if (Parent != NULL)
   {
@@ -228,17 +264,23 @@ O(1) vs O(1)
 @return pointer to Copied Rollout Node.
 
 */
+
 double MCTS_Node::GetAverageValue()
 {
   return ValueSum/NodeVisits;
 }
 
+
 void MCTS_Node::DisplayStats(){
-  std::cout << "----------------------------------------\n";
-  printf("ValueSum:%f\n", ValueSum);
-  printf("\tNodeVisits:%i\n", NodeVisits);
-  printf("\tValueSum:%f\n", ValueSum);
-  std::cout << GivenGame->Generate_StringRepresentation();
+  if(NodeVisits>0)
+  {
+    std::cout << "----------------------------------------\n";
+    printf("ValueSum:%f\n", ValueSum);
+    printf("\tNodeVisits:%f\n", NodeVisits);
+    printf("\tValueSum:%f\n", ValueSum);
+    std::cout << GivenGame->Generate_StringRepresentation();
+  }
+
 }
 
 /*
@@ -250,6 +292,7 @@ DisplayTree(int Depth)
 @return Void
 
 */
+
 void MCTS_Node::DisplayTree(int Depth){
 
   std::cout << "Displaying Depth:" << Depth << "\n";
@@ -276,6 +319,7 @@ DisplayTree(int Depth)
 @return Void
 
 */
+
 void MCTS_Node::DisplayTree(){
   for (MCTS_Node* Child : Children) { // c++11 range-based for loop
       Child->DisplayStats();
@@ -290,10 +334,10 @@ void MCTS_Node::DisplayTree(){
 
 
 
+//template <class C, template <class C> class M>
 
 
-
-class MCTS : public TreeSimulation
+class MCTS: public TreeSimulation
 {
 public:
   double Value;
@@ -308,12 +352,19 @@ public:
   std::list<MCTS_Node*>MCTS_List;
   Game* SimulatedGame;
 
-    MCTS(Game*_Game,Player* Player){
+    MCTS(Game*_Game,std::list<Player*> _GivenPlayers){
       Value  = 0;
       Visits = 0;
-      GivenPlayer = Player;
+      _Players = _GivenPlayers;
+      GivenPlayer = *(_GivenPlayers.begin());
+      for (Player* _Player : _GivenPlayers){
+            printf("MCTS Playerlist:%p\n",(_Player));
+      }
       //HeadNode  = NULL;
-      HeadNode  = new MCTS_Node(_Game,Player);
+      //printf("new MCTS_Node's Player:%p\n",Player);
+      //std::cin.get();
+
+      HeadNode  = new MCTS_Node(_Game,_GivenPlayers);
       GivenGame = _Game;
     }
 
@@ -355,6 +406,7 @@ void MCTS::GetPossibleMoves()
 
 
 
+
 MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 {
   /*
@@ -389,12 +441,16 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
 
     //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+
+    //UTTT* UTTT_Game = static_cast<UTTT*>(TransversedNode->GivenGame);
     std::list<Game*> Games = TransversedNode->GivenGame->PossibleGames();
     //std::cout << "Adding Children Size:" << Games.size() << "\n";
     if (Games.size() == 0)
     {
       return TransversedNode;
     }
+
+    printf("TransversedNode->GivenGame->Players.begin():%p\n",*(TransversedNode->GivenGame->_Players.begin()));
     TransversedNode->AddChildren(Games);
 
 
@@ -419,6 +475,7 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 //
 
 
+
 void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 {
 /*
@@ -430,8 +487,9 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
     TransversedNode = Algorithm(TransversedNode);
     std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
 
-    TransversedNode->BackPropagation(GivenPlayer);
+    TransversedNode->BackPropagation(TransversedNode->GivenGame->TestForWinner());
 }
+
 
 
 
@@ -446,11 +504,12 @@ void MCTS::Search(int Depth)
       //printf("\tDepth: %d\n",i);
       EvaluateTransversal(HeadNode,GivenPlayer);
     }
-
-    //HeadNode->DisplayTree(1);
+//Pause
+    HeadNode->DisplayTree(2);
 
 
 }
+
 
 MCTS* MCTS::PruneSearch(MCTS_Node*SelectedNode)
 {
@@ -458,11 +517,13 @@ MCTS* MCTS::PruneSearch(MCTS_Node*SelectedNode)
     return NULL;
 }
 
+
 MCTS* MCTS::CreateBookMoves()
 {
 
     return NULL;
 }
+
 
 MCTS* MCTS::SaveBookMoves(char* Path)
 {
@@ -470,11 +531,13 @@ MCTS* MCTS::SaveBookMoves(char* Path)
     return NULL;
 }
 
+
 MCTS* MCTS::OpenBookMoves(char* Path)
 {
 
     return NULL;
 }
+
 
 
 void MCTS::ParallelSearch(int Depth)

@@ -1,3 +1,18 @@
+/*
+====================================================================================================
+Description MCTS(Conte-Carlo-Tree-Search):
+- Contains MCTS(Conte-Carlo-Tree-Search), and MCTS_Node to search a search space
+based on the given rules within Game.cu
+
+-TODO: Implement MCTS as a template for more modularity.
+====================================================================================================
+Date:           13 September 2021
+Script Version: 1.0
+Name:           Anthony M Schroeder
+Email:          as3379@nau.edu
+==========================================================
+*/
+
 #ifndef MCTS_CU
 #define MCTS_CU
 
@@ -319,39 +334,73 @@ DisplayTree(int Depth)
 @return Void
 
 */
-
 void MCTS_Node::DisplayTree(){
-  for (MCTS_Node* Child : Children) { // c++11 range-based for loop
+  // For each branch, display the game's statistics.
+  //////////////////////////////////////////////////////////////////////////////
+  for (MCTS_Node* Child : Children) {
       Child->DisplayStats();
     }
+
   std::cout << "----------------------------------------\n";
   std::cout << GivenGame->Generate_StringRepresentation();
-  for (MCTS_Node* Child : Children) { // c++11 range-based for loop
+  for (MCTS_Node* Child : Children) {
        Child->DisplayTree();
     }
 
 }
 
 
-
+//TODO Implement templates for proper inheritance/addressing.
 //template <class C, template <class C> class M>
 
+/*
+MCTS is a tree search that takes a complete view of a game and evaluates the
+most optimal moves for both players through a UCB1 algorithm.
+This algorithm performs a hybrid of breath and depth search to evenly search a given search space.
 
+Great step by step example found here: https://www.youtube.com/watch?v=UXW2yZndl7U
+
+@Methods:
+Search()
+Algorithm():: A recursive implementation of the MCTS algorithm. Recursively creates a serach tree based on the MCTS, searching for the most optimal move.
+
+ * @param
+    Game*_Game,
+    std::list<Player*> _GivenPlayers)
+ *
+ * @return MCTS_Node,
+ *
+ * @see MCTS_Node::Find_MAX_UCB1_Child()
+ * @see Game interface(Found within Game.cu)
+ */
 class MCTS: public TreeSimulation
 {
 public:
+  //TO Remove
+  //////////////////////////////////////////////////////////////////////////////
   double Value;
   double Visits;
-  Game* GivenGame;
 
+
+  //////////////////////////////////////////////////////////////////////////////
+  // The current head node.
+  //////////////////////////////////////////////////////////////////////////////
+  Game* GivenGame;
+  //MCTS_Node* TransversedNode;
+  MCTS_Node* HeadNode;
+  Game* SimulatedGame;
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // The current head node.
+  //////////////////////////////////////////////////////////////////////////////
   std::list<Player*> _Players;
   Player* GivenPlayer;
 
-  //MCTS_Node* TransversedNode;
-  MCTS_Node* HeadNode;
-  std::list<MCTS_Node*>MCTS_List;
-  Game* SimulatedGame;
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Initialization method.
+  //////////////////////////////////////////////////////////////////////////////
     MCTS(Game*_Game,std::list<Player*> _GivenPlayers){
       Value  = 0;
       Visits = 0;
@@ -368,12 +417,19 @@ public:
       GivenGame = _Game;
     }
 
-    ~MCTS(){
-      delete HeadNode;
-    }
 
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  //////////////////////////////////////////////////////////////////////////////
+  ~MCTS(){
+    delete HeadNode;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Method Declarations.
+  //////////////////////////////////////////////////////////////////////////////
     MCTS_Node* Algorithm(MCTS_Node* TransversedNode);
-    void EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer);
+    void EvaluateStep(MCTS_Node* TransversedNode,Player* GivenPlayer);
     //double BackPropagation(MCTS_Node* TransversedNode,double GivenPlayer);
     void Search(int Depth); //,Player* GivenPlayer
     MCTS* PruneSearch(MCTS_Node*SelectedNode);
@@ -406,11 +462,24 @@ void MCTS::GetPossibleMoves()
 
 
 
+/**
+   A recursive impementation of the MCTS algorithm. Recursively creates a serach
+    tree based on the MCTS, searching for the most optimal move.
 
+  This modifies the given MCTS search tree, adding MCTS_Node's.
+
+ * @param
+ *   <MCTS_Node*> TransversedNode(Is the next node to be evaluated on, either recursively or initialy).
+ *
+ * @return MCTS_Node,
+ *
+ * @see MCTS_Node::Find_MAX_UCB1_Child()
+ * @see Game interface(Found within Game.cu)
+ */
 MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 {
   /*
-    Helper Function for MCTS::Search & EvaluateTransversal.
+    Helper Function for MCTS::Search & EvaluateStep.
     Performs an itteration of the MCTS Algorithm on 'TransversedNode'
   */
 
@@ -428,11 +497,18 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
   //Pause;
 
-
+  //////////////////////////////////////////////////////////////////////////////
+  //If Node is LeafNode, create Children nodes, and select the first node for
+  // rollout.
+  //////////////////////////////////////////////////////////////////////////////
   if(TransversedNode->Children.size() == 0){
-    //If Node is LeafNode
+
     //std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
 
+
+    /////////////////////////////////////////////////////////////////
+    // If Leaf Node has no visits, preform rollout.
+    /////////////////////////////////////////////////////////////////
     if(TransversedNode->NodeVisits == 0){
       //std::cout << "About to rool out on:"   << TransversedNode << "\n";
 
@@ -441,49 +517,73 @@ MCTS_Node* MCTS::Algorithm(MCTS_Node* TransversedNode)
 
 
     //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
-
     //UTTT* UTTT_Game = static_cast<UTTT*>(TransversedNode->GivenGame);
+
+
+    /////////////////////////////////////////////////////////////////
+    // Find all possible games from branch.
+    /////////////////////////////////////////////////////////////////
     std::list<Game*> Games = TransversedNode->GivenGame->PossibleGames();
     //std::cout << "Adding Children Size:" << Games.size() << "\n";
+
+
+    /////////////////////////////////////////////////////////////////
+    // verify future games have been found.
+    /////////////////////////////////////////////////////////////////
     if (Games.size() == 0)
     {
       return TransversedNode;
     }
 
+    /////////////////////////////////////////////////////////////////
+    //Takes the new Games and add them to the tree.
+    /////////////////////////////////////////////////////////////////
     printf("TransversedNode->GivenGame->Players.begin():%p\n",*(TransversedNode->GivenGame->_Players.begin()));
     TransversedNode->AddChildren(Games);
 
-
+    /////////////////////////////////////////////////////////////////
+    //select the first posible node.
+    /////////////////////////////////////////////////////////////////
     MCTS_Node* NextNode = *TransversedNode->Children.begin();
-    //std::cout << "Selecting Next Node:" <<NextNode << "\n";
+
+    /////////////////////////////////////////////////////////////////
+    //Recursivly search down the tree looking for an 'optimal' branch to evaluate.
+    /////////////////////////////////////////////////////////////////
     return Algorithm(NextNode);
-    //return NULL;
 
   }
+  //Otherwise, transverse the tree using the UCB1 formula, looking for an 'optimal' branch to evaluate.
   else{
 
-    //Not Leaf Node, Transverse TreeSearch: Find Max Child UCB1 value.
+    //Not Leaf Node, Transverse down the Tree: Find the branch with the MAX UCB1 value.
     MCTS_Node* MAXNode = TransversedNode->Find_MAX_UCB1_Child();
-    //TODO: Implement Node Visits within BackProp...
-    //TransversedNode->NodeVisits++;
+
+    //Recursivly search down the tree looking for an 'optimal' branch to evaluate.
     return Algorithm(MAXNode);
-    //return NULL;
   }
 }
 
 
-//
 
 
-
-void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
+/**
+   Helper Function for MCTS::Search. Performs an iteration of the MCTS on the parameter 'TransversedNode.' Then takes the result of Search/RollOut and performs BackPropagation to adjust the weights of each MCTS_Node within the search tree.
+ *
+ * @param
+ *   <MCTS_Node*> TransversedNode().
+ *   <Player*> GivenPlayer
+          (A pointer of the current Player's turn. This is used during the
+          backpropagation step to evaluate winning and losing game positions.).
+ *
+ * @return Void, modifies the given MCTS object, adding MCTS_Node elements to
+ *   the Head node.
+ *
+ * @see MCTS
+ * @see Game interface(Found within Game.cu)
+ */
+void MCTS::EvaluateStep(MCTS_Node* TransversedNode,Player* GivenPlayer)
 {
-/*
-  Helper Function for MCTS::Search.
-  Performs an itteration of the MCTS Algorithm on the parameter 'TransversedNode'.
-  Depending on the winner of the Transversal/RollOut aggregates the appropriate
-  Value through MCTS's Back Propagation.
-*/
+
     TransversedNode = Algorithm(TransversedNode);
     std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
 
@@ -492,17 +592,29 @@ void MCTS::EvaluateTransversal(MCTS_Node* TransversedNode,Player* GivenPlayer)
 
 
 
-
+/**
+ * Preforms the Monte Carlo tree search on the game used to initialize the MCTS
+ *  Object.
+ *
+ *
+ * @param <int> Depth(Depth of search tree).
+ *
+ * @return Void, modifies the given MCTS object, adding MCTS_Node elements to
+ *   the Head node.
+ *
+ * @see MCTS
+ * @see Game interface(Found within Game.cu)
+ */
 void MCTS::Search(int Depth)
 {
-  /*
-    Interface to initate MCTS Tree Searches.
-    Given Depth,
-  */
+
     std::cout << "Searching Depth:" << Depth << "\n";
+    // Increment counter, and perform another step within the search.
     for (int i = 0; i < Depth; i++) {
       //printf("\tDepth: %d\n",i);
-      EvaluateTransversal(HeadNode,GivenPlayer);
+
+      // Use helper Method EvaluateStep to increment the search.
+      EvaluateStep(HeadNode,GivenPlayer);
     }
 //Pause
     HeadNode->DisplayTree(2);

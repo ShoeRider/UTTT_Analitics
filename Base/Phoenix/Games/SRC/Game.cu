@@ -47,12 +47,30 @@ struct Player
     void (*ExternalSimulation)();
     bool HumanPlayer;
     Player(){}
-    virtual GameMove* MakeMove(Game* GivenGame)=0;
-    virtual ~Player(){};
+  //  GameMove* MakeMove(Game* GivenGame)=0;
+    ~Player(){};
 
 };
 
+/*
+Game Interface:
+Interface to standardize Games inorder to regularize Games for Tree searches.
 
+Intended to be used for MCTS variants.
+
+@Methods:
+Search()
+Algorithm():: A recursive implementation of the MCTS algorithm. Recursively creates a serach tree based on the MCTS, searching for the most optimal move.
+
+ * @param
+    Game*_Game,
+    std::list<Player*> _GivenPlayers)
+
+ *
+ * @see MCTS_Node::Find_MAX_UCB1_Child()
+ * @see Game interface(Found within Game.cu)
+
+*/
 class Game
 {
 private:
@@ -60,7 +78,7 @@ private:
 protected:
 
   public:
-      std::list<Player*> Players;
+      std::list<Player*> _Players;
       Player*  WinningPlayer = NULL;
       Player*  DrawPlayer    = NULL;
       Game(){}
@@ -71,8 +89,10 @@ protected:
         //  and also makes this class abstract.
 
       //virtual bool ValidMove(int Row,int Col) = 0;
-      virtual std::list<GameMove*> PossibleMoves() = 0;
-      virtual std::list<Game*> PossibleGames()     = 0;
+
+
+      //std::list<GameMove*> PossibleMoves() = 0;
+      //std::list<Game*> PossibleGames()     = 0;
       virtual bool ValidMove(GameMove* Move)       = 0;
       virtual bool Move(GameMove* Move)            = 0;
       virtual Game* CopyGame()                     = 0;
@@ -96,7 +116,7 @@ protected:
       virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {
         for (Player* i : GivenPlayers) { // c++11 range-based for loop
             //printf("%p\n",i);
-            Players.push_back(i);
+            _Players.push_back(i);
           }
       };
 

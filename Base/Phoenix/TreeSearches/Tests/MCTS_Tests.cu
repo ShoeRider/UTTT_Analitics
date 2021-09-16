@@ -3,7 +3,7 @@
 
 #include "../../Games/SRC/Game.cu"
 #include "../../Games/SRC/TTT.cu"
-#include "../../Games/SRC/UTTT.cu"
+//#include "../../Games/SRC/UTTT.cu"
 #include "../SRC/MCTS.cu"
 
 
@@ -27,7 +27,7 @@ delete Sim;
 */
 bool UTTT_Player_Init(){
   //std::cout << "Hello World!";
-  UTTT_Player Player0 = UTTT_Player(0,'X');
+  //UTTT_Player Player0 = UTTT_Player(0,'X');
   //delete Player0;
   return 0;
 }
@@ -67,10 +67,10 @@ int main() {
   //Player* Player0 = static_cast<Player*>(&TTTPlayer0);
   //Player* Player1 = static_cast<Player*>(&TTTPlayer1);
 
-  Game *_Game = new TTT({&Player0,&Player1});
+  TTT *_Game = new TTT({&Player0,&Player1});
 
-  TreeSimulation *Sim = new MCTS(_Game,{&Player0,&Player1});
-  Sim->Search(15000);
+  MCTS<TTT> *Sim = new MCTS<TTT>(_Game,{&Player0,&Player1});
+  Sim->Search(100);
 
   //delete &Player0;
   //delete &Player1;

@@ -13,7 +13,11 @@ Email:          as3379@nau.edu
 ==========================================================
 Date:           15 September 2021
 Script Version: 1.1
-Description: Started modifying MCTS as a template.
+Description: Started modifying MCTS as a template<typename Game_Tp>.
+==========================================================
+Date:           16 September 2021
+Script Version: 1.2
+Description: Started modifying MCTS as a template<typename Game_Tp, typename Player_Tp>.
 ==========================================================
 */
 
@@ -438,7 +442,7 @@ Algorithm():: A recursive implementation of the MCTS algorithm. Recursively crea
  * @see MCTS_Node::Find_MAX_UCB1_Child()
  * @see Game interface(Found within Game.cu)
  */
-template <typename Game_Tp>
+template <typename Game_Tp, typename Player_Tp>
 class MCTS: public TreeSimulation
 {
 public:
@@ -460,18 +464,18 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   // The current head node.
   //////////////////////////////////////////////////////////////////////////////
-  std::list<Player*> _Players;
+  std::list<Player_Tp*> _Players;
   Player* GivenPlayer;
 
 
   //////////////////////////////////////////////////////////////////////////////
   // Initialization method.
-  MCTS(Game_Tp*_Game,std::list<Player*> _GivenPlayers){
+  MCTS(Game_Tp*_Game,std::list<Player_Tp*> _GivenPlayers){
     Value  = 0;
     Visits = 0;
     _Players = _GivenPlayers;
     GivenPlayer = *(_GivenPlayers.begin());
-    for (Player* _Player : _GivenPlayers){
+    for (Player_Tp* _Player : _GivenPlayers){
           //printf("MCTS Playerlist:%p\n",(_Player));
     }
     //HeadNode  = NULL;
@@ -494,16 +498,16 @@ public:
   // Method Declarations.
   //////////////////////////////////////////////////////////////////////////////
     MCTS_Node<Game_Tp>* Algorithm(MCTS_Node<Game_Tp>* TransversedNode);
-    void EvaluateStep(MCTS_Node<Game_Tp>* TransversedNode,Player* GivenPlayer);
+    void EvaluateStep(MCTS_Node<Game_Tp>* TransversedNode,Player_Tp* GivenPlayer);
     //double BackPropagation(MCTS_Node* TransversedNode,double GivenPlayer);
     void Search(int Depth); //,Player* GivenPlayer
     MCTS* PruneSearch(MCTS_Node<Game_Tp>*SelectedNode);
     void ParallelSearch(int Depth);
 
 
-    MCTS* CreateBookMoves();
-    MCTS* SaveBookMoves(char* Path);
-    MCTS* OpenBookMoves(char* Path);
+    //MCTS* CreateBookMoves();
+    //MCTS* SaveBookMoves(char* Path);
+    //MCTS* OpenBookMoves(char* Path);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
     void GetPossibleMoves();
 
@@ -518,8 +522,8 @@ public:
 
 
 
-template <typename Game_Tp>
-void MCTS<Game_Tp>::GetPossibleMoves()
+template <typename Game_Tp, typename Player_Tp>
+void MCTS<Game_Tp,Player_Tp>::GetPossibleMoves()
 {
     //std::list<GameMove*> Moves = GivenGame->PossibleMoves();
     //std::list<Game*> Games = GivenGame->PossibleGames();
@@ -541,8 +545,8 @@ void MCTS<Game_Tp>::GetPossibleMoves()
  * @see MCTS_Node::Find_MAX_UCB1_Child()
  * @see Game interface(Found within Game.cu)
  */
-template <typename Game_Tp>
-MCTS_Node<Game_Tp>* MCTS<Game_Tp>::Algorithm(MCTS_Node<Game_Tp>* TransversedNode)
+template <typename Game_Tp, typename Player_Tp>
+MCTS_Node<Game_Tp>* MCTS<Game_Tp,Player_Tp>::Algorithm(MCTS_Node<Game_Tp>* TransversedNode)
 {
   /*
     Helper Function for MCTS::Search & EvaluateStep.
@@ -647,8 +651,8 @@ MCTS_Node<Game_Tp>* MCTS<Game_Tp>::Algorithm(MCTS_Node<Game_Tp>* TransversedNode
  * @see MCTS
  * @see Game interface(Found within Game.cu)
  */
-template <typename Game_Tp>
-void MCTS<Game_Tp>::EvaluateStep(MCTS_Node<Game_Tp>* TransversedNode,Player* GivenPlayer)
+template <typename Game_Tp, typename Player_Tp>
+void MCTS<Game_Tp,Player_Tp>::EvaluateStep(MCTS_Node<Game_Tp>* TransversedNode,Player_Tp* GivenPlayer)
 {
 
     TransversedNode = Algorithm(TransversedNode);
@@ -672,8 +676,8 @@ void MCTS<Game_Tp>::EvaluateStep(MCTS_Node<Game_Tp>* TransversedNode,Player* Giv
  * @see MCTS
  * @see Game interface(Found within Game.cu)
  */
-template <typename Game_Tp>
-void MCTS<Game_Tp>::Search(int Depth)
+template <typename Game_Tp, typename Player_Tp>
+void MCTS<Game_Tp,Player_Tp>::Search(int Depth)
 {
 
     std::cout << "Searching Depth:" << Depth << "\n";
@@ -690,37 +694,16 @@ void MCTS<Game_Tp>::Search(int Depth)
 
 }
 
-template <typename Game_Tp>
-MCTS<Game_Tp>* MCTS<Game_Tp>::PruneSearch(MCTS_Node<Game_Tp>*SelectedNode)
-{
-
-    return NULL;
-}
-
-template <typename Game_Tp>
-MCTS<Game_Tp>* MCTS<Game_Tp>::CreateBookMoves()
-{
-
-    return NULL;
-}
-
-template <typename Game_Tp>
-MCTS<Game_Tp>* MCTS<Game_Tp>::SaveBookMoves(char* Path)
-{
-
-    return NULL;
-}
-
-template <typename Game_Tp>
-MCTS<Game_Tp>* MCTS<Game_Tp>::OpenBookMoves(char* Path)
+template <typename Game_Tp, typename Player_Tp>
+MCTS<Game_Tp,Player_Tp>* MCTS<Game_Tp,Player_Tp>::PruneSearch(MCTS_Node<Game_Tp>*SelectedNode)
 {
 
     return NULL;
 }
 
 
-template <typename Game_Tp>
-void MCTS<Game_Tp>::ParallelSearch(int Depth)
+template <typename Game_Tp, typename Player_Tp>
+void MCTS<Game_Tp,Player_Tp>::ParallelSearch(int Depth)
 {
     std::cout << "Searching Depth:" << Depth << "\n";
 

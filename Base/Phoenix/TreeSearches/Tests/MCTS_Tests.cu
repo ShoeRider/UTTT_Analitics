@@ -1,4 +1,4 @@
-  #ifndef MCTS_Tests_CU
+#ifndef MCTS_Tests_CU
 #define MCTS_Tests_CU
 
 #include "../../Games/SRC/Game.cu"
@@ -69,8 +69,8 @@ int main() {
 
   TTT *_Game = new TTT({&Player0,&Player1});
 
-  MCTS<TTT> *Sim = new MCTS<TTT>(_Game,{&Player0,&Player1});
-  Sim->Search(100);
+  MCTS<TTT,Player> *Sim = new MCTS<TTT,Player>(_Game,{&Player0,&Player1});
+  Sim->Search(200000);
 
   //delete &Player0;
   //delete &Player1;

@@ -81,20 +81,20 @@ public:
     // Initialization method.
     MCTS_Node(Game_Tp* Instance,std::list<Player*> _GivenPlayers){
       for (Player* _Player : _GivenPlayers){
-            printf("adding Player:%p\n",(_Player));
+            //printf("adding Player:%p\n",(_Player));
             _Players.push_back(_Player);
       }
       GivenGame  = Instance;
       Children   = {};
       NodeVisits = 0;
       ValueSum   = 0;
-      printf("Creating MCTS Node w Player:%p\n",*(_Players.begin()));
+      //printf("Creating MCTS Node w Player:%p\n",*(_Players.begin()));
       //std::cin.get();
     }
 
 
     ~MCTS_Node(){
-      for (MCTS_Node* Node : Children){
+      for (MCTS_Node<Game_Tp>* Node : Children){
         delete Node;
       }
       if (RollOutChild != NULL)
@@ -199,32 +199,48 @@ MCTS_Node<Game_Tp>* MCTS_Node<Game_Tp>::ReturnBestMove(){
 }
 
 
-//For each element within a list of PossibleInstances(Different Game States)
-//Add as different Childeren
+
 
 template <typename Game_Tp>
 int MCTS_Node<Game_Tp>::AddChildren(std::list<Game_Tp*> PossibleInstances){
   int ChildrenAdded = 0;
   MCTS_Node* NewNode;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // For each element within a list of PossibleInstances(Different Game States)
+  // Add as different Childeren/Leaf Nodes
   for (Game_Tp* Instance : PossibleInstances){
+
       if(Instance != NULL)
       {
-        std::list<Player*> ProgressedOrder = *(new std::list<Player*>(Instance->_Players));
+        //std::list<Player*> ProgressedOrder = *(new std::list<Player*>(Instance->_Players));
+
       /*
+      TODO: Remove
       ProgressedOrder.splice(ProgressedOrder.end(),        // destination position
                      ProgressedOrder,              // source list
                      ProgressedOrder.begin());     // source position
                      */
         //std::next(ProgressedOrder, 1);
         //GivenGame->_Players.begin()
-        TTT* _Instance = static_cast<TTT*>(Instance);
-        printf("%p\n",&(_Instance));
-        printf("Create Instance->Players:%p\n",(_Instance->_Players));
-        printf("Create Instance->Players:%p\n",&(_Instance->_Players));
-        for (Player* _Pl : _Instance->_Players){
-              printf("\t-:%p\n",(_Pl));
+
+
+
+        //////////////////////////////////////////////////////////////////////////////
+        // Debuging Printf Block
+        //////////////////////////////////////////////////////////////////////////////
+        //printf("%p\n",&(Instance));
+        //printf("Create Instance->Players:%p\n",(Instance->_Players));
+        //printf("Create Instance->Players:%p\n",&(Instance->_Players));
+
+        for (Player* _Pl : Instance->_Players){
+              //printf("\t-:%p\n",(_Pl));
         }
-        NewNode = new MCTS_Node(Instance,(_Instance->_Players));
+
+        //////////////////////////////////////////////////////////////////////////////
+        // For Each Possible Game, Create New MCTS_Node<Game_Tp>, and add it to
+        // children list.
+        NewNode = new MCTS_Node<Game_Tp>(Instance,(Instance->_Players));
         NewNode->Parent = this;
         Children.push_back(NewNode);
         ChildrenAdded++;
@@ -284,14 +300,14 @@ void MCTS_Node<Game_Tp>::BackPropagation(Player* GivenPlayer)
   {
     EvaluatedValue = 0;
   }
-  std::cout << GivenGame->Generate_StringRepresentation();
-  printf("MCTS Node Player:%p\n",*(_Players.begin()));
-  printf("     GivenPlayer:%p\n",GivenPlayer);
-  printf("  EvaluatedValue:%f\n",EvaluatedValue);
-  printf("           Value:%f\n",ValueSum);
-  printf("          Visits:%f\n",NodeVisits);
+  //std::cout << GivenGame->Generate_StringRepresentation();
+  //printf("MCTS Node Player:%p\n",*(_Players.begin()));
+  //printf("     GivenPlayer:%p\n",GivenPlayer);
+  //printf("  EvaluatedValue:%f\n",EvaluatedValue);
+  //printf("           Value:%f\n",ValueSum);
+  //printf("          Visits:%f\n",NodeVisits);
   ValueSum += EvaluatedValue;
-  printf(" Parent:%p\n",Parent);
+  //printf(" Parent:%p\n",Parent);
   //If not the head Node, Keep transversing up the Search Tree.
   if (Parent != NULL)
   {
@@ -313,6 +329,12 @@ double MCTS_Node<Game_Tp>::GetAverageValue()
   return ValueSum/NodeVisits;
 }
 
+
+/*
+DisplayStats
+
+
+*/
 template <typename Game_Tp>
 void MCTS_Node<Game_Tp>::DisplayStats(){
   if(NodeVisits>0)
@@ -321,6 +343,7 @@ void MCTS_Node<Game_Tp>::DisplayStats(){
     printf("ValueSum:%f\n", ValueSum);
     printf("\tNodeVisits:%f\n", NodeVisits);
     printf("\tValueSum:%f\n", ValueSum);
+    printf("\tUCB1:%f\n", Find_UCB1());
     std::cout << GivenGame->Generate_StringRepresentation();
   }
 
@@ -338,8 +361,8 @@ DisplayTree(int Depth)
 template <typename Game_Tp>
 void MCTS_Node<Game_Tp>::DisplayTree(int Depth){
 
-  std::cout << "Displaying Depth:" << Depth << "\n";
-  std::cout << "Children length:" << Children.size() << "\n";
+  //std::cout << "Displaying Depth:" << Depth << "\n";
+  //std::cout << "Children length:" << Children.size() << "\n";
   if (Children.size() > 0){
     for (MCTS_Node* Child : Children) { // c++11 range-based for loop
          Child->DisplayStats();
@@ -380,6 +403,7 @@ void MCTS_Node<Game_Tp>::DisplayTree(){
 
 
 //TODO Implement templates for proper inheritance/addressing.
+//Example of Template
 //template <class C, template <class C> class M>
 template <typename T>
 class Array {
@@ -390,6 +414,9 @@ public:
     Array(T arr[], int s);
     void print();
 };
+
+
+
 
 
 /*
@@ -445,7 +472,7 @@ public:
     _Players = _GivenPlayers;
     GivenPlayer = *(_GivenPlayers.begin());
     for (Player* _Player : _GivenPlayers){
-          printf("MCTS Playerlist:%p\n",(_Player));
+          //printf("MCTS Playerlist:%p\n",(_Player));
     }
     //HeadNode  = NULL;
     //printf("new MCTS_Node's Player:%p\n",Player);
@@ -577,7 +604,7 @@ MCTS_Node<Game_Tp>* MCTS<Game_Tp>::Algorithm(MCTS_Node<Game_Tp>* TransversedNode
     /////////////////////////////////////////////////////////////////
     //Takes the new Games and add them to the tree.
     /////////////////////////////////////////////////////////////////
-    printf("TransversedNode->GivenGame->Players.begin():%p\n",*(TransversedNode->GivenGame->_Players.begin()));
+    //printf("TransversedNode->GivenGame->Players.begin():%p\n",*(TransversedNode->GivenGame->_Players.begin()));
     TransversedNode->AddChildren(Games);
 
     /////////////////////////////////////////////////////////////////
@@ -625,7 +652,7 @@ void MCTS<Game_Tp>::EvaluateStep(MCTS_Node<Game_Tp>* TransversedNode,Player* Giv
 {
 
     TransversedNode = Algorithm(TransversedNode);
-    std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
+    //std::cout << TransversedNode->GivenGame->Generate_StringRepresentation();
 
     TransversedNode->BackPropagation(TransversedNode->GivenGame->TestForWinner());
 }
@@ -658,7 +685,7 @@ void MCTS<Game_Tp>::Search(int Depth)
       EvaluateStep(HeadNode,GivenPlayer);
     }
 //Pause
-    HeadNode->DisplayTree(2);
+    HeadNode->DisplayTree(1);
 
 
 }

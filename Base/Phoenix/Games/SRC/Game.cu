@@ -73,9 +73,6 @@ Algorithm():: A recursive implementation of the MCTS algorithm. Recursively crea
 */
 class Game
 {
-private:
-
-protected:
 
   public:
       std::list<Player*> _Players;
@@ -94,7 +91,7 @@ protected:
       //std::list<GameMove*> PossibleMoves() = 0;
       //std::list<Game*> PossibleGames()     = 0;
       virtual bool ValidMove(GameMove* Move)       = 0;
-      virtual bool Move(GameMove* Move)            = 0;
+      //virtual bool Move(GameMove* Move)            = 0;
       virtual Game* CopyGame()                     = 0;
       //virtual void AvaliableMoves(int Depth) = 0;
 
@@ -104,7 +101,10 @@ protected:
       //virtual void ConfigurePlayers()   = 0;
       //virtual std::string GameHash()        = 0;
       virtual void PlayGame()           = 0;
-      virtual Player* TestForWinner()   = 0;
+      //virtual Player* TestForWinner()   = 0;
+
+
+
       //virtual std::string DeclareWinner(int Player) = 0;
       //virtual void StepSimulation() = 0;
       //virtual void CopySimulation() = 0;
@@ -113,15 +113,18 @@ protected:
       virtual Game* RollOut()            = 0;
       virtual void DisplayWinner()            = 0;
 
-      virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {
-        for (Player* i : GivenPlayers) { // c++11 range-based for loop
-            //printf("%p\n",i);
-            _Players.push_back(i);
-          }
-      };
+/*
+virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {
+  for (Player* i : GivenPlayers) { // c++11 range-based for loop
+      //printf("%p\n",i);
+      _Players.push_back(i);
+    }
+};*/
 
 };
 
+
+//TODO: REMOVE, Create local library...
 Game* get(std::list<Game*> _list, int _i){
     std::list<Game*>::iterator it = _list.begin();
     for(int i=0; i<_i; i++){
@@ -129,6 +132,17 @@ Game* get(std::list<Game*> _list, int _i){
     }
     return *it;
 }
+
+
+
+
+template <typename Game_Tp,typename Player_Tp>
+Player_Tp* PlayGameOut(Game_Tp Game){
+  return 0;
+}
+
+
+
 
 
 #endif //GAME_CU

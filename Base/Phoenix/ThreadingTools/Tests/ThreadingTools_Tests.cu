@@ -4,10 +4,14 @@
 
 #include "../SRC/ThreadingTools.cu"
 
+void* SomeFunction(void*data){
+  return NULL;
+}
+
 
 int main() {
  //std::cout << "Hello World!";
-
+  TTT_Player Player0 = ParallelControlBlock();
  return 0;
 }
 

@@ -10,6 +10,20 @@ Date:           13 September 2021
 Script Version: 1.0
 Name:           Anthony M Schroeder
 Email:          as3379@nau.edu
+
+//TODO Implement templates for proper inheritance/addressing.
+//Example of Template
+//template <class C, template <class C> class M>
+template <typename T>
+class Array {
+private:
+    T *ptr;
+    int size;
+public:
+    Array(T arr[], int s);
+    void print();
+};
+
 ==========================================================
 Date:           15 September 2021
 Script Version: 1.1
@@ -49,7 +63,6 @@ Great step by step example found here: https://www.youtube.com/watch?v=UXW2yZndl
 
  * @param
     Game* Instance,
-
 
  *
  * @see MCTS::Find_MAX_UCB1_Child()
@@ -344,9 +357,9 @@ void MCTS_Node<Game_Tp,Player_Tp>::DisplayStats(){
   if(NodeVisits>0)
   {
     std::cout << "----------------------------------------\n";
-    printf("ValueSum:%f\n", ValueSum);
     printf("\tNodeVisits:%f\n", NodeVisits);
     printf("\tValueSum:%f\n", ValueSum);
+    printf("\tNode Ratio:%f\n", (ValueSum/NodeVisits));
     printf("\tUCB1:%f\n", Find_UCB1());
     std::cout << GivenGame->Generate_StringRepresentation();
   }
@@ -406,18 +419,7 @@ void MCTS_Node<Game_Tp,Player_Tp>::DisplayTree(){
 }
 
 
-//TODO Implement templates for proper inheritance/addressing.
-//Example of Template
-//template <class C, template <class C> class M>
-template <typename T>
-class Array {
-private:
-    T *ptr;
-    int size;
-public:
-    Array(T arr[], int s);
-    void print();
-};
+
 
 
 
@@ -446,11 +448,6 @@ template <typename Game_Tp, typename Player_Tp>
 class MCTS: public TreeSimulation
 {
 public:
-  //TO Remove
-  //////////////////////////////////////////////////////////////////////////////
-  double Value;
-  double Visits;
-
 
   //////////////////////////////////////////////////////////////////////////////
   // The current head node.
@@ -471,8 +468,7 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   // Initialization method.
   MCTS(Game_Tp*_Game,std::list<Player_Tp*> _GivenPlayers){
-    Value  = 0;
-    Visits = 0;
+
     Players = _GivenPlayers;
     GivenPlayer = *(_GivenPlayers.begin());
     for (Player_Tp* _Player : _GivenPlayers){
@@ -508,7 +504,6 @@ public:
     //MCTS* SaveBookMoves(char* Path);
     //MCTS* OpenBookMoves(char* Path);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
-    void GetPossibleMoves();
 
     void CreateChildren();
     void TreeTraversal();
@@ -520,13 +515,6 @@ public:
 
 
 
-
-template <typename Game_Tp, typename Player_Tp>
-void MCTS<Game_Tp,Player_Tp>::GetPossibleMoves()
-{
-    //std::list<GameMove*> Moves = GivenGame->PossibleMoves();
-    //std::list<Game*> Games = GivenGame->PossibleGames();
-}
 
 
 
@@ -566,12 +554,12 @@ MCTS_Node<Game_Tp,Player_Tp>* MCTS<Game_Tp,Player_Tp>::Algorithm(MCTS_Node<Game_
 
   //Pause;
 
-  //////////////////////////////////////////////////////////////////////////////
-  //If Node is LeafNode, create Children nodes, and select the first node for
-  // rollout.
-  //////////////////////////////////////////////////////////////////////////////
-  if(TransversedNode->Children.size() == 0){
 
+  if(TransversedNode->Children.size() == 0){
+    //////////////////////////////////////////////////////////////////////////////
+    //If Node is LeafNode, create Children nodes, and select the first node for
+    // rollout.
+    //////////////////////////////////////////////////////////////////////////////
     //std::cout << "LeafNode Detected  :"   << TransversedNode << "\n";
 
 

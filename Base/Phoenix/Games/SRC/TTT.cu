@@ -40,6 +40,7 @@ Description:
 //////////////////////////////////////////////////////////////////////////////
 #include "TTT.h"
 
+
 /*
 TTT_Move
 Purpose: A Helper class to hold the potential move data for a TTT Game.
@@ -71,6 +72,12 @@ T* get(std::list<T*> _list, int _i){
     return *it;
 }
 
+/*
+TTT_Player
+@Purpose: Class to track TTT Players.
+@Methods:
+  MakeMove() function pointer to allow for Humans to play.
+*/
 struct TTT_Player : public Player
 {
   public:

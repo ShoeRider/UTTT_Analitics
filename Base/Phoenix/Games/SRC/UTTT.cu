@@ -36,10 +36,9 @@ Email:          as3379@nau.edu
 
 /*
 UTTT_Player
-@Purpose: A Helper class to hold the potential move data for a UTTT Game. IE: X,Y coordinates. And possibly a Player Pointer.
+@Purpose: Class to track UTTT Players.
 @Methods:
-  No Methods. Intended to only hold move data.
-
+  MakeMove() function pointer to allow for Humans to play.
 */
 struct UTTT_Player : public TTT_Player
 {
@@ -59,7 +58,12 @@ struct UTTT_Player : public TTT_Player
 };
 
 
-
+/*
+UTTT_Move
+@Purpose: A Helper class to hold the potential move data for a UTTT Game. IE: X,Y coordinates. And possibly a Player Pointer.
+@Methods:
+  No Methods. Intended to only hold move data.
+*/
 struct UTTT_Move : public TTT_Move
 {
 

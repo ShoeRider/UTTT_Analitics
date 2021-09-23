@@ -332,6 +332,7 @@ void MCTS_Node<Game_Tp,Player_Tp>::BackPropagation(Player_Tp* GivenPlayer)
   }
 }
 
+
 /*gets the average Value of a node.
  this is desired over the
 O(1) vs O(1)

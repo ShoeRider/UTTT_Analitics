@@ -28,12 +28,13 @@ int main() {
  UTTT_Player Player1 = UTTT_Player(1,'O');
 
  UTTT *_Game = new UTTT({&Player0,&Player1});
- printf("_Game:%p\n",_Game);
+ //printf("_Game:%p\n",_Game);
  // delete _Game;
 
  PMCTS<UTTT,UTTT_Player> *Sim = new PMCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
- Sim->Search(1,100);
+ Sim->Search(1,4000000);
  delete Sim;
+   printf("Got Here\n");
  return 0;
 }
 

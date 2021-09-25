@@ -34,7 +34,8 @@ public:
   virtual ~ThreadData_t(){}
 };
 
-class ThreadControlBlock
+
+class ThreadControl
 {
   public:
   int ThreadNumber;
@@ -51,12 +52,17 @@ class ThreadControlBlock
   int ProgramState;
   int AccomplishedTasks;
 
-  ThreadData_t* ThreadData;
+  void* ThreadData;
+
+  pthread_t Thread;
+
   RunTimeFunction ThreadFunction;
   RunTimeFunction Start_Thread;
   RunTimeFunction End_Thread;
   RunTimeFunction Free_Enviornment;
-  ThreadControlBlock(ThreadData_t* GivenThreadData){
+
+
+  ThreadControl(void* GivenThreadData){
     StartTime          = clock()*.000001;
   	ThreadNumber       = 0;
     ProgramState       = 0;
@@ -64,42 +70,54 @@ class ThreadControlBlock
     ThreadData         = GivenThreadData;
 
   }
-  virtual ~ThreadControlBlock(){}
+  void Start(){
+    //pthread_create(Thread, NULL, CrazyThread, (Manager->Thread0));
+  }
+  virtual ~ThreadControl(){}
   virtual void StartThread();
 };
 
 
+template <typename Game_Tp, typename Player_Tp>
 class ParallelControlBlock
 {
 
   public:
       //Parallel Components
       int MaximumThreads;
-      std::list<ThreadControlBlock*> DispatchedThreads;
+
+      //////////////////////////////////////////////////////////////////////////////
+      // pointers to maintain tree structure.
+      //////////////////////////////////////////////////////////////////////////////
+      std::list<ThreadControl*> DispatchedThreads;
 
       std::mutex RecievingThreads_Mutex;
-      std::list<ThreadControlBlock*> RecievingThreads;
+      std::list<ThreadControl*> RecievingThreads;
       ParallelControlBlock(){
 
       }
       virtual ~ParallelControlBlock(){}
 
-      virtual void DispatchThread(void *(*start_routine)(void*),void *arg){
+
+      //////////////////////////////////////////////////////////////////////////////
+      // Method Declarations.
+      //////////////////////////////////////////////////////////////////////////////
+      void DispatchThread(void *(*start_routine)(void*),void *arg){
         ThreadData_t* ThreadData = new ThreadData_t();
-        ThreadControlBlock* Newthread = new ThreadControlBlock(ThreadData);
+        ThreadControl* Newthread = new ThreadControl(NULL);
         DispatchedThreads.push_back(Newthread);
       }
 
-      virtual void RecieveThreads(){
+      void RecieveThreads(){
         RecievingThreads_Mutex.lock();
-        for (ThreadControlBlock* Thread : RecievingThreads) { // c++11 range-based for loop
+        for (ThreadControl* Thread : RecievingThreads) { // c++11 range-based for loop
 
             DispatchedThreads.remove(Thread);
           }
         RecievingThreads_Mutex.unlock();
       }
 
-      virtual void RecieveALLThreads(){
+      void RecieveALLThreads(){
 
       }
 };

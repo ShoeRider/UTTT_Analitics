@@ -1,52 +1,101 @@
- /*
-Anthony M Schroeder
-
-
+/*
+====================================================================================================
+Description TTT(Tic Tac Toe):
 Purpose:
-Implement Tic Tac Toe through Game interface. Using standard rules.
-
-
+  Implement Tic Tac Toe through Game interface. Using standard rules.
+Contains(Classes):
+  TTT_Player
+  TTT_Move
+  TTT
+TODO:
+  Fix Memory Leak.
+  Add *Radio?* Player functionality: Takes Pointer to code -> Runs -> returns move
+====================================================================================================
+Date:           NA
+Script Version: 1.0
+Name:           Anthony M Schroeder
+Email:          as3379@nau.edu
+==========================================================
+Date:           15 September 2021
+Script Version: 1.1
+Description: Remove Game* from TTT to create usable version for MCTS Templates.
+==========================================================
+Date:           21 September 2021
+Script Version: 1.2
+Description:
+  Changed:
+    - Player Pointers to TTT_Player.
+    - GameMove Pointers to TTT_Move.
+    TODO: Move:
+      T* get(std::list<T*> _list, int _i)
+      to new base library folder.
+==========================================================
 */
 #ifndef TTT_CU
 #define TTT_CU
 
 
-#include <iostream>
-#include <string>
-#include <list>
-#include <cstdlib>
+//////////////////////////////////////////////////////////////////////////////
+// Game Library for inheritance structure.
+//////////////////////////////////////////////////////////////////////////////
+#include "TTT.h"
 
-#include "Game.cu"
 
+/*
+TTT_Move
+Purpose: A Helper class to hold the potential move data for a TTT Game.
+  IE: X,Y coordinates. And possibly a Player Pointer.
+
+
+@Methods:
+  No Methods.  Intended to only hold move data.
+ */
 struct TTT_Move : public GameMove
 {
 
   public:
     int Row;
     int Col;
-      TTT_Move(int GivenRow,int GivenCol){
-        Row = GivenRow;
-        Col = GivenCol;
-      }
-      virtual ~TTT_Move(){}
-};
 
+    TTT_Move(int GivenRow,int GivenCol){
+      Row = GivenRow;
+      Col = GivenCol;
+    }
+    virtual ~TTT_Move(){}
+};
+template <typename T>
+T* get(std::list<T*> _list, int _i){
+    typename std::list<T*>::iterator it = _list.begin();
+    for(int i = 0; i<_i; i++){
+        ++it;
+    }
+    return *it;
+}
+
+/*
+TTT_Player
+@Purpose: Class to track TTT Players.
+@Methods:
+  MakeMove() function pointer to allow for Humans to play.
+*/
 struct TTT_Player : public Player
 {
   public:
     int PlayerNumber;
     char GameRepresentation;
     bool HumanPlayer;
+
+
     TTT_Player(){}
-  TTT_Player(int GivenPlayer,char GivenGameRepresentation){
+   TTT_Player(int GivenPlayer,char GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
   }
   ~TTT_Player(){}
-  virtual GameMove* MakeMove(Game* GivenGame);
+   TTT_Move* MakeMove(TTT* GivenGame);
 };
 
-GameMove* TTT_Player::MakeMove(Game* GivenGame)
+TTT_Move* TTT_Player::MakeMove(TTT* GivenGame)
 {
    //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
 
@@ -56,87 +105,111 @@ GameMove* TTT_Player::MakeMove(Game* GivenGame)
    std::cout << "Please Enter Y Axis: ";
    std::cin >> Y;
    TTT_Move* TTTMove = new TTT_Move(X,Y);
-   GameMove* Move = static_cast<GameMove*>(TTTMove);
+   //GameMove* Move = static_cast<GameMove*>(TTTMove);
 
-   return Move;
+   return TTTMove;
 }
 
-void Free_TTTMoveList(std::list<GameMove*> GameMoves)
+void Free_TTTMoveList(std::list<TTT_Move*> GameMoves)
 {
   //std::list<GameMove*> Moves = PossibleMoves();
-  for (GameMove* GMove : GameMoves) { // c++11 range-based for loop
-      TTT_Move* Move = static_cast<TTT_Move*>(GMove);
-      delete Move;
+  for (TTT_Move* GMove : GameMoves) { // c++11 range-based for loop
+      //TTT_Move* Move = static_cast<TTT_Move*>(GMove);
+      delete GMove;
     }
 }
 
 
+TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
+  TTT_Player* Player = new TTT_Player(PlayerID,PlayerCharacter);
+  // Change Player->Move pointer to request input.
+  return Player;
+}
 
+/*
+TTT(Tic Tac Toe):
+Implement Tic Tac Toe through Game interface. Using standard rules.
+
+@Methods:
+Search()
+Algorithm():: A recursive implementation of the MCTS algorithm. Recursively creates a serach tree based on the MCTS, searching for the most optimal move.
+
+ * @param
+    Game*_Game,
+    std::list<Player*> _GivenPlayers)
+
+ *
+ * @see MCTS_Node::Find_MAX_UCB1_Child()
+ * @see Game interface(Found within Game.cu)
+
+*/
 class TTT : public Game
 {
 protected:
 
 
 public:
-  /*
-  Please note the following:
-  Currentplayer = Players.front();
-  */
-  /*
-  TTT_Player Player0 = TTT_Player(0,'X');
-  TTT_Player Player1 = TTT_Player(1,'O');
-  TTT(){
-    Pause
-      this->DeclarePlayers({&Player0,&Player1});
-      this->DrawPlayer     = static_cast<Player*>(&Draw);
-      this->WinningPlayer  = NULL;
-
-      MovesRemaining       = 9;
-      this->SetUpBoard();
-    }
-  */
+  //////////////////////////////////////////////////////////////////////////////
+  // Player(s) DATA
+  //TODO: Take Draw player during Initialization.
+  //////////////////////////////////////////////////////////////////////////////
   TTT_Player Draw    = TTT_Player(-1,'C');
 
-
   std::list<TTT_Player*> Players;
-  Player*  WinningPlayer = NULL;
+  TTT_Player*  WinningPlayer = NULL;
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Game Data
+  //////////////////////////////////////////////////////////////////////////////
+  //MovesRemaining is a decrementing counter to determine if there are any remaining moves.
   int MovesRemaining;
+  //Represenation of the game.
   char Board[3][3];
+
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Initialization method.
   TTT(){
-    printf("Calling Default Constructor... \n");
+    //printf("Calling Default Constructor... \n");
     //throw "Calling Default Constructor... \n";
   }
 
-    TTT(std::list<Player*> GivenPlayers){
+    TTT(std::list<TTT_Player*> GivenPlayers){
         this->DeclarePlayers(GivenPlayers);
 
         this->WinningPlayer  = NULL;
         MovesRemaining       = 9;
         this->SetUpBoard();
       }
-    ~TTT(){
+    virtual ~TTT(){
     }
-    Player* GetWinner();
+
+    //////////////////////////////////////////////////////////////////////////////
+    // Method Declarations.
+    //////////////////////////////////////////////////////////////////////////////
+    TTT_Player* GetWinner();
     void DisplayWinner();
-    void DeclarePlayers(std::list<Player*> GivenPlayers);
+    void DeclarePlayers(std::list<TTT_Player*> GivenPlayers);
     void SetUpBoard();
-    Game* CopyGame();
+    TTT* CopyGame();
+    void RotatePlayers();
     bool Move(GameMove* Move);
 
     bool ValidMove(GameMove* Move);
-    Player* TestForWinner();
+    TTT_Player* TestForWinner();
 
-    virtual std::list<GameMove*> PossibleMoves();
-    virtual std::list<Game*>     PossibleGames();
+    std::list<TTT_Move*> PossibleMoves();
+    std::list<TTT*>     PossibleGames();
     std::string Generate_StringRepresentation();
 
-    Player* DeclareWinner(Player* Winner);
+    TTT_Player* DeclareWinner(TTT_Player* Winner);
     char GetWinnersCharacter();
     //void DisplayInTerminal();
-    Game* RollOut();
+    TTT* RollOut();
     void PlayGame();
 };
+
 
 
 
@@ -149,23 +222,38 @@ void TTT::SetUpBoard()
         Board[Row][Col] = ' ';
     }
   }
-  for (Player* Player : Players) { // c++11 range-based for loop
+  for (TTT_Player* Player : Players) { // c++11 range-based for loop
       ;
-      printf("Player:%p:%c\n",Player,static_cast<TTT_Player*>(Player)->GameRepresentation);
+      //printf("Player:%p:%c\n",Player,static_cast<TTT_Player*>(Player)->GameRepresentation);
     }
 }
 
 
 
-void TTT::DeclarePlayers(std::list<Player*> GivenPlayers)
+void TTT::DeclarePlayers(std::list<TTT_Player*> GivenPlayers)
 {
-  for (Player* i : GivenPlayers) { // c++11 range-based for loop
+  //printf("Adding Players\n");
+  for (TTT_Player* i : GivenPlayers) { // c++11 range-based for loop
       TTT_Player* TTTPlayer = static_cast<TTT_Player*>(i);
       Players.push_back(TTTPlayer);
+      //_Players.push_back(i);
     }
 }
 
 
+void TTT::RotatePlayers(){
+  Players.splice(Players.end(),        // destination position
+                 Players,              // source list
+                 Players.begin());     // source position
+// _Players.splice(_Players.end(),        // destination position
+//                _Players,              // source list
+//                _Players.begin());     // source position
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Game Functionality
+//////////////////////////////////////////////////////////////////////////////
 
 bool TTT::ValidMove(GameMove* Move)
 {
@@ -206,9 +294,7 @@ bool TTT::Move(GameMove* Move)
     // move first element to the end
     Board[TTTMove->Row][TTTMove->Col] = Players.front()->GameRepresentation;
     TestForWinner();
-    Players.splice(Players.end(),        // destination position
-                   Players,              // source list
-                   Players.begin());     // source position
+    RotatePlayers();
     return true;
   }
   return false;
@@ -253,7 +339,7 @@ std::string TTT::Generate_StringRepresentation()
   return Game;
 }
 
-Player* TTT::DeclareWinner(Player* GivenWinner)
+TTT_Player* TTT::DeclareWinner(TTT_Player* GivenWinner)
 {
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);
@@ -268,7 +354,7 @@ Player* TTT::DeclareWinner(Player* GivenWinner)
 
 char TTT::GetWinnersCharacter()
 {
-  Player* Winner = TestForWinner();
+  TTT_Player* Winner = TestForWinner();
   if(Winner != NULL)
   {
   return static_cast<TTT_Player*>(TestForWinner())->GameRepresentation;
@@ -279,12 +365,12 @@ char TTT::GetWinnersCharacter()
 }
 
 
-Player* TTT::GetWinner(){
-  return static_cast<Player*>(WinningPlayer);
+TTT_Player* TTT::GetWinner(){
+  return (WinningPlayer);
 };
 
 // Returns True/False If Winner is found
-Player* TTT::TestForWinner()
+TTT_Player* TTT::TestForWinner()
 {
   if(
     WinningPlayer == &Draw ||
@@ -375,9 +461,9 @@ Winning Diagonal Method Found. Example:
 }
 
 
-std::list<GameMove*> TTT::PossibleMoves()
+std::list<TTT_Move*> TTT::PossibleMoves()
 {
-  std::list<GameMove*>Moves;
+  std::list<TTT_Move*>Moves;
 
   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
   for (int Row = 0; Row < 3; Row++)
@@ -387,24 +473,32 @@ std::list<GameMove*> TTT::PossibleMoves()
         if (Board[Row][Col] == ' ')
         {
           TTT_Move* TTTMove = new TTT_Move(Row,Col);
-          GameMove* Move = static_cast<GameMove*>(TTTMove);
-          Moves.push_back(Move);
+          //GameMove* Move = static_cast<GameMove*>(TTTMove);
+          Moves.push_back(TTTMove);
         }
     }
   }
   return Moves;
 }
 
-std::list<Game*> TTT::PossibleGames()
+std::list<TTT*> TTT::PossibleGames()
 {
-  std::list<GameMove*> Moves = PossibleMoves();
-  std::list<Game*>Games;
+  std::list<TTT_Move*> Moves = PossibleMoves();
+  std::list<TTT*>Games;
   TTT* Branch;
-  for (GameMove* GMove : Moves) { // c++11 range-based for loop
+  for (TTT_Move* GMove : Moves) { // c++11 range-based for loop
        Branch = new TTT(*this);
        Branch->Move(GMove);
        Games.push_back(Branch);
        //Free each Move Structure
+/*
+printf("%p\n",&(Branch));
+printf("Create Instance->Players:%p\n",(Branch->_Players));
+printf("PossibleGames's Players:%p\n",&(Branch->_Players));
+for (Player* _Pl : Branch->_Players){
+      printf("\t:%p\n",(_Pl));
+}
+*/
        delete GMove;
     }
   //printf("Freeing Moves list \n");
@@ -413,8 +507,8 @@ std::list<Game*> TTT::PossibleGames()
 }
 
 
-Game* TTT::CopyGame(){
-  return static_cast<Game*>(new TTT(*this));
+TTT* TTT::CopyGame(){
+  return (new TTT(*this));
 }
 
 
@@ -422,7 +516,7 @@ Game* TTT::CopyGame(){
 
 
 
-Game* TTT::RollOut(){
+TTT* TTT::RollOut(){
   GameMove* Move;
   int Range;
 
@@ -430,7 +524,7 @@ Game* TTT::RollOut(){
   while(WinningPlayer == NULL){
 
     //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-    std::list<GameMove*>GameMoves = PossibleMoves();
+    std::list<TTT_Move*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
     //printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
@@ -450,7 +544,7 @@ Game* TTT::RollOut(){
 void TTT::PlayGame()
 {
   GameMove* Move;
-  Player* Currentplayer;
+  TTT_Player* Currentplayer;
 
   TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   while(TTTPlayer == NULL){
@@ -460,7 +554,7 @@ void TTT::PlayGame()
     this->Move(Move);
     delete Move;
 
-    std::cout << this->Generate_StringRepresentation();
+    //std::cout << this->Generate_StringRepresentation();
     TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
 }

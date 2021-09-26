@@ -25,8 +25,18 @@ Date:           26 September 2021
 Script Version: 1.1
 Name:           Anthony M Schroeder
 Email:          as3379@nau.edu
-Implementing different dispatch thread algorithms.
-- _PMCTS: for a more directed search algorithm.
+Implemented the following 'thread dispatch' algorithms:
+- DispatchNaively
+- DispatchEvenly
+==========================================================
+Date:           26 September 2021
+Script Version: 1.2
+Name:           Anthony M Schroeder
+Email:          as3379@nau.edu
+Refactored code for Recursive Thread Dispatch.
+Implemented the following 'thread dispatch' algorithms:
+- UCB1 PMCTS.
+
 ==========================================================
 */
 
@@ -930,11 +940,10 @@ JoinThreads.
 
  */
 template <typename Game_Tp, typename Player_Tp>
-std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
+std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinFinishedThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
 {
   int ThreadsJoined = 0;
 
-  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* RemovingThread;
   while(ThreadsJoined <= 0){
       typename std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>::iterator ThreadList_iterator = ThreadList.begin();
       while ( ThreadList_iterator != ThreadList.end())
@@ -951,12 +960,20 @@ std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinThreads(std::list<PMCTS_T
               ++ThreadList_iterator;
           }
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
   return ThreadList;
 }
 
+template <typename Game_Tp, typename Player_Tp>
+std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinAllThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
+{
+  while(ThreadList.size() != 0){
+    ThreadList = _JoinFinishedThreads<Game_Tp,Player_Tp>(ThreadList);
+  }
+  return ThreadList;
+}
 
 
 template <typename Game_Tp, typename Player_Tp>
@@ -991,10 +1008,12 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* Tra
       //////////////////////////////////////////////////////////////////////////////
       //Join Threads
       if (ThreadList.size() == Threads){
-        ThreadList = _JoinThreads<Game_Tp,Player_Tp>(ThreadList);
+        ThreadList = _JoinFinishedThreads<Game_Tp,Player_Tp>(ThreadList);
       }
+
     }
   }
+  ThreadList = _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
 
 }
 
@@ -1028,14 +1047,7 @@ for (PMCTS_ThreadData_t<Game_Tp,Player_Tp>* Node : ThreadList){
 
 */
 
-  while(ThreadList.size() > 0){
-    ThreadList = _JoinThreads<Game_Tp,Player_Tp>(ThreadList);
-  }
-  printf("Size Remaining: %lu\n",ThreadList.size());
-
-
-
-  //delete ThreadList;
+  ThreadList = _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
 }
 
 

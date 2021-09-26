@@ -5,14 +5,28 @@ This takes the Monte-Carlo Tree search and adds some multithreading to Create Fa
 
 Still uses the Game interface, and template structure from MCTS.
 
+Requires:
+  "TreeSearch.cu"
+  "MCTS.cu"
+
+Possibly requires:
+  "ThreadingTools.cu"
+
 TODO:
-  Create PMCTS<> template
   Implement Break Out Search from notes.
 ====================================================================================================
 Date:           NA
 Script Version: 1.0
 Name:           Anthony M Schroeder
 Email:          as3379@nau.edu
+Implemented a 'dispatch evenly' algorithm.
+==========================================================
+Date:           26 September 2021
+Script Version: 1.1
+Name:           Anthony M Schroeder
+Email:          as3379@nau.edu
+Implementing different dispatch thread algorithms.
+- _PMCTS: for a more directed search algorithm.
 ==========================================================
 */
 
@@ -45,6 +59,7 @@ struct PMCTS_ThreadData_t {
     PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode;
     double Threads;
     double Depth;
+    bool Finished;
 };
 
 
@@ -467,10 +482,11 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   // Parallel Functions
   //////////////////////////////////////////////////////////////////////////////
-  PMCTS_Node<Game_Tp,Player_Tp>* DispatchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* DispatchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
   void DispatchThreads(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
   void DispatchByPigeonHole(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
   void DispatchByRotation(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
+  void DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
 
   //////////////////////////////////////////////////////////////////////////////
   // 'Single' Threaded Algorithms
@@ -744,11 +760,6 @@ PMCTS_Node<Game_Tp,Player_Tp>* PMCTS<Game_Tp,Player_Tp>::PMCTS_Algorithm(PMCTS_N
 
 }
 
-template <typename Game_Tp, typename Player_Tp>
-PMCTS_Node<Game_Tp,Player_Tp>* PMCTS<Game_Tp,Player_Tp>::DispatchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth)
-{
-
-}
 
 
 
@@ -850,6 +861,7 @@ void * _PMCTS_Search(void*GivenPMCTS_ThreadData)
 
 
   }
+  PMCTS_ThreadData->Finished = true;
   //TransversedNode->DisplayTree(1);
   return 0;
   //returning PMCTS_Node<Game_Tp,Player_Tp>*
@@ -864,6 +876,140 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchByPigeonHole(PMCTS_Node<Game_Tp,Player_Tp
 {
 
 }
+
+/*
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS<Game_Tp,Player_Tp>::DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
+{
+  double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData;
+  //printf("Depth                           :%d\n",Depth);
+  //printf("TransversedNode->Children.size():%d\n",TransversedNode->Children.size());
+  //printf("ThreadDepth                     :%f\n",ThreadDepth);
+  std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
+
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
+    //MCTS_Search(Node,ThreadDepth);
+
+    PMCTS_ThreadData = DispatchThread(TransversedNode, ThreadDepth);
+    ThreadList.push_back(PMCTS_ThreadData);
+
+  }
+
+  for (PMCTS_ThreadData_t<Game_Tp,Player_Tp>* Node : ThreadList){
+
+    pthread_join((Node->Thread), NULL);
+    free(Node);
+  }
+}
+*/
+
+
+template <typename Game_Tp, typename Player_Tp>
+PMCTS_ThreadData_t<Game_Tp,Player_Tp>* _DispatchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode, int ThreadDepth)
+{
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
+  //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
+  PMCTS_ThreadData->TransversedNode = TransversedNode;
+  PMCTS_ThreadData->Depth           = ThreadDepth;
+  PMCTS_ThreadData->Finished        = false;
+  //_PMCTS_Search<Game_Tp,Player_Tp>(PMCTS_ThreadData);
+  pthread_create(&(PMCTS_ThreadData->Thread), NULL, _PMCTS_Search<Game_Tp,Player_Tp>, PMCTS_ThreadData);
+  return PMCTS_ThreadData;
+}
+
+#include <chrono>
+#include <thread>
+
+/*
+JoinThreads.
+ * @param
+ *    Takes a std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>, and takes the
+ *   Finished threads and joins them.
+ * Also has a internal wait 100 miliseconds to prevent overutilization of resources.
+
+ */
+template <typename Game_Tp, typename Player_Tp>
+std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
+{
+  int ThreadsJoined = 0;
+
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* RemovingThread;
+  while(ThreadsJoined <= 0){
+      typename std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>::iterator ThreadList_iterator = ThreadList.begin();
+      while ( ThreadList_iterator != ThreadList.end())
+      {
+          if((*ThreadList_iterator)->Finished){
+            pthread_join(((*ThreadList_iterator)->Thread), NULL);
+            ThreadsJoined++;
+            free((*ThreadList_iterator));
+            ThreadList.erase(ThreadList_iterator++);
+          }
+          else
+          {
+              // move to next item
+              ++ThreadList_iterator;
+          }
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+  return ThreadList;
+}
+
+
+
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS<Game_Tp,Player_Tp>::DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
+{
+  double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData;
+
+
+  //printf("Depth                           :%d\n",Depth);
+  //printf("TransversedNode->Children.size():%d\n",TransversedNode->Children.size());
+  //printf("ThreadDepth                     :%f\n",ThreadDepth);
+  std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
+
+  int ThreadsJoined    = 0;
+  int TotalDispatches  = 0;
+  int ThreadsDispatched = 0;
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
+    //MCTS_Search(Node,ThreadDepth);
+
+    //////////////////////////////////////////////////////////////////////////////
+    //For Each Thread to dispatch, preform the following function untill complete.
+    bool DispatchedForNode = true;
+    while(DispatchedForNode)
+    {
+      //printf("DispatchedForNode:%d\n",DispatchedForNode);
+      //printf("ThreadsDispatched:%d\n",ThreadsDispatched);
+      //printf("Threads:%d\n",Threads);
+      //printf("//////////////////////////////////////////////////////////////////////////////\n");
+      //////////////////////////////////////////////////////////////////////////////
+      //Dispatch Threads
+      if (ThreadList.size() < Threads){
+        //PMCTS_ThreadData = _DispatchThread<Game_Tp,Player_Tp>(Node, ThreadDepth);
+        ThreadList.push_back(
+          _DispatchThread<Game_Tp,Player_Tp>(Node, ThreadDepth)
+        );
+        DispatchedForNode = false;
+      }
+
+
+      //////////////////////////////////////////////////////////////////////////////
+      //Join Threads
+      if (ThreadList.size() == Threads){
+        ThreadList = _JoinThreads<Game_Tp,Player_Tp>(ThreadList);
+      }
+    }
+  }
+
+}
+
+
+
+
 
 template <typename Game_Tp, typename Player_Tp>
 void PMCTS<Game_Tp,Player_Tp>::DispatchByRotation(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
@@ -881,20 +1027,32 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchByRotation(PMCTS_Node<Game_Tp,Player_Tp>*
     printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
     PMCTS_ThreadData->TransversedNode = Node;
     PMCTS_ThreadData->Depth = ThreadDepth;
+    PMCTS_ThreadData->Finished = false;
 
     //_PMCTS_Search<Game_Tp,Player_Tp>(PMCTS_ThreadData);
     pthread_create(&(PMCTS_ThreadData->Thread), NULL, _PMCTS_Search<Game_Tp,Player_Tp>, PMCTS_ThreadData);
     ThreadList.push_back(PMCTS_ThreadData);
   }
 
-  for (PMCTS_ThreadData_t<Game_Tp,Player_Tp>* Node : ThreadList){
-
-    pthread_join((Node->Thread), NULL);
-    //delete Node;
-  }
-  //delete ThreadList;
+/*
+//////////////////////////////////////////////////////////////////////////////
+// Original Free Threads Code.
+for (PMCTS_ThreadData_t<Game_Tp,Player_Tp>* Node : ThreadList){
+  pthread_join((Node->Thread), NULL);
+  free(Node);
 }
 
+*/
+
+  while(ThreadList.size() > 0){
+    ThreadList = _JoinThreads<Game_Tp,Player_Tp>(ThreadList);
+  }
+  printf("Size Remaining: %lu\n",ThreadList.size());
+
+
+
+  //delete ThreadList;
+}
 
 
 template <typename Game_Tp, typename Player_Tp>
@@ -919,8 +1077,9 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchThreads(PMCTS_Node<Game_Tp,Player_Tp>* Tr
     /////////////////////////////////////////////////////////////////
     // Dispatch by Rotation, Each Branch will eventually get a Thread gets an even Search Depth.
     /////////////////////////////////////////////////////////////////
-
-    DispatchByRotation(TransversedNode,Threads,Depth);
+    //DispatchByRotation(TransversedNode,Threads,Depth);
+    printf("calling DispatchEvenly\n");
+    DispatchEvenly(TransversedNode,Threads,Depth);
   }
 
 }

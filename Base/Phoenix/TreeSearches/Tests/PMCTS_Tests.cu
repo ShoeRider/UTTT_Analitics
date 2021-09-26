@@ -32,7 +32,7 @@ int main() {
  // delete _Game;
 
  PMCTS<UTTT,UTTT_Player> *Sim = new PMCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
- Sim->Search(1,4000000);
+ Sim->Search(12,1000000);
  delete Sim;
    printf("Got Here\n");
  return 0;

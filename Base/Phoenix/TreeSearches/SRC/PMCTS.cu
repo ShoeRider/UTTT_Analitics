@@ -485,7 +485,7 @@ public:
   PMCTS_ThreadData_t<Game_Tp,Player_Tp>* DispatchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
   void DispatchThreads(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
   void DispatchByPigeonHole(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
-  void DispatchByRotation(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
+  void DispatchNaively(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
   void DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -963,27 +963,18 @@ template <typename Game_Tp, typename Player_Tp>
 void PMCTS<Game_Tp,Player_Tp>::DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
 {
   double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
-  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData;
-
-
-  //printf("Depth                           :%d\n",Depth);
-  //printf("TransversedNode->Children.size():%d\n",TransversedNode->Children.size());
-  //printf("ThreadDepth                     :%f\n",ThreadDepth);
   std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
 
-  int ThreadsJoined    = 0;
-  int TotalDispatches  = 0;
-  int ThreadsDispatched = 0;
+  //////////////////////////////////////////////////////////////////////////////
+  //For Each Branch within Game, Dispatch a new thread.
   for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
-    //MCTS_Search(Node,ThreadDepth);
 
     //////////////////////////////////////////////////////////////////////////////
     //For Each Thread to dispatch, preform the following function untill complete.
     bool DispatchedForNode = true;
     while(DispatchedForNode)
     {
-      //printf("DispatchedForNode:%d\n",DispatchedForNode);
-      //printf("ThreadsDispatched:%d\n",ThreadsDispatched);
+
       //printf("Threads:%d\n",Threads);
       //printf("//////////////////////////////////////////////////////////////////////////////\n");
       //////////////////////////////////////////////////////////////////////////////
@@ -1012,7 +1003,7 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* Tra
 
 
 template <typename Game_Tp, typename Player_Tp>
-void PMCTS<Game_Tp,Player_Tp>::DispatchByRotation(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
+void PMCTS<Game_Tp,Player_Tp>::DispatchNaively(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
 {
   double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
   PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData;
@@ -1022,16 +1013,9 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchByRotation(PMCTS_Node<Game_Tp,Player_Tp>*
   std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
 
   for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
-    //MCTS_Search(Node,ThreadDepth);
-    PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
-    printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
-    PMCTS_ThreadData->TransversedNode = Node;
-    PMCTS_ThreadData->Depth = ThreadDepth;
-    PMCTS_ThreadData->Finished = false;
-
-    //_PMCTS_Search<Game_Tp,Player_Tp>(PMCTS_ThreadData);
-    pthread_create(&(PMCTS_ThreadData->Thread), NULL, _PMCTS_Search<Game_Tp,Player_Tp>, PMCTS_ThreadData);
-    ThreadList.push_back(PMCTS_ThreadData);
+    ThreadList.push_back(
+      _DispatchThread<Game_Tp,Player_Tp>(Node, ThreadDepth)
+    );
   }
 
 /*
@@ -1077,8 +1061,8 @@ void PMCTS<Game_Tp,Player_Tp>::DispatchThreads(PMCTS_Node<Game_Tp,Player_Tp>* Tr
     /////////////////////////////////////////////////////////////////
     // Dispatch by Rotation, Each Branch will eventually get a Thread gets an even Search Depth.
     /////////////////////////////////////////////////////////////////
-    //DispatchByRotation(TransversedNode,Threads,Depth);
-    printf("calling DispatchEvenly\n");
+    //DispatchNaively(TransversedNode,Threads,Depth);
+    //printf("calling DispatchEvenly\n");
     DispatchEvenly(TransversedNode,Threads,Depth);
   }
 

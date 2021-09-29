@@ -45,31 +45,8 @@ TODO: create namespace
 #define P_MCTS_CU
 
 
-#include <iostream>
-#include <string>
-#include <list>
-#include <cmath>
-#include <bits/stdc++.h>
-#include <chrono>
-#include <thread>
 
-
-
-#include <mutex>
 #include "PMCTS.h"
-#include "TreeSearch.cu"
-#include "../SRC/MCTS.cu"
-#include "../../ThreadingTools/SRC/ThreadingTools.cu"
-
-
-//namespace PMCTS {
-
-//}
-
-
-
-
-
 
 
 
@@ -78,8 +55,8 @@ TODO: create namespace
 
 
 /*
-MCTS_Node
-
+MCTS_Node, is a structure within the MCTS which holds structural information,
+as well as a game state representation.
 Great step by step example found here: https://www.youtube.com/watch?v=UXW2yZndl7U
 
 @Methods:
@@ -116,7 +93,7 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   PMCTS_Node*           Parent       = NULL;
   PMCTS_Node*           RollOutChild = NULL;
-  std::list<PMCTS_Node*> Children;
+  std::list<PMCTS_Node<Game_Tp,Player_Tp>*> Children;
 
 
     //////////////////////////////////////////////////////////////////////////////
@@ -129,7 +106,7 @@ public:
       GivenGame  = Instance;
       Children   = {};
       NodeVisits = 0;
-      ValueSum   = 0.001;
+      ValueSum   = 0;
       UCB1       = 0;
       SoftMAX    = 0;
       //printf("Creating MCTS Node w Player:%p\n",*(_Players.begin()));
@@ -162,23 +139,24 @@ public:
           printf("-----------------------");
             return Find_UCB1() == Other_PMCTS_Node->Find_UCB1();
         }
-//////////////////////////////////////////////////////////////////////////////
-// Method Declarations.
-//////////////////////////////////////////////////////////////////////////////
-double     Find_UCB1();
+  //////////////////////////////////////////////////////////////////////////////
+  // Method Declarations.
+  //////////////////////////////////////////////////////////////////////////////
+  double     Find_UCB1();
 
-PMCTS_Node<Game_Tp,Player_Tp>* Find_MAX_UCB1_Child();
-PMCTS_Node<Game_Tp,Player_Tp>* ReturnBestMove();
-PMCTS_Node<Game_Tp,Player_Tp>* RollOut();
-int        AddChildren(std::list<Game_Tp*> PossibleMoves);
-void       BackPropagation(Player_Tp* GivenPlayer,PMCTS_Node<Game_Tp,Player_Tp>* HeadNode);
-double     GetAverageValue();
-void       DisplayTree();
-void       DisplayTree(int Depth);
-void       DisplayStats();
-double Get_UCB1_ChildrenSum();
-double AssignSoftMAX();
-double Get_ChildrenValueSum();
+  PMCTS_Node<Game_Tp,Player_Tp>* Find_MAX_UCB1_Child();
+  PMCTS_Node<Game_Tp,Player_Tp>* ReturnBestMove();
+  PMCTS_Node<Game_Tp,Player_Tp>* RollOut();
+  int        AddChildren(std::list<Game_Tp*> PossibleMoves);
+  void       BackPropagation(Player_Tp* GivenPlayer,PMCTS_Node<Game_Tp,Player_Tp>* HeadNode);
+  void       BackPropagation(PMCTS_Node<Game_Tp,Player_Tp>* HeadNode);
+  double     GetAverageValue();
+  void       DisplayTree();
+  void       DisplayTree(int Depth);
+  void       DisplayStats();
+  double Get_UCB1_ChildrenSum();
+  double AssignSoftMAX();
+  double Get_ChildrenValueSum();
 };
 
 
@@ -199,17 +177,9 @@ double PMCTS_Node<Game_Tp,Player_Tp>::Find_UCB1(){
   }
   //Preform UCB1 Formula
   UCB1 = (ValueSum/NodeVisits) + ExploreBy*sqrt(log(_NodeVisits/NodeVisits));
-/*
-printf("Value:%f\n", Value);
-printf("\tNodeVisits:%i\n", NodeVisits);
-printf("\tValueSum:%f\n", ValueSum);
-printf("-----------------------");
-*/
+
   return UCB1;
 }
-
-
-
 
 
 
@@ -231,8 +201,6 @@ PMCTS_Node<Game_Tp,Player_Tp>* PMCTS_Node<Game_Tp,Player_Tp>::Find_MAX_UCB1_Chil
   //Note: Doesnt account for NULL Node
   return HighestNode;
 }
-
-
 
 
 
@@ -286,7 +254,6 @@ int PMCTS_Node<Game_Tp,Player_Tp>::AddChildren(std::list<Game_Tp*> PossibleInsta
 }
 
 
-
 /*
 Takes the Node itself, copies itself.
 (This also copies the corresponding game state And performs Rollout on the new copy.)
@@ -300,7 +267,7 @@ Afterward, it returns the new copy.
 */
 template <typename Game_Tp, typename Player_Tp>
 PMCTS_Node<Game_Tp,Player_Tp>* PMCTS_Node<Game_Tp,Player_Tp>::RollOut(){
-
+  //GivenGame->TestForWinner();
   Game_Tp* RollOutGame = GivenGame->CopyGame();
   RollOutGame->RollOut();
 
@@ -474,7 +441,7 @@ DisplayTree(int Depth)
 template <typename Game_Tp, typename Player_Tp>
 void PMCTS_Node<Game_Tp,Player_Tp>::DisplayTree(int Depth){
   printf("Calling Sort \n");
-  Children = InsertionSort(Children);
+  //Children = InsertionSort(Children);
 
 
   if (Children.size() > 0){
@@ -573,6 +540,9 @@ std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinFinishedThreads(std::list
   return ThreadList;
 }
 
+
+
+
 template <typename Game_Tp, typename Player_Tp>
 std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinAllThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
 {
@@ -581,6 +551,13 @@ std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> _JoinAllThreads(std::list<PMCT
   }
   return ThreadList;
 }
+
+
+
+
+
+
+
 
 
 
@@ -672,38 +649,65 @@ PMCTS_Node<Game_Tp,Player_Tp>* MCTS_Algorithm(PMCTS_Node<Game_Tp,Player_Tp>*Tran
   }
 }
 
+
+/*
 //////////////////////////////////////////////////////////////////////////////
-// MCTS_Search has been implemented for parallelism.
+// MCTS_Search
 //////////////////////////////////////////////////////////////////////////////
 template <typename Game_Tp, typename Player_Tp>
-void * MCTS_Search_thread(void*GivenPMCTS_ThreadData)
+void MCTS_Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode, double ThreadDepth)
 {
-  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = static_cast<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>(GivenPMCTS_ThreadData);
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
+  //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
+  PMCTS_ThreadData->TransversedNode = TransversedNode;
+  PMCTS_ThreadData->Depth           = ThreadDepth;
+  PMCTS_ThreadData->Finished        = false;
+  MCTS_Search_thread<Game_Tp,Player_Tp>(PMCTS_ThreadData);
+  free(PMCTS_ThreadData);
+}
+*/
+template <typename Game_Tp, typename Player_Tp>
+void MCTS_Search(PMCTS_Node<Game_Tp,Player_Tp>* StartingNode,double Depth)
+{
 
   //////////////////////////////////////////////////////////////////////////////
   // For each Itteration, preform the following steps.
   //////////////////////////////////////////////////////////////////////////////
-  for (int i = 0; i < PMCTS_ThreadData->Depth; i++) {
-    PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode = PMCTS_ThreadData->TransversedNode;
+  for (int i = 0; i < Depth; i++) {
 
+    PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode = StartingNode;
+    //printf("Depth:%d\n", i);
+    //printf("TransversedNode:%p\n", TransversedNode);
     //////////////////////////////////////////////////////////////////////////////
     // Preform Tree transversal, to build tree.
+    //    This returns either a rollout node, or a node from the tree with a completed game(based on MCTS).
     TransversedNode = MCTS_Algorithm<Game_Tp,Player_Tp>(TransversedNode);
 
     //////////////////////////////////////////////////////////////////////////////
     // Preform BackPropagation, to assign weights.
-    TransversedNode->BackPropagation(TransversedNode->GivenGame->TestForWinner(),PMCTS_ThreadData->TransversedNode);
-
-
+    TransversedNode->BackPropagation(TransversedNode->GivenGame->TestForWinner(),StartingNode);
   }
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// MCTS_Search_thread has been implemented to call MCTS_Search as Thread.
+//////////////////////////////////////////////////////////////////////////////
+template <typename Game_Tp, typename Player_Tp>
+void * MCTS_Search_thread(void* GivenPMCTS_ThreadData)
+{
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = static_cast<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>(GivenPMCTS_ThreadData);
+
+  MCTS_Search(PMCTS_ThreadData->TransversedNode,PMCTS_ThreadData->Depth);
+
   //////////////////////////////////////////////////////////////////////////////
   // Thread is finished, Set Flag for Thread Clean up.
   PMCTS_ThreadData->Finished = true;
 
   return 0;
 }
-
-
 
 
 
@@ -729,51 +733,16 @@ void * MCTS_Search_thread(void*GivenPMCTS_ThreadData)
 //////////////////////////////////////////////////////////////////////////////
 
 
-template <typename Game_Tp, typename Player_Tp>
-void PMCTS_DispatchByPigeonHole(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int ThreadDepth)
-{
-
-}
 
 
 template <typename Game_Tp, typename Player_Tp>
-void MCTS_DispatchThreads(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
-{
-  //TODO: add Segment Dispatch Logic to both:
-  // -DispatchByPigeonHole
-  // -DispatchByRotation
-
-
-  /////////////////////////////////////////////////////////////////
-  // Determine how to dispatch Threads.
-  /////////////////////////////////////////////////////////////////
-  if (Threads > TransversedNode->Children.size()){
-    /////////////////////////////////////////////////////////////////
-    // Dispatch by PigeonHole. Giving the highest UCB1 nodes more Threads.
-    /////////////////////////////////////////////////////////////////
-    PMCTS_DispatchByPigeonHole(TransversedNode,Threads,Depth);
-
-  }
-  else{
-    /////////////////////////////////////////////////////////////////
-    // Dispatch by Rotation, Each Branch will eventually get a Thread gets an even Search Depth.
-    /////////////////////////////////////////////////////////////////
-    //DispatchNaively(TransversedNode,Threads,Depth);
-    //printf("calling DispatchEvenly\n");
-    MCTS_DispatchEvenly(TransversedNode,Threads,Depth);
-  }
-
-}
-
-
-template <typename Game_Tp, typename Player_Tp>
-PMCTS_ThreadData_t<Game_Tp,Player_Tp>* _DispatchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, int ThreadDepth)
+PMCTS_ThreadData_t<Game_Tp,Player_Tp>* DispatchMCTS_SearchThread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, int ThreadDepth)
 {
   PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
   //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
   PMCTS_ThreadData->TransversedNode = TransversedNode;
   PMCTS_ThreadData->Depth           = ThreadDepth;
-  PMCTS_ThreadData->Threads           = ThreadDepth;
+  PMCTS_ThreadData->Threads           = Threads;
   PMCTS_ThreadData->Finished        = false;
 
   pthread_create(&(PMCTS_ThreadData->Thread), NULL, MCTS_Search_thread<Game_Tp,Player_Tp>, PMCTS_ThreadData);
@@ -782,18 +751,42 @@ PMCTS_ThreadData_t<Game_Tp,Player_Tp>* _DispatchThread(PMCTS_Node<Game_Tp,Player
 
 
 
+
+
+
+
+
+template <typename Game_Tp, typename Player_Tp>
+void MCTS_DispatchNaively(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
+{
+  double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
+
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>*            PMCTS_ThreadData;
+  std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
+
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
+    ThreadList.push_back(
+      DispatchMCTS_SearchThread<Game_Tp,Player_Tp>(Node, Threads, ThreadDepth)
+    );
+  }
+
+  ThreadList = _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
+}
+
+
 template <typename Game_Tp, typename Player_Tp>
 void MCTS_DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
 {
+  MCTS_Search(TransversedNode,2);
+
   double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
   std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
-
   //////////////////////////////////////////////////////////////////////////////
   //For Each Branch within Game, Dispatch a new thread.
   for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
 
     //////////////////////////////////////////////////////////////////////////////
-    //For Each Thread to dispatch, preform the following function untill complete.
+    //For Each Thread to dispatch, wait until there is an available thread to release.
     bool DispatchedForNode = true;
     while(DispatchedForNode)
     {
@@ -803,7 +796,7 @@ void MCTS_DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Thre
       if (ThreadList.size() < Threads){
         //PMCTS_ThreadData = _DispatchThread<Game_Tp,Player_Tp>(Node, ThreadDepth);
         ThreadList.push_back(
-          _DispatchThread<Game_Tp,Player_Tp>(Node, Threads, ThreadDepth)
+          DispatchMCTS_SearchThread<Game_Tp,Player_Tp>(Node, Threads, ThreadDepth)
         );
         DispatchedForNode = false;
       }
@@ -819,54 +812,6 @@ void MCTS_DispatchEvenly(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Thre
   }
   ThreadList = _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
 
-}
-
-
-
-template <typename Game_Tp, typename Player_Tp>
-void PMCTS_DispatchNaively(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,int Threads, int Depth)
-{
-  double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
-  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData;
-  //printf("Depth                           :%d\n",Depth);
-  //printf("TransversedNode->Children.size():%d\n",TransversedNode->Children.size());
-  //printf("ThreadDepth                     :%f\n",ThreadDepth);
-  std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
-
-  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
-    ThreadList.push_back(
-      _DispatchThread<Game_Tp,Player_Tp>(Node, Threads, ThreadDepth)
-    );
-  }
-
-/*
-//////////////////////////////////////////////////////////////////////////////
-// Original Free Threads Code.
-for (PMCTS_ThreadData_t<Game_Tp,Player_Tp>* Node : ThreadList){
-  pthread_join((Node->Thread), NULL);
-  free(Node);
-}
-
-*/
-
-  ThreadList = _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// MCTS_Search
-//////////////////////////////////////////////////////////////////////////////
-template <typename Game_Tp, typename Player_Tp>
-void MCTS_Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double ThreadDepth)
-{
-  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
-  //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
-  PMCTS_ThreadData->TransversedNode = TransversedNode;
-  PMCTS_ThreadData->Depth           = ThreadDepth;
-  PMCTS_ThreadData->Threads         = Threads;
-  PMCTS_ThreadData->Finished        = false;
-  MCTS_Search_thread<Game_Tp,Player_Tp>(PMCTS_ThreadData);
-  free(PMCTS_ThreadData);
 }
 
 
@@ -888,6 +833,7 @@ void MCTS_Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, 
   Helper Function for MCTS::Search & EvaluateStep.
   Performs an itteration of the MCTS Algorithm on 'TransversedNode'
 */
+/*
 template <typename Game_Tp, typename Player_Tp>
 PMCTS_Node<Game_Tp,Player_Tp>* PMCTS_Algorithm(PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode)
 {
@@ -956,10 +902,8 @@ PMCTS_Node<Game_Tp,Player_Tp>* PMCTS_Algorithm(PMCTS_Node<Game_Tp,Player_Tp>*Tra
     return MCTS_Algorithm(MAXNode);
   }
 }
-
-
-/*
 */
+
 
 
 /*
@@ -988,68 +932,297 @@ PMCTS_Node<Game_Tp,Player_Tp>* PMCTS_Algorithm(PMCTS_Node<Game_Tp,Player_Tp>*Tra
 //////////////////////////////////////////////////////////////////////////////
 
 template <typename Game_Tp, typename Player_Tp>
-void PMCTS_assignThreadsBySoftMAX(PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode,double Threads, double Depth){
-  double Sum              = TransversedNode->Get_ChildrenValueSum();
-  double SumToThreadRatio  = Sum/Threads;
-  double ThreadsAssigned       = 0;
+double MCTS_FindPriorityByUCB1(PMCTS_Node<Game_Tp,Player_Tp>*Node){
+  double UCB1 = Node->Find_UCB1();
+  return sqrt(UCB1+1);
+}
 
-  double ThreadDepth = (Depth/TransversedNode->Children.size())+1;
+
+template <typename Game_Tp, typename Player_Tp>
+double MCTS_FindSUMPriorityByUCB1(PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode){
+  double Sum;
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
+    Sum += MCTS_FindPriorityByUCB1(Node);
+  }
+  return Sum;
+}
+
+//MCTS_UCB1Threads *UCB1Threads = new MCTS_UCB1Threads();
+template <typename Game_Tp, typename Player_Tp>
+class MCTS_UCB1Threads
+{
+public:
+  //////////////////////////////////////////////////////////////////////////////
+  // Thread Serach Data
+  //////////////////////////////////////////////////////////////////////////////
+  double ThreadsToDispatch;
+  double ThreadsDispatched;
   std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*> ThreadList;
 
-  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
-    ThreadsAssigned = fmod(Node->UCB1, SumToThreadRatio);
-    ThreadsAssigned = floor((int)ThreadsAssigned);
 
-    if(ThreadsAssigned == 0)
-    {
-      ThreadsAssigned = 1;
-    }
+  double DepthToThreadRatio;
+  double PriorityDistribution;
+  double MinimumDistribution;
 
-    printf("UCB1_Sum:%f\n",Sum);
-    printf("Threads:%f\n",Threads);
-    printf("ThreadList.size() :%d\n",ThreadList.size() );
-    printf("UCB1_SumToThreadRatio:%f\n",SumToThreadRatio);
-    printf("ThreadsAssigned:%f\n",ThreadsAssigned);
-    printf("ThreadDepth:%f\n",ThreadDepth);
-    printf("/////////////////////////////////////////////////////////////////\n");
-    Pause;
+  double Branches;
+  double PrioritySum;
+  double PriorityDepth;
+  double MinimumDepth;
+  //////////////////////////////////////////////////////////////////////////////
+  // Initialization method.
+  MCTS_UCB1Threads(PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode,double GivenThreadsToDispatch, double Depth){
+    ThreadsToDispatch = GivenThreadsToDispatch;
+    ThreadsDispatched = 0;
+
+    DepthToThreadRatio = (Depth/ThreadsToDispatch);
+    PriorityDistribution = .75;
+    MinimumDistribution  = .25;
+
+    Branches          = TransversedNode->Children.size();
+    PrioritySum       = MCTS_FindSUMPriorityByUCB1(TransversedNode);
+    PriorityDepth     = (PriorityDistribution*Depth);
+    MinimumDepth      = (MinimumDistribution*Depth)/Branches;
+
+
+  }
+  ~MCTS_UCB1Threads(){
+    _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
+
+  }
+
+  void JoinFinishedThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
+  {
+
+    //printf("/////////////////////////////////////////////////////////////////\n");
+    //printf("Starting _JoinFinishedThreads\n");
+    //printf("ThreadList.size():%d\n",ThreadList.size());
+    //printf("/////////////////////////////////////////////////////////////////\n");
+    int ThreadsJoined = 0;
+
+    while(ThreadsJoined <= 0){
+        //printf("ThreadList.size():%d\n",ThreadList.size());
+        typename std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>::iterator ThreadList_iterator = ThreadList.begin();
+        while ( ThreadList_iterator != ThreadList.end())
+        {
+            if((*ThreadList_iterator)->Finished){
+              pthread_join(((*ThreadList_iterator)->Thread), NULL);
+              ThreadsJoined++;
+              ThreadsDispatched -= ((*ThreadList_iterator)->Threads);
+              free((*ThreadList_iterator));
+              ThreadList.erase(ThreadList_iterator++);
+            }
+            else
+            {
+                // move to next item
+                ++ThreadList_iterator;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
+  }
+
+  void Dispatch(PMCTS_Node<Game_Tp,Player_Tp>*Node){
+    double Brach_PriorityDepth = 0;
+    double BranchDepth         = 0;
+    double BranchThreads       = 0;
+
+    Brach_PriorityDepth = (MCTS_FindPriorityByUCB1<Game_Tp,Player_Tp>(Node)/this->PrioritySum)*PriorityDepth;
+    BranchDepth = Brach_PriorityDepth + MinimumDepth;
+    BranchDepth = MinimumDepth;
+
+    //double asdf= BranchDepth/DepthToThreadRatio;
+    printf("BranchDepth:%f\n",BranchDepth);
+    //printf("DepthToThreadRatio:%f\n",DepthToThreadRatio);
+    //printf("asdf:%f\n",asdf);
+    //BranchThreads = std::min(asdf,(double)1);
+    BranchThreads = 1;
+    //printf("BranchThreads:%f\n",BranchThreads);
+
 
     //////////////////////////////////////////////////////////////////////////////
-    //For Each Thread to dispatch, preform the following function untill complete.
-    bool DispatchedForNode = true;
-    while(DispatchedForNode)
+    //For Each Thread to dispatch, wait until there is an available thread to release.
+    bool DispatchingForNode = true;
+    while(DispatchingForNode)
     {
 
       //////////////////////////////////////////////////////////////////////////////
       //Dispatch Threads
-      if (ThreadList.size() < Threads){
+      if (ThreadsDispatched < (ThreadsToDispatch+BranchThreads)){
         //PMCTS_ThreadData = _DispatchThread<Game_Tp,Player_Tp>(Node, ThreadDepth);
-        //PMCTS_DispatchBySoftMAX(Node, ThreadsAssigned, ThreadDepth);
         ThreadList.push_back(
-          PMCTS_DispatchBySoftMAX(Node, ThreadsAssigned, ThreadDepth)
+          Dispatch_MCTS_UCB1PrioritySearch_Thread<Game_Tp,Player_Tp>(Node, BranchThreads, BranchDepth)
         );
-        printf("Return from Dispatch\n");
-        DispatchedForNode = false;
+        DispatchingForNode = false;
       }
-      printf("/////////////////////////////////////////////////////////////////\n");
-      printf("Threads:%f\n",Threads);
-      printf("ThreadList.size() :%d\n",ThreadList.size() );
-      printf("/////////////////////////////////////////////////////////////////\n");
+
 
       //////////////////////////////////////////////////////////////////////////////
       //Join Threads
-      if (ThreadList.size() == Threads){
-
-        printf("_JoinFinishedThreads\n");
-        ThreadList = _JoinFinishedThreads<Game_Tp,Player_Tp>(ThreadList);
-      }
-
+      ThreadList = _JoinFinishedThreads<Game_Tp,Player_Tp>(ThreadList);
     }
   }
-  printf("_JoinAllThreads\n");
-  ThreadList = _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
+};
+
+
+
+
+
+template <typename Game_Tp, typename Player_Tp>
+void MCTS_UCB1PriorityAssignment(PMCTS_Node<Game_Tp,Player_Tp>*TransversedNode,double Threads, double Depth){
+
+  MCTS_UCB1Threads<Game_Tp, Player_Tp> *UCB1Threads = new MCTS_UCB1Threads<Game_Tp, Player_Tp>(TransversedNode,Threads,Depth);
+
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
+    //UCB1Threads->Dispatch(Node);
+    UCB1Threads->Dispatch(Node);
+/*
+printf("UCB1_Sum:%f\n",Sum);
+printf("Threads:%f\n",Threads);
+printf("ThreadList.size() :%d\n",ThreadList.size() );
+printf("UCB1_SumToThreadRatio:%f\n",SumToThreadRatio);
+printf("ThreadsAssigned:%f\n",ThreadsAssigned);
+printf("ThreadDepth:%f\n",ThreadDepth);
+printf("/////////////////////////////////////////////////////////////////\n");
+    //Pause;
+    */
+
+
+  }
+
+  delete UCB1Threads;
+
 }
 
+
+
+
+template <typename Game_Tp, typename Player_Tp>
+void MCTS_UCB1PrioritySearch(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double Depth)
+{
+  //TODO: add Segment Dispatch Logic to both:
+  // -DispatchByPigeonHole
+  // -DispatchByRotation
+
+  double ThreshHold = 36;
+  printf("TransversedNode->NodeVisits:%f\n",TransversedNode->NodeVisits);
+  Pause;
+  /////////////////////////////////////////////////////////////////
+  // Determine how to dispatch Threads.
+  /////////////////////////////////////////////////////////////////
+  if (TransversedNode->NodeVisits > ThreshHold){
+  //if (true){
+    /////////////////////////////////////////////////////////////////
+    // Dispatch by recursive MCTS_UCB1PrioritySearch.
+    /////////////////////////////////////////////////////////////////
+    MCTS_UCB1PriorityAssignment<Game_Tp,Player_Tp>(TransversedNode,Threads,Depth);
+
+    //PMCTS_DispatchByPigeonHole(TransversedNode,Threads,Depth);
+
+  }
+  else{
+    /////////////////////////////////////////////////////////////////
+    // Dispatch by MCTS_DispatchEvenly,
+    /////////////////////////////////////////////////////////////////
+    //printf("calling DispatchEvenly\n");
+    MCTS_DispatchEvenly(TransversedNode,Threads,Depth);
+
+  }
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Node : TransversedNode->Children){
+    TransversedNode->BackPropagation(Node->GivenGame->TestForWinner(),TransversedNode);
+  }
+
+}
+
+
+template <typename Game_Tp, typename Player_Tp>
+void* MCTS_UCB1PrioritySearch_Thread(void* GivenPMCTS_ThreadData)
+{
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = static_cast<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>(GivenPMCTS_ThreadData);
+
+  MCTS_UCB1PrioritySearch<Game_Tp,Player_Tp>(PMCTS_ThreadData->TransversedNode,PMCTS_ThreadData->Threads,PMCTS_ThreadData->Depth);
+  //////////////////////////////////////////////////////////////////////////////
+  // Thread is finished, Set Flag for Thread Clean up.
+  PMCTS_ThreadData->Finished = true;
+  return 0;
+}
+
+
+template <typename Game_Tp, typename Player_Tp>
+PMCTS_ThreadData_t<Game_Tp,Player_Tp>* Dispatch_MCTS_UCB1PrioritySearch_Thread(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, int ThreadDepth)
+{
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
+  //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
+  PMCTS_ThreadData->TransversedNode = TransversedNode;
+  PMCTS_ThreadData->Depth           = ThreadDepth;
+  PMCTS_ThreadData->Threads         = Threads;
+  PMCTS_ThreadData->Finished        = false;
+
+  pthread_create(&(PMCTS_ThreadData->Thread), NULL, MCTS_UCB1PrioritySearch_Thread<Game_Tp,Player_Tp>, PMCTS_ThreadData);
+  return PMCTS_ThreadData;
+}
+
+
+
+
+template <typename Game_Tp, typename Player_Tp>
+void MCTS_UCB1Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double Depth)
+{
+  //printf("(Depth/10):%f\n",(Depth/10));
+  //Pause;
+  for(int i=0;i<10;i++){
+      MCTS_UCB1PrioritySearch(TransversedNode,Threads,(Depth/10));
+  }
+
+}
+
+
+/*
+//////////////////////////////////////////////////////////////////////////////
+// PMCTS_Search
+//////////////////////////////////////////////////////////////////////////////
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS_Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double ThreadDepth)
+{
+  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
+  //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
+  PMCTS_ThreadData->TransversedNode = TransversedNode;
+  PMCTS_ThreadData->Depth           = ThreadDepth;
+  PMCTS_ThreadData->Threads         = Threads;
+  PMCTS_ThreadData->Finished        = false;
+
+  PMCTS_Search_thread<Game_Tp,Player_Tp>(PMCTS_ThreadData);
+  free(PMCTS_ThreadData);
+}*/
+
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS_Search(
+    PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,
+    double Threads,
+    double Depth
+  )
+{
+
+  MCTS_Search(TransversedNode,2);
+  printf("/////////////////////////////////////////////////////////////////\n");
+  printf("PMCTS_Search_thread\n");
+  printf("PMCTS_ThreadData->Threads:%f\n",Threads);
+  printf("PMCTS_ThreadData->Depth:%f\n",Depth);
+  printf("/////////////////////////////////////////////////////////////////\n");
+  //Pause;
+  /////////////////////////////////////////////////////////////////
+  // Determine if Multiple Threads are being used.
+  /////////////////////////////////////////////////////////////////
+  if (Threads > 0 ){
+    //PMCTS_DispatchThreads(PMCTS_ThreadData->TransversedNode, PMCTS_ThreadData->Threads, PMCTS_ThreadData->Depth);
+    PMCTS_assignThreadsBySoftMAX(TransversedNode, Threads, Depth);
+  }
+  else{
+    /////////////////////////////////////////////////////////////////
+    // Only using one thread, preform MCTS normaly for given Depth.
+    /////////////////////////////////////////////////////////////////
+    MCTS_Search(TransversedNode,Depth);
+  }
+}
 
 
 template <typename Game_Tp, typename Player_Tp>
@@ -1057,26 +1230,11 @@ void* PMCTS_Search_thread(void* GivenPMCTS_ThreadData)
 {
   PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = static_cast<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>(GivenPMCTS_ThreadData);
 
-  MCTS_Search(PMCTS_ThreadData->TransversedNode,1,1);
-  printf("/////////////////////////////////////////////////////////////////\n");
-  printf("PMCTS_Search_thread\n");
-  printf("PMCTS_ThreadData->Threads:%f\n",PMCTS_ThreadData->Threads);
-  printf("PMCTS_ThreadData->Depth:%f\n",PMCTS_ThreadData->Depth);
-  printf("/////////////////////////////////////////////////////////////////\n");
-  Pause;
-  /////////////////////////////////////////////////////////////////
-  // Determine if Multiple Threads are being used.
-  /////////////////////////////////////////////////////////////////
-  if (PMCTS_ThreadData->Threads > 1 ){
-    //PMCTS_DispatchThreads(PMCTS_ThreadData->TransversedNode, PMCTS_ThreadData->Threads, PMCTS_ThreadData->Depth);
-    PMCTS_assignThreadsBySoftMAX(PMCTS_ThreadData->TransversedNode, PMCTS_ThreadData->Threads, PMCTS_ThreadData->Depth);
-  }
-  else{
-    /////////////////////////////////////////////////////////////////
-    // Only using one thread, preform MCTS normaly for given Depth.
-    /////////////////////////////////////////////////////////////////
-    MCTS_Search(PMCTS_ThreadData->TransversedNode,1,PMCTS_ThreadData->Depth);
-  }
+  PMCTS_Search(
+      PMCTS_ThreadData->TransversedNode,
+      PMCTS_ThreadData->Threads,
+      PMCTS_ThreadData->Depth
+    );
 
   //////////////////////////////////////////////////////////////////////////////
   // Thread is finished, Set Flag for Thread Clean up.
@@ -1084,7 +1242,6 @@ void* PMCTS_Search_thread(void* GivenPMCTS_ThreadData)
 
   return 0;
 }
-
 
 
 
@@ -1105,7 +1262,7 @@ PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_DispatchBySoftMAX(PMCTS_Node<Game_T
   printf("PMCTS_ThreadData->Threads:%f\n",PMCTS_ThreadData->Threads);
   printf("PMCTS_ThreadData->Depth:%f\n",PMCTS_ThreadData->Depth);
   printf("/////////////////////////////////////////////////////////////////\n");
-  Pause;
+  //Pause;
   pthread_create(&(PMCTS_ThreadData->Thread), NULL, PMCTS_Search_thread<Game_Tp,Player_Tp>, PMCTS_ThreadData);
   printf("Return from Dispatch\n");
   return PMCTS_ThreadData;
@@ -1113,22 +1270,6 @@ PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_DispatchBySoftMAX(PMCTS_Node<Game_T
 }
 
 
-//////////////////////////////////////////////////////////////////////////////
-// PMCTS_Search
-//////////////////////////////////////////////////////////////////////////////
-template <typename Game_Tp, typename Player_Tp>
-void PMCTS_Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double ThreadDepth)
-{
-  PMCTS_ThreadData_t<Game_Tp,Player_Tp>* PMCTS_ThreadData = (PMCTS_ThreadData_t<Game_Tp,Player_Tp>*) malloc(sizeof(PMCTS_ThreadData_t<Game_Tp,Player_Tp>));
-  //printf("PMCTS_ThreadData_t:%p\n",PMCTS_ThreadData);
-  PMCTS_ThreadData->TransversedNode = TransversedNode;
-  PMCTS_ThreadData->Depth           = ThreadDepth;
-  PMCTS_ThreadData->Threads         = Threads;
-  PMCTS_ThreadData->Finished        = false;
-
-  PMCTS_Search_thread<Game_Tp,Player_Tp>(PMCTS_ThreadData);
-  free(PMCTS_ThreadData);
-}
 
 
 
@@ -1164,7 +1305,7 @@ Algorithm():: A recursive implementation of the MCTS algorithm. Recursively crea
 template <typename Game_Tp, typename Player_Tp>
 class PMCTS: public TreeSimulation
 {
-public:
+  public:
 
   //////////////////////////////////////////////////////////////////////////////
   //Thread Information
@@ -1197,8 +1338,6 @@ public:
 
     HeadNode  = new PMCTS_Node<Game_Tp,Player_Tp>(_Game,_GivenPlayers);
     GivenGame = _Game;
-
-    ParallelCB = new ParallelControlBlock();
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1206,7 +1345,7 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   virtual ~PMCTS(){
     delete HeadNode;
-    delete ParallelCB;
+    //delete ParallelCB;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1282,12 +1421,15 @@ public:
 template <typename Game_Tp, typename Player_Tp>
 void PMCTS<Game_Tp,Player_Tp>::Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double Depth)
 {
-  MCTS_Search(TransversedNode,1,10);
+  MCTS_Search(TransversedNode,37);
   //PMCTS_DispatchThreads(TransversedNode, Threads, Depth);
-  PMCTS_Search(TransversedNode,Threads, Depth);
+  //PMCTS_Search(TransversedNode,Threads, Depth);
 
 
+  //MCTS_DispatchEvenly(TransversedNode,5,10);
 
+  MCTS_UCB1PrioritySearch(TransversedNode,Threads,Depth);
+  //MCTS_UCB1Search(TransversedNode,Threads,Depth);
 }
 
 
@@ -1297,7 +1439,7 @@ void PMCTS<Game_Tp,Player_Tp>::Search(double Threads, double Depth)
 {
   Search(HeadNode, Threads, Depth);
 
-  //HeadNode->DisplayTree(1);
+  HeadNode->DisplayTree(1);
 }
 
 

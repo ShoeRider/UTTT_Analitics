@@ -354,6 +354,44 @@ public:
 
 };
 
+
+template <>
+struct std::hash<UTTT>
+{
+  std::size_t Hash(UTTT* k) const
+  {
+    using std::size_t;
+    using std::hash;
+    using std::string;
+
+    // Compute individual hash values for first,
+    // second and third and combine them using XOR
+    // and bit shifting:
+    std::hash<TTT>* Hash = new std::hash<TTT>;// = std::hash<TTT>(* _Game);
+    std::size_t Itteration = 0;
+    std::size_t Sum = 0;
+    for (int Row = 0; Row < 3; Row++)
+    {
+      for (int Col = 0; Col < 3; Col++)
+      {
+          //Board[Row][Col] = ' ';
+          Itteration = Hash->Hash(k->Boards[Row][Col])*(Col+1)*(Row+1)>> 1;
+          Sum        += Itteration;
+          printf("Itteration: %zu\n",Itteration);
+          //printf("\tSum: %zu\n",Sum);
+          //printf("----------------------------\n");
+      }
+    }
+    delete Hash;
+    //return ((
+    //         ^ (hash<string>()(k.second) << 1)) >> 1)
+    //         ^ (hash<int>()(k.third) << 1);
+    return Sum;
+  }
+};
+
+
+
 /*
 SetUpBoard
   Generic method to initilize each sub-Game class within the 3x3 game.

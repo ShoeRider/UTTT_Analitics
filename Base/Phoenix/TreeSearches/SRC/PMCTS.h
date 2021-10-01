@@ -13,6 +13,12 @@
 
 
 #include <mutex>
+
+
+
+#include <jsoncpp/json/value.h>
+#include <fstream>
+
 #include "TreeSearch.cu"
 #include "../SRC/MCTS.cu"
 #include "../../ThreadingTools/SRC/ThreadingTools.cu"

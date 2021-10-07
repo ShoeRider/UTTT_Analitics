@@ -10,10 +10,8 @@ Requires:
   "MCTS.cu"
 
 Possibly requires:
-  "ThreadingTools.cu"
 
-TODO:
-  Implement Break Out Search from notes.
+
 ====================================================================================================
 Date:           NA
 Script Version: 1.0
@@ -36,8 +34,6 @@ Email:          as3379@nau.edu
 Refactored code for Recursive Thread Dispatch.
 Implemented the following 'thread dispatch' algorithms:
 - UCB1 PMCTS.
-
-TODO: create namespace
 ==========================================================
 */
 
@@ -159,6 +155,7 @@ public:
   double     GetAverageValue();
   void       DisplayTree();
   void       DisplayTree(int Depth);
+  std::size_t GetHash();
   void       DisplayStats();
   double Get_UCB1_ChildrenSum();
   double AssignSoftMAX();
@@ -362,7 +359,14 @@ double PMCTS_Node<Game_Tp,Player_Tp>::GetAverageValue()
   return ValueSum/NodeVisits;
 }
 
-
+template <typename Game_Tp, typename Player_Tp>
+std::size_t PMCTS_Node<Game_Tp,Player_Tp>::GetHash()
+{
+  std::hash<Game_Tp>* Hash = new std::hash<Game_Tp>;// = std::hash<TTT>(* _Game);
+  std::size_t HashValue = Hash->Hash(GivenGame);
+  delete Hash;
+  return HashValue;
+}
 
 
 template <typename Game_Tp, typename Player_Tp>
@@ -374,10 +378,8 @@ void PMCTS_Node<Game_Tp,Player_Tp>::DisplayStats(){
     printf("\tValueSum:%f\n", ValueSum);
     printf("\tNode Ratio:%f\n", (ValueSum/NodeVisits));
     printf("\tUCB1:%f\n", Find_UCB1());
-    std::hash<Game_Tp>* Hash = new std::hash<Game_Tp>;// = std::hash<TTT>(* _Game);
-    printf("Hash: %zu\n",Hash->Hash(GivenGame));
+    printf("\tHash: %zu\n",GetHash());
     //std::cout << GivenGame->Generate_StringRepresentation();
-    delete (Hash);
   }
 
 }

@@ -30,6 +30,11 @@ Description:
       T* get(std::list<T*> _list, int _i)
       to new base library folder.
 ==========================================================
+Date:           30 September 2021
+Script Version: 1.3
+Description:
+  Added hash function to TTT class.
+==========================================================
 */
 #ifndef TTT_CU
 #define TTT_CU
@@ -39,6 +44,10 @@ Description:
 // Game Library for inheritance structure.
 //////////////////////////////////////////////////////////////////////////////
 #include "TTT.h"
+
+
+
+
 
 
 /*
@@ -126,6 +135,9 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
   return Player;
 }
 
+
+
+
 /*
 TTT(Tic Tac Toe):
 Implement Tic Tac Toe through Game interface. Using standard rules.
@@ -176,8 +188,8 @@ public:
   }
 
     TTT(std::list<TTT_Player*> GivenPlayers){
-        this->DeclarePlayers(GivenPlayers);
-
+        //this->DeclarePlayers(GivenPlayers);
+        Players = GivenPlayers;
         this->WinningPlayer  = NULL;
         MovesRemaining       = 9;
         this->SetUpBoard();
@@ -208,6 +220,49 @@ public:
     //void DisplayInTerminal();
     TTT* RollOut();
     void PlayGame();
+    //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
+};
+
+//#include<bits/stdc++>
+//template< class Key >
+//struct hash<class template>;
+
+#include <unordered_map>
+
+
+template <>
+struct std::hash<TTT>
+{
+  std::size_t Hash(TTT* k) const
+  {
+    using std::size_t;
+    using std::hash;
+    using std::string;
+
+    // Compute individual hash values for first,
+    // second and third and combine them using XOR
+    // and bit shifting:
+    std::size_t Itteration = 0;
+    std::size_t Sum = 0;
+    for (int Row = 0; Row < 3; Row++)
+    {
+      for (int Col = 0; Col < 3; Col++)
+      {
+          //Board[Row][Col] = ' ';
+          //if()
+          Itteration = (hash<char>()(k->Board[Row][Col])/16)*(Col+1)/ (Row+1);
+          Sum        += Itteration;
+          printf("Character:'%c':/8 %zu\n",k->Board[Row][Col],(hash<char>()(k->Board[Row][Col])/16));
+
+          //printf("Sum: %zu\n",Sum);
+          //printf("----------------------------\n");
+      }
+    }
+    //return ((
+    //         ^ (hash<string>()(k.second) << 1)) >> 1)
+    //         ^ (hash<int>()(k.third) << 1);
+    return Sum;
+  }
 };
 
 
@@ -222,10 +277,6 @@ void TTT::SetUpBoard()
         Board[Row][Col] = ' ';
     }
   }
-  for (TTT_Player* Player : Players) { // c++11 range-based for loop
-      ;
-      //printf("Player:%p:%c\n",Player,static_cast<TTT_Player*>(Player)->GameRepresentation);
-    }
 }
 
 

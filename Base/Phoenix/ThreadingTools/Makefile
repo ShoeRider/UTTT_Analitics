@@ -10,7 +10,7 @@ Test:
 	@echo "Compiling(Tests) ..."
 	nvcc -o ./ThreadingTools_Tests ./Tests/ThreadingTools_Tests.cu
 	@echo "Running(Tests) ..."
-	valgrind --leak-check=yes ./MCTS_Tests
+	valgrind --leak-check=yes ./ThreadingTools_Tests
 	#./ThreadingTools_Tests
 
 

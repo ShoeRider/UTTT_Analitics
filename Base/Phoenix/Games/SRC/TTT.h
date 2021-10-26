@@ -37,9 +37,9 @@ struct GameMove;
 struct Player;
 
 
-class TTT;
-class TTT_Player;
 class TTT_Move;
+class TTT_Player;
+class TTT;
 
 #define Pause int ASDF; std::cin >> ASDF;
 

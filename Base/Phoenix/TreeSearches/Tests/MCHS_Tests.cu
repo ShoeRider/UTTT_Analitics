@@ -4,11 +4,12 @@
 #include "../../Games/SRC/Game.cu"
 #include "../../Games/SRC/TTT.cu"
 #include "../../Games/SRC/UTTT.cu"
-#include "../SRC/MCTS.cu"
+#include "../SRC/MCHS.cu"
+
 
 #include <iostream>
 #include <chrono>
-
+//#include "chrono_io"
 
 
 
@@ -32,23 +33,36 @@ bool UTTT_Player_Init(){
   //delete Player0;
   return 0;
 }
-
 /*
-TTT_Player Player0 = TTT_Player(0,'X');
-TTT_Player Player1 = TTT_Player(1,'O');
+
+  TTT_Player Player0 = TTT_Player(0,'X');
+  TTT_Player Player1 = TTT_Player(1,'O');
+
+  //Player* Player0 = static_cast<Player*>(&TTTPlayer0);
+  //Player* Player1 = static_cast<Player*>(&TTTPlayer1);
+
+  TTT *_Game = new TTT({&Player0,&Player1});
+
+
+  MCHS<TTT,TTT_Player> *Sim = new MCHS<TTT,TTT_Player>(_Game,{&Player0,&Player1});
+  Sim->Search(100000);
+*/
+/*
+UTTT_Player Player0 = UTTT_Player(0,'X');
+UTTT_Player Player1 = UTTT_Player(1,'O');
 
 //Player* Player0 = static_cast<Player*>(&TTTPlayer0);
 //Player* Player1 = static_cast<Player*>(&TTTPlayer1);
 
-TTT *_Game = new TTT({&Player0,&Player1});
+UTTT *_Game = new UTTT({&Player0,&Player1});
 
-MCTS<TTT,TTT_Player> *Sim = new MCTS<TTT,TTT_Player>(_Game,{&Player0,&Player1});
-Sim->Search(100000);
-
+MCHS<UTTT,UTTT_Player> *Sim = new MCHS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
+Sim->Search(1000000);
 
 //delete &Player0;
 //delete &Player1;
 //delete _Game;
+delete Sim;
 */
 
 
@@ -69,17 +83,20 @@ int main() {
 
   UTTT *_Game = new UTTT({&Player0,&Player1});
 
-  MCTS<UTTT,UTTT_Player> *Sim = new MCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
+  MCHS<UTTT,UTTT_Player> *Sim = new MCHS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
   Sim->Search(250000);
 
   //delete &Player0;
   //delete &Player1;
   //delete _Game;
+
   std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
 
-
-
+  //delete &Player0;
+  //delete &Player1;
+  //delete _Game;
   delete Sim;
+
  return 0;
 }
 

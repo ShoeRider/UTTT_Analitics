@@ -10,6 +10,7 @@ Finished:
 + Parallel MCTS to decrease search time.
 + Basic MCHS. HashTable and hashes of game states to remove overlapping game branches.
 
+
 In progress: 
 + Save/Read Book Moves for faster initial searches.
 + Unit Testing Through GTest
@@ -21,3 +22,4 @@ requirements:
 
 gcc
 valgrind
+

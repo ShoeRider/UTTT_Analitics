@@ -28,6 +28,7 @@ Email:          as3379@nau.edu
 // Game Library for inheritance structure.
 //////////////////////////////////////////////////////////////////////////////
 #include "Game.cu"
+#include "TTT.cu"
 
 struct UTTT_Player;
 struct UTTT_Move;
@@ -36,6 +37,7 @@ struct UTTT_Move;
 class UTTT_Player;
 class UTTT_Move;
 class UTTT;
+std::size_t Hash(UTTT* k);
 
 #define Pause int ASDF; std::cin >> ASDF;
 

@@ -35,6 +35,24 @@ Script Version: 1.3
 Description:
   Added hash function to TTT class.
 ==========================================================
+Date:           4 October 2021
+Script Version: 1.4
+Description:
+  - Added JSON Read/Write Functionality using: nlohman JSON Library.
+  - Changed File extension to CPP.
+TODO: Change JSON Libary to compatable CUDA.
+Possible interests:
+- SIMDJSON (GitHub: https://github.com/simdjson/simdjson)
+-
+==========================================================
+Date:           11 October 2021
+Script Version: 1.4.01
+Description:
+  Changed File extension back to CU. attempting to compile with:
+- SIMDJSON (GitHub: https://github.com/simdjson/simdjson)
+TODO: Generalize JSON Saves to account for different Player Oders,
+  IE: Player0 has different game representation than X.
+==========================================================
 */
 #ifndef TTT_CU
 #define TTT_CU
@@ -47,8 +65,47 @@ Description:
 
 #include <iostream>
 #include <fstream>
-#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
+
+//#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
+
+//https://stackoverflow.com/questions/63503620/cant-use-m128i-in-cuda-kernel
+//#include "../../ExternalLibraries/simdjson/singleheader/simdjson.h"
+
+//////////////////////////////////////////////////////////////////////////////
+//https://github.com/kazuho/picojson/
+//#include "../../ExternalLibraries/picojson/picojson.h"
+
+//picojson
 #include <iomanip>
+
+
+//TODO Move to Basic Libaries
+//Example:
+/*
+int a_size = sizeof(p->Board) / sizeof(char);
+std::string str = convertToString(p->Board, a_size);
+*/
+std::string convertToString(char* a, int size)
+{
+    int i;
+    std::string s = "";
+    for (i = 0; i < size; i++) {
+        s = s + a[i];
+        //std::cout << a[i] << "\n";
+    }
+    //std::cout << s << "\n";
+    return s;
+}
+
+template <typename T>
+T* get(std::list<T*> _list, int _i){
+    typename std::list<T*>::iterator it = _list.begin();
+    for(int i = 0; i<_i; i++){
+        ++it;
+    }
+    return *it;
+}
+
 
 
 
@@ -60,7 +117,8 @@ Purpose: A Helper class to hold the potential move data for a TTT Game.
 
 
 @Methods:
-  No Methods.  Intended to only hold move data.
+  No Methods.  Intended to act as a Command pattern.
+  TTT_Move to be integrated with ML Model to select move.
  */
 struct TTT_Move : public GameMove
 {
@@ -68,21 +126,15 @@ struct TTT_Move : public GameMove
   public:
     int Row;
     int Col;
-
+    //////////////////////////////////////////////////////////////////////////////
+    // Initialization method.
     TTT_Move(int GivenRow,int GivenCol){
       Row = GivenRow;
       Col = GivenCol;
     }
     virtual ~TTT_Move(){}
 };
-template <typename T>
-T* get(std::list<T*> _list, int _i){
-    typename std::list<T*>::iterator it = _list.begin();
-    for(int i = 0; i<_i; i++){
-        ++it;
-    }
-    return *it;
-}
+
 
 /*
 TTT_Player
@@ -93,39 +145,46 @@ TTT_Player
 struct TTT_Player : public Player
 {
   public:
+    //////////////////////////////////////////////////////////////////////////////
+    // Game Data
+    //////////////////////////////////////////////////////////////////////////////
     int PlayerNumber;
     char GameRepresentation;
     bool HumanPlayer;
 
-
+    //////////////////////////////////////////////////////////////////////////////
+    // Initialization method.
     TTT_Player(){}
-    TTT_Player(nlohmann::json &j){
-      //char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-      //GameRepresentation = digits[iChar];
-      int iChar = j["GameRepresentation"];
-      //j["GameRepresentation"]
-      //std::string value = j["PlayerNumber"].get<std::string>().c_str();
-      PlayerNumber = j["PlayerNumber"];//char
-      HumanPlayer = j["HumanPlayer"];//char
-      GameRepresentation = (char)iChar;
 
-      Display();
+    //////////////////////////////////////////////////////////////////////////////
+    // Initialization method from JSON Files
 
-    }
    TTT_Player(int GivenPlayer,char GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
     HumanPlayer = false;
   }
+
   ~TTT_Player(){}
    TTT_Move* MakeMove(TTT* GivenGame);
    void Display();
+   std::size_t Hash();
 };
 
+std::size_t TTT_Player::Hash(){
+  //std::size_t HashSum;
+  //std::string GameState = convertToString(k->Board,9);
+  //HashSum = (std::hash<std::char>());
+
+  return (int)(GameRepresentation);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Move Method for human players.
+// TODO: integrate with command pattern, allowing for ML Models to select moves.
+//TTT_Move doesnt need to be returned, TTTMove should be applied to Game here.
 TTT_Move* TTT_Player::MakeMove(TTT* GivenGame)
 {
-   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
-
    int X,Y;
    std::cout << "Please Enter X Axis: ";
    std::cin >> X;
@@ -147,6 +206,8 @@ void TTT_Player::Display()
    printf("HumanPlayer:%d\n",HumanPlayer);
 }
 
+
+
 void Free_TTTMoveList(std::list<TTT_Move*> GameMoves)
 {
   //std::list<GameMove*> Moves = PossibleMoves();
@@ -157,6 +218,7 @@ void Free_TTTMoveList(std::list<TTT_Move*> GameMoves)
 }
 
 
+
 TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
   TTT_Player* Player = new TTT_Player(PlayerID,PlayerCharacter);
   // Change Player->Move pointer to request input.
@@ -164,44 +226,40 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
 }
 
 
-void Add(nlohmann::json &j,   TTT_Player &p) {
-  //nlohmann::json data;
-  printf("p.GameRepresentation:%c\n",p.GameRepresentation);
-    printf("p.GameRepresentation(int):%d\n",p.GameRepresentation);
-      printf("p.GameRepresentation(int):%c\n",(char)79);
-    Pause;
-    j = nlohmann::json::object({
-      {"PlayerNumber", p.PlayerNumber},
-      {"HumanPlayer", p.HumanPlayer},
-      {"GameRepresentation", p.GameRepresentation}
-    });
+void Add(TTT_Player &p) {
 
-/*
-char Test = 'O';
-  printf("Test:%c\n",Test);
-
-  printf("p.GameRepresentation:%c\n",p.GameRepresentation);
-  j = nlohmann::json{
-      {"PlayerNumber",  p.PlayerNumber},
-      {"HumanPlayer",  p.HumanPlayer},
-      {"GameRepresentation", p.GameRepresentation}};
-      */
-    //return data;
 }
 
 
-nlohmann::json Json(TTT_Player &p) {
-  nlohmann::json data;
-  Add(data,p);
-  return data;
+
+
+
+
+void Json(TTT_Player &p) {
+
 }
 
-/*
-void from_json(const nlohmann::json &j, TTT_Player &p) {
 
-  j.at("PlayerNumber").get_to(p.PlayerNumber);
-  j.at("HumanPlayer").get_to(p.HumanPlayer);
-  j.at("GameRepresentation").get_to(p.GameRepresentation);
+
+
+
+/*
+void Add(nlohmann::json &j,std::list<TTT_Player*> &Players) {
+
+
+  j = nlohmann::json::array();
+  //nlohmann::json Player;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // For Each Player within JSON file, place Players into list.
+  // NOTE: When Saving TTT Players to JSON file, the order is swapped(The First
+  //   player is at the bottom of the list). Reading the JSON file for loop
+  //   automatically adds the players back into the correct order(The first
+  //   player within the JSON file becomes the last player within the Player order).
+  for (TTT_Player* i : Players) { // c++11 range-based for loop
+    //Player = (const TTT &)* i;
+    j.push_back(Json(*i));
+  }
 }
 */
 
@@ -250,51 +308,54 @@ public:
   //MovesRemaining is a decrementing counter to determine if there are any remaining moves.
   int MovesRemaining;
   int MovesMade;  //TODO, Implement MovesMade
+  bool SimulationFinished;
   //Represenation of the game.
   //char Board[3][3];
   //TTTMove->Row*3+TTTMove->Col
   char Board[9];
+  std::size_t GameHash;
 
-
+  //////////////////////////////////////////////////////////////////////////////
+  // JSON File Data
+  //////////////////////////////////////////////////////////////////////////////
+  bool JsonRead;
 
   //////////////////////////////////////////////////////////////////////////////
   // Initialization method.
   TTT(){
     //printf("Calling Default Constructor... \n");
     //throw "Calling Default Constructor... \n";
+    JsonRead = false;
+
   }
 
   //////////////////////////////////////////////////////////////////////////////
   // JSON Initialization method(Reading from file).
-  TTT(nlohmann::json &j){
+  //TTT(){
 
-    //////////////////////////////////////////////////////////////////////////////
-    // For Each Player within JSON file, place back within Players list.
-    // NOTE: When Saving TTT Players to JSON file, the order is swapped(The
-    //   First player is at the bottom of the list); the for loop automatically
-    //   adds the players back into the order(The first player within the JSON
-    //   file becomes the last player within the Player order).
-    for (nlohmann::json ji: j["Players"]) { // c++11 range-based for loop
-      Players.push_back(new TTT_Player(ji));
-    }
-
-    //std::string value = J_Game["Board"].get<std::string>();
-    //Board = J_Game["Board"].get<std::string>().c_str();
-    strcat(Board, j["Game"]["Board"].get<std::string>().c_str());
-  }
+  //}
 
   TTT(std::list<TTT_Player*> GivenPlayers){
       //this->DeclarePlayers(GivenPlayers);
       Players = GivenPlayers;
       this->WinningPlayer  = NULL;
       MovesRemaining       = 9;
+      JsonRead = false;
+      SimulationFinished = false;
       this->SetUpBoard();
+      GameHash = this->Hash();
+      //std::cout<< "GameHash:" << GameHash <<"\n";
     }
     virtual ~TTT(){
-      for (TTT_Player* Player: Players) { // c++11 range-based for loop
-        //free(Player);
-        delete Player;
+
+
+      if(JsonRead){
+        for (TTT_Player* Player: Players) { // c++11 range-based for loop
+          //free(Player);
+          delete Player;
+        }
       }
+
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -321,9 +382,10 @@ public:
     TTT* RollOut();
     void PlayGame();
     //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
-
+    bool equal(TTT* OtherGame);
     void Save(std::string LogPath);
     void Read(std::string LogPath);
+    std::size_t Hash();
 };
 
 //#include<bits/stdc++>
@@ -333,42 +395,23 @@ public:
 #include <unordered_map>
 
 
-template <>
-struct std::hash<TTT>
-{
-  std::size_t Hash(TTT* k) const
-  {
-    using std::size_t;
-    using std::hash;
-    using std::string;
-    std::string GameState;
 
-    // Compute individual hash values for first,
-    // second and third and combine them using XOR
-    // and bit shifting:
-    std::size_t Itteration = 0;
-    std::size_t Sum = 0;
+std::size_t TTT::Hash(){
+  std::size_t HashSum;
+  std::string GameState = convertToString(this->Board,9);
+  //std::cout << GameState <<"\n";
+  HashSum = (std::hash<std::string>()(GameState));
+  //std::cout << HashSum <<"\n";
+
 /*
-for (int Row = 0; Row < 3; Row++)
-{
-  for (int Col = 0; Col < 3; Col++)
-  {
-    GameState += k->Board[Row][Col];
-  }
+int Position = 0;
+for (TTT_Player* Player: this->Players) { // c++11 range-based for loop
+  Position+=1;
+  HashSum += Player->Hash()*Position;
 }*/
-
-    Itteration = (hash<char*>()(k->Board));
-    Sum        += Itteration;
-    //printf("Itteration:'%s':/8 %zu\n",GameState.c_str(),Itteration);
-    //printf("Sum: %zu\n",Sum);
-    //printf("----------------------------\n");
-
-    //return ((
-    //         ^ (hash<string>()(k.second) << 1)) >> 1)
-    //         ^ (hash<int>()(k.third) << 1);
-    return Itteration;
-  }
-};
+  GameHash = HashSum;
+  return HashSum;
+}
 
 
 
@@ -398,9 +441,7 @@ void TTT::RotatePlayers(){
   Players.splice(Players.end(),        // destination position
                  Players,              // source list
                  Players.begin());     // source position
-// _Players.splice(_Players.end(),        // destination position
-//                _Players,              // source list
-//                _Players.begin());     // source position
+
 };
 
 
@@ -497,6 +538,7 @@ TTT_Player* TTT::DeclareWinner(TTT_Player* GivenWinner)
   if(WinningPlayer == NULL){
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
+    SimulationFinished = true;
     //std::cout << this->Generate_StringRepresentation();
     //printf("WinningPlayer:%p\n",WinningPlayer);
 
@@ -607,8 +649,9 @@ Winning Diagonal Method Found. Example:
   }
 
   if(this->MovesRemaining == 0){
-    WinningPlayer = &Draw;
-    return WinningPlayer;
+    //WinningPlayer = &Draw;
+    //return WinningPlayer;
+    return this->DeclareWinner(&Draw);
   }
   return WinningPlayer;
 }
@@ -665,7 +708,19 @@ TTT* TTT::CopyGame(){
 }
 
 
-
+bool TTT::equal(TTT* OtherGame)
+{
+  if(GameHash != OtherGame->GameHash){
+    return false;
+  }
+  for (int Row = 0; Row < 9; Row++)
+  {
+    if (Board[Row] != OtherGame->Board[Row]){
+      return false;
+    }
+  }
+  return true;
+}
 
 
 
@@ -735,86 +790,29 @@ void TTT::PlayGame()
 
 
 
-void JSON_ExampleRead(){
-  nlohmann::json data;
-  std::ifstream file("../../Files/Example01.json");
-  file >> data;
+
+
+
+void Add(TTT*p) {
+
+
 }
 
+void Json(TTT *p) {
 
-void JSON_ExampleWrite(){
-  nlohmann::json data;
-  data["M_final"] = std::vector<double>(1);
-  data["beta"]    = 10.0;
-/*
-nlohmann::json data = R"(
-    {
-        "happy": true,
-        "pi": 3.141
-    }
-)"_json;
-*/
-  std::ofstream file("Test01.json");
-  file << std::setw(4) << data << std::endl;
-}
-
-
-
-void Add(nlohmann::json &j, TTT &p) {
-    j = nlohmann::json{
-        {"Board",  p.Board},
-        {"MovesRemaining", p.MovesRemaining}};
-}
-
-nlohmann::json Json(TTT &p) {
-  nlohmann::json data;
-  Add(data,p);
-  return data;
 }
 
 
 
 
 void TTT::Save(std::string LogPath){
-  nlohmann::json data;
 
-  data["Game"]=Json(*this);
-
-  //nlohmann::json JsonObjects;
-  data["Players"] = nlohmann::json::array();
-  //nlohmann::json Player;
-
-  //////////////////////////////////////////////////////////////////////////////
-  // For Each Player within JSON file, place Players into list.
-  // NOTE: When Saving TTT Players to JSON file, the order is swapped(The First
-  //   player is at the bottom of the list). Reading the JSON file for loop
-  //   automatically adds the players back into the correct order(The first
-  //   player within the JSON file becomes the last player within the Player order).
-  for (TTT_Player* i : this->Players) { // c++11 range-based for loop
-    //Player = (const TTT &)* i;
-    data["Players"].push_back(Json(*i));
-  }
-
-  std::ofstream file(LogPath);
-  file << std::setw(4) << data << std::endl;
 }
 
 
+
 TTT* Read_TTT_JSON(std::string LogPath){
-    //nlohmann::json data;
-    //std::ifstream file(LogPath);
-    //file >> data;
-    std::ifstream ifs(LogPath);
-    nlohmann::json jf = nlohmann::json::parse(ifs);
-    TTT *_Game = new TTT(jf);
-
-
-    //TTT* p = (TTT*)malloc( sizeof(TTT) );
-
-    //TTT p = jf.at("Game");
-
-    _Game->Generate_StringRepresentation();
-    return _Game;
+  return 0;
 }
 
 

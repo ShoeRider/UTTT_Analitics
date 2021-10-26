@@ -27,7 +27,7 @@ identical branches from searching the same space.
 #include <bits/stdc++.h>
 
 #include "HashTable.cu"
-#include "TreeSearch.cpp"
+#include "TreeSearch.cu"
 #include "../../Games/SRC/Game.cu"
 
 
@@ -65,7 +65,7 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   // List of _Players to maintain turn order.
   //////////////////////////////////////////////////////////////////////////////
-  std::list<Player_Tp*> _Players;
+  std::list<Player_Tp*> Players;
 
   //////////////////////////////////////////////////////////////////////////////
   // pointers to maintain tree structure.
@@ -85,7 +85,7 @@ public:
     MCHS_Node(Game_Tp* Instance,std::list<Player_Tp*> _GivenPlayers,HashTable_t<MCHS_Node>*GivenHashTable){
       for (Player_Tp* _Player : _GivenPlayers){
             //printf("adding Player:%p\n",(_Player));
-            _Players.push_back(_Player);
+            Players.push_back(_Player);
       }
 
       Parents = {};
@@ -94,6 +94,7 @@ public:
       Children   = {};
       NodeVisits = 0;
       ValueSum   = 0;
+
       //printf("Creating MCHS Node w Player:%p\n",*(_Players.begin()));
       //std::cin.get();
     }
@@ -122,6 +123,7 @@ public:
     // Method Declarations.
     //////////////////////////////////////////////////////////////////////////////
     double     Find_UCB1();
+    void       RotatePlayers();
 
     MCHS_Node* Find_MAX_UCB1_Child();
     MCHS_Node* ReturnBestMove();
@@ -145,6 +147,13 @@ MCHS_Node* get(std::list<MCHS_Node*> _list, int _i){
     return *it;
 }*/
 
+template <typename Game_Tp, typename Player_Tp>
+void MCHS_Node<Game_Tp,Player_Tp>::RotatePlayers(){
+  Players.splice(Players.end(),        // destination position
+                 Players,              // source list
+                 Players.begin());     // source position
+
+};
 
 
 
@@ -152,6 +161,7 @@ MCHS_Node* get(std::list<MCHS_Node*> _list, int _i){
 //Preform MonteCarlo's UCB1 evaluation algorithm on a given node.
 template <typename Game_Tp, typename Player_Tp>
 double MCHS_Node<Game_Tp,Player_Tp>::Find_UCB1(){
+
   double MaxValue = INT_MAX;
   double Value = 0;
 
@@ -161,7 +171,7 @@ double MCHS_Node<Game_Tp,Player_Tp>::Find_UCB1(){
     double ExploreBy = 1.4142;
     if(NodeVisits == 0)
     {
-      return INT_MAX;
+      return DBL_MAX;
     }
     float _NodeVisits = 1;
     _NodeVisits = Parent->NodeVisits;
@@ -186,12 +196,12 @@ template <typename Game_Tp, typename Player_Tp>
 MCHS_Node<Game_Tp,Player_Tp>* MCHS_Node<Game_Tp,Player_Tp>::Find_MAX_UCB1_Child(){
   double     HighestValue = -DBL_MAX;
   double     NodesValue;
-  MCHS_Node* HighestNode  = NULL;
+  MCHS_Node* HighestNode  = (*Children.begin());
 
   for (MCHS_Node<Game_Tp,Player_Tp>* Node : Children){
       NodesValue = Node->Find_UCB1();
 
-      if (HighestValue < NodesValue)
+      if (HighestValue <= NodesValue)
       {
         HighestNode  = Node;
         HighestValue = NodesValue;
@@ -225,17 +235,19 @@ MCHS_Node<Game_Tp,Player_Tp>* MCHS_Node<Game_Tp,Player_Tp>::ReturnBestMove(){
 
 template <typename Game_Tp, typename Player_Tp>
 void MCHS_Node<Game_Tp,Player_Tp>::DisplayStats(){
-  if(NodeVisits>0)
-  {
-    std::cout << "----------------------------------------\n";
-    printf("\tNodeVisits:%f\n", NodeVisits);
-    printf("\tValueSum:%f\n", ValueSum);
-    printf("\tNode Ratio:%f\n", (ValueSum/NodeVisits));
-    printf("\tUCB1:%f\n", Find_UCB1());
-    printf("\tHash: %zu\n",GetHash());
-    std::cout << GivenGame->Generate_StringRepresentation();
+  std::cout << "----------------------------------------\n";
+  printf("\tLocation: %p\n",this);
+  printf("\tPlayer: %c\n",(*Players.begin())->GameRepresentation);
+  printf("\tNodeVisits:%f\n", NodeVisits);
+  printf("\tValueSum:%f\n", ValueSum);
+  printf("\tNode Ratio:%f\n", (ValueSum/NodeVisits));
+  printf("\tUCB1:%f\n", Find_UCB1());
+  printf("\tHash: %zu\n",GivenGame->Hash());
+  printf("\tChilderen: %zu\n",Children.size());
+  std::cout << GivenGame->Generate_StringRepresentation();
+  for (MCHS_Node<Game_Tp,Player_Tp>* Node : Children){
+    printf("\t\tChilderen: %p \t%f \t%f\n",Node,Node->ValueSum,Node->NodeVisits);
   }
-
 }
 
 template <typename Game_Tp, typename Player_Tp>
@@ -257,7 +269,7 @@ int MCHS_Node<Game_Tp,Player_Tp>::AddChildren(std::list<Game_Tp*> PossibleInstan
         // children list.
         NewNode = new MCHS_Node<Game_Tp,Player_Tp>(Instance,(Instance->Players),HashTable);
         bool InsertedNode = false;
-
+        NewNode->RotatePlayers();
         std::tie(NewNode, InsertedNode) = HashTable->AddGetReference(NewNode);
 
         Children.push_back(NewNode);
@@ -271,13 +283,13 @@ this->RefreshWeights();
 */
   if(!InsertedNode){
 
-    std::cout << "updating weights\n";
-    std::cout << "old*\t:"<<NewNode->NodeVisits<< "\n";
-    std::cout << "\t"<<this->NodeVisits<< "\n";
+    //std::cout << "updating weights\n";
+    //std::cout << "old*\t:"<<NewNode->NodeVisits<< "\n";
+    //std::cout << "\t"<<this->NodeVisits<< "\n";
     RefreshWeights();
-    std::cout << "\t"<<this->NodeVisits<< "\n";
-    this->DisplayStats();
-    NewNode->DisplayStats();
+    //std::cout << "\t"<<this->NodeVisits<< "\n";
+    //this->DisplayStats();
+    //NewNode->DisplayStats();
   }
 
 
@@ -310,7 +322,7 @@ MCHS_Node<Game_Tp,Player_Tp>* MCHS_Node<Game_Tp,Player_Tp>::RollOut(){
   //printf("RO_WinningPlayer:%p\n",RollOutGame->WinningPlayer);
   //TODO Check if game is finished
   //No need to free externally, MCHS_Node deconstructer will free.
-  RollOutChild = new MCHS_Node<Game_Tp,Player_Tp>(RollOutGame,_Players,HashTable);
+  RollOutChild = new MCHS_Node<Game_Tp,Player_Tp>(RollOutGame,Players,HashTable);
 
   RollOutChild->Parents.push_back(this);
   //RollOutChild->Parent = this;
@@ -320,15 +332,30 @@ MCHS_Node<Game_Tp,Player_Tp>* MCHS_Node<Game_Tp,Player_Tp>::RollOut(){
 template <typename Game_Tp, typename Player_Tp>
 void MCHS_Node<Game_Tp,Player_Tp>::RefreshWeights()
 {
-  NodeVisits = 1;
-  ValueSum   = 0;
+  if(Parents.size()){
+    NodeVisits = 1;
+    ValueSum   = 0;
 
-  for (MCHS_Node<Game_Tp,Player_Tp>* Node : Children){
-    NodeVisits += Node->NodeVisits;
-    ValueSum   += Node->ValueSum;
+    for (MCHS_Node<Game_Tp,Player_Tp>* Node : Children){
+      NodeVisits += Node->NodeVisits;
+      ValueSum   += -(Node->ValueSum);
 
+
+    }
   }
-  this->DisplayStats();
+  else{
+    NodeVisits = 1;
+    ValueSum   = 0;
+
+    for (MCHS_Node<Game_Tp,Player_Tp>* Node : Children){
+      NodeVisits += Node->NodeVisits;
+      ValueSum   += (Node->ValueSum);
+
+
+    }
+  }
+
+  //this->DisplayStats();
   if(Parents.size()){
     for (MCHS_Node<Game_Tp,Player_Tp>* Parent : Parents){
       //std::cout << "\tParent: " << Parent << "\n";
@@ -353,12 +380,13 @@ BackPropagation is the final step of the MCHS. It backtracks from a rollout leaf
 template <typename Game_Tp, typename Player_Tp>
 void MCHS_Node<Game_Tp,Player_Tp>::BackPropagation(Player_Tp* GivenPlayer)
 {
+
   NodeVisits++;
 
 
   //If no matching condition is found an apposing player won the RollOut game.
-
-  if(*(_Players.begin()) == GivenPlayer)
+  //double EvaluatedValue = -1;
+  if(*(Players.begin()) == GivenPlayer)
   {
     ValueSum += 1;
   }
@@ -376,6 +404,7 @@ void MCHS_Node<Game_Tp,Player_Tp>::BackPropagation(Player_Tp* GivenPlayer)
   //printf("  EvaluatedValue:%f\n",EvaluatedValue);
   //printf("           Value:%f\n",ValueSum);
   //printf("          Visits:%f\n",NodeVisits);
+  //ValueSum += EvaluatedValue;
   //printf(" Parent:%p\n",Parent);
   //If not the head Node, Keep transversing up the Search Tree.
 
@@ -548,7 +577,7 @@ public:
     //HeadNode  = NULL;
     //printf("new MCHS_Node's Player:%p\n",Player);
     //std::cin.get();
-    HashTable = new HashTable_t<MCHS_Node<Game_Tp,Player_Tp>>(10000);
+    HashTable = new HashTable_t<MCHS_Node<Game_Tp,Player_Tp>>(250000);
     HeadNode  = new MCHS_Node<Game_Tp,Player_Tp>(_Game,_GivenPlayers,HashTable);
     GivenGame = _Game;
 
@@ -664,6 +693,7 @@ MCHS_Node<Game_Tp,Player_Tp>* MCHS<Game_Tp,Player_Tp>::Algorithm(MCHS_Node<Game_
     /////////////////////////////////////////////////////////////////
     // Find all possible games from branch.
     /////////////////////////////////////////////////////////////////
+
     std::list<Game_Tp*> Games = TransversedNode->GivenGame->PossibleGames();
     //std::cout << "Adding Children Size:" << Games.size() << "\n";
 
@@ -753,12 +783,18 @@ void MCHS<Game_Tp,Player_Tp>::Search(int Depth)
 
     std::cout << "Searching Depth:" << Depth << "\n";
     // Increment counter, and perform another step within the search.
-    for (int i = 0; i < Depth; i++) {
-      //printf("\tDepth: %d\n",i);
-
-      // Use helper Method EvaluateStep to increment the search.
-      EvaluateStep(HeadNode,GivenPlayer);
+    while(HeadNode->NodeVisits < Depth){
+        // Use helper Method EvaluateStep to increment the search.
+        EvaluateStep(HeadNode,GivenPlayer);
     }
+/*
+for (int i = 0; i < Depth; i++) {
+  //printf("\tDepth: %d\n",i);
+
+  // Use helper Method EvaluateStep to increment the search.
+  EvaluateStep(HeadNode,GivenPlayer);
+}
+*/
 //Pause
     HeadNode->RefreshWeights();
     HeadNode->DisplayTree(1);

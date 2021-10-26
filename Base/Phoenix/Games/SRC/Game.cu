@@ -141,8 +141,28 @@ Player_Tp* PlayGameOut(Game_Tp Game){
   return 0;
 }
 
+/*
+#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
+
+template <typename Game_Tp,typename Player_Tp>
+void Add(nlohmann::json &j,std::list<Player_Tp*> &Players) {
 
 
+  j = nlohmann::json::array();
+  //nlohmann::json Player;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // For Each Player within JSON file, place Players into list.
+  // NOTE: When Saving TTT Players to JSON file, the order is swapped(The First
+  //   player is at the bottom of the list). Reading the JSON file for loop
+  //   automatically adds the players back into the correct order(The first
+  //   player within the JSON file becomes the last player within the Player order).
+  for (Player_Tp* i : Players) { // c++11 range-based for loop
+    //Player = (const TTT &)* i;
+    j.push_back(Json(*i));
+  }
+}
+*/
 
 
 #endif //GAME_CU

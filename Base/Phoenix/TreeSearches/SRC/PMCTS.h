@@ -18,9 +18,10 @@
 
 #include <fstream>
 
-#include "TreeSearch.cu"
-#include "../SRC/MCTS.cu"
-#include "../../ThreadingTools/SRC/ThreadingTools.cu"
+#include "TreeSearch.cpp"
+#include "../SRC/MCTS.cpp"
+//#include "../../ThreadingTools/SRC/ThreadingTools.cpp"
+#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
 
 
 template <typename Game_Tp, typename Player_Tp>

@@ -2,8 +2,8 @@
 #define MCTS_Tests_CU
 
 #include "../../Games/SRC/Game.cpp"
-#include "../../Games/SRC/TTT.cu"
-#include "../../Games/SRC/UTTT.cu"
+#include "../../Games/SRC/TTT.cpp"
+#include "../../Games/SRC/UTTT.cpp"
 #include "../SRC/MCTS.cpp"
 #include "../SRC/PMCTS.cpp"
 

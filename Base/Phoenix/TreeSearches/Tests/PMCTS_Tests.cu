@@ -6,6 +6,7 @@
 #include "../../Games/SRC/UTTT.cu"
 #include "../SRC/MCTS.cu"
 #include "../SRC/PMCTS.cu"
+#include "../SRC/PMCTS.cu"
 
 
 /*
@@ -22,6 +23,39 @@ Sim->Search(15000,&Player0);
 //delete _Game;
 delete Sim;
 */
+
+
+
+void DisplayDataTypeSizes(){
+  std::cout << "least 8:  " << sizeof(std::int_least8_t) * 8 << " bits\n";
+  std::cout << "least 16: " << sizeof(std::int_least16_t) * 8 << " bits\n";
+  std::cout << "least 32: " << sizeof(std::int_least32_t) * 8 << " bits\n";
+  std::cout << '\n';
+  std::cout << "fast 8:  " << sizeof(std::int_fast8_t) * 8 << " bits\n";
+  std::cout << "fast 16: " << sizeof(std::int_fast16_t) * 8 << " bits\n";
+  std::cout << "fast 32: " << sizeof(std::int_fast32_t) * 8 << " bits\n";
+  std::cout << '\n';
+
+  std::string GameState;
+  char *Board_i = (char*) malloc(9);
+  for (int Row = 0; Row < 3; Row++)
+  {
+    for (int Col = 0; Col < 3; Col++)
+    {
+      GameState += ' ';
+
+    }
+  }
+  char Board[3][3];
+
+  std::cout << "Board[3][3]:  "    << sizeof(Board) * 8 << " bits\n";
+  std::cout << "std::string(9): "  << sizeof(GameState) * 8 << " bits\n";
+  std::cout << "char *Board_i: "  << sizeof(Board_i) * 8 << " bits\n";
+  free(Board_i);
+  //std::cout << "fast 32: "      << sizeof(std::int_fast32_t) * 8 << " bits\n";
+
+}
+
 int main() {
  //std::cout << "Hello World!";
  UTTT_Player Player0 = UTTT_Player(0,'X');
@@ -35,7 +69,7 @@ int main() {
 //Pause;
  Sim->Search(1,10);
  delete Sim;
-   printf("Got Here\n");
+  DisplayDataTypeSizes();
  return 0;
 }
 

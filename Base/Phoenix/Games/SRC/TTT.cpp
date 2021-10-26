@@ -45,7 +45,10 @@ Description:
 //////////////////////////////////////////////////////////////////////////////
 #include "TTT.h"
 
-
+#include <iostream>
+#include <fstream>
+#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
+#include <iomanip>
 
 
 
@@ -96,12 +99,27 @@ struct TTT_Player : public Player
 
 
     TTT_Player(){}
+    TTT_Player(nlohmann::json &j){
+      //char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+      //GameRepresentation = digits[iChar];
+      int iChar = j["GameRepresentation"];
+      //j["GameRepresentation"]
+      //std::string value = j["PlayerNumber"].get<std::string>().c_str();
+      PlayerNumber = j["PlayerNumber"];//char
+      HumanPlayer = j["HumanPlayer"];//char
+      GameRepresentation = (char)iChar;
+
+      Display();
+
+    }
    TTT_Player(int GivenPlayer,char GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
+    HumanPlayer = false;
   }
   ~TTT_Player(){}
    TTT_Move* MakeMove(TTT* GivenGame);
+   void Display();
 };
 
 TTT_Move* TTT_Player::MakeMove(TTT* GivenGame)
@@ -116,7 +134,17 @@ TTT_Move* TTT_Player::MakeMove(TTT* GivenGame)
    TTT_Move* TTTMove = new TTT_Move(X,Y);
    //GameMove* Move = static_cast<GameMove*>(TTTMove);
 
+   //TODO: Include Move call here
+   //GivenGame->Move(TTTMove);
    return TTTMove;
+}
+
+void TTT_Player::Display()
+{
+   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
+   printf("PlayerNumber:%d\n",PlayerNumber);
+   printf("GameRepresentation:%c\n",GameRepresentation);
+   printf("HumanPlayer:%d\n",HumanPlayer);
 }
 
 void Free_TTTMoveList(std::list<TTT_Move*> GameMoves)
@@ -134,6 +162,52 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
   // Change Player->Move pointer to request input.
   return Player;
 }
+
+
+void Add(nlohmann::json &j,   TTT_Player &p) {
+  //nlohmann::json data;
+  printf("p.GameRepresentation:%c\n",p.GameRepresentation);
+    printf("p.GameRepresentation(int):%d\n",p.GameRepresentation);
+      printf("p.GameRepresentation(int):%c\n",(char)79);
+    Pause;
+    j = nlohmann::json::object({
+      {"PlayerNumber", p.PlayerNumber},
+      {"HumanPlayer", p.HumanPlayer},
+      {"GameRepresentation", p.GameRepresentation}
+    });
+
+/*
+char Test = 'O';
+  printf("Test:%c\n",Test);
+
+  printf("p.GameRepresentation:%c\n",p.GameRepresentation);
+  j = nlohmann::json{
+      {"PlayerNumber",  p.PlayerNumber},
+      {"HumanPlayer",  p.HumanPlayer},
+      {"GameRepresentation", p.GameRepresentation}};
+      */
+    //return data;
+}
+
+
+nlohmann::json Json(TTT_Player &p) {
+  nlohmann::json data;
+  Add(data,p);
+  return data;
+}
+
+/*
+void from_json(const nlohmann::json &j, TTT_Player &p) {
+
+  j.at("PlayerNumber").get_to(p.PlayerNumber);
+  j.at("HumanPlayer").get_to(p.HumanPlayer);
+  j.at("GameRepresentation").get_to(p.GameRepresentation);
+}
+*/
+
+
+
+
 
 
 
@@ -175,8 +249,11 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   //MovesRemaining is a decrementing counter to determine if there are any remaining moves.
   int MovesRemaining;
+  int MovesMade;  //TODO, Implement MovesMade
   //Represenation of the game.
-  char Board[3][3];
+  //char Board[3][3];
+  //TTTMove->Row*3+TTTMove->Col
+  char Board[9];
 
 
 
@@ -187,14 +264,37 @@ public:
     //throw "Calling Default Constructor... \n";
   }
 
-    TTT(std::list<TTT_Player*> GivenPlayers){
-        //this->DeclarePlayers(GivenPlayers);
-        Players = GivenPlayers;
-        this->WinningPlayer  = NULL;
-        MovesRemaining       = 9;
-        this->SetUpBoard();
-      }
+  //////////////////////////////////////////////////////////////////////////////
+  // JSON Initialization method(Reading from file).
+  TTT(nlohmann::json &j){
+
+    //////////////////////////////////////////////////////////////////////////////
+    // For Each Player within JSON file, place back within Players list.
+    // NOTE: When Saving TTT Players to JSON file, the order is swapped(The
+    //   First player is at the bottom of the list); the for loop automatically
+    //   adds the players back into the order(The first player within the JSON
+    //   file becomes the last player within the Player order).
+    for (nlohmann::json ji: j["Players"]) { // c++11 range-based for loop
+      Players.push_back(new TTT_Player(ji));
+    }
+
+    //std::string value = J_Game["Board"].get<std::string>();
+    //Board = J_Game["Board"].get<std::string>().c_str();
+    strcat(Board, j["Game"]["Board"].get<std::string>().c_str());
+  }
+
+  TTT(std::list<TTT_Player*> GivenPlayers){
+      //this->DeclarePlayers(GivenPlayers);
+      Players = GivenPlayers;
+      this->WinningPlayer  = NULL;
+      MovesRemaining       = 9;
+      this->SetUpBoard();
+    }
     virtual ~TTT(){
+      for (TTT_Player* Player: Players) { // c++11 range-based for loop
+        //free(Player);
+        delete Player;
+      }
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -221,6 +321,9 @@ public:
     TTT* RollOut();
     void PlayGame();
     //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
+
+    void Save(std::string LogPath);
+    void Read(std::string LogPath);
 };
 
 //#include<bits/stdc++>
@@ -238,30 +341,32 @@ struct std::hash<TTT>
     using std::size_t;
     using std::hash;
     using std::string;
+    std::string GameState;
 
     // Compute individual hash values for first,
     // second and third and combine them using XOR
     // and bit shifting:
     std::size_t Itteration = 0;
     std::size_t Sum = 0;
-    for (int Row = 0; Row < 3; Row++)
-    {
-      for (int Col = 0; Col < 3; Col++)
-      {
-          //Board[Row][Col] = ' ';
-          //if()
-          Itteration = (hash<char>()(k->Board[Row][Col])/16)*(Col+1)/ (Row+1);
-          Sum        += Itteration;
-          printf("Character:'%c':/8 %zu\n",k->Board[Row][Col],(hash<char>()(k->Board[Row][Col])/16));
+/*
+for (int Row = 0; Row < 3; Row++)
+{
+  for (int Col = 0; Col < 3; Col++)
+  {
+    GameState += k->Board[Row][Col];
+  }
+}*/
 
-          //printf("Sum: %zu\n",Sum);
-          //printf("----------------------------\n");
-      }
-    }
+    Itteration = (hash<char*>()(k->Board));
+    Sum        += Itteration;
+    //printf("Itteration:'%s':/8 %zu\n",GameState.c_str(),Itteration);
+    //printf("Sum: %zu\n",Sum);
+    //printf("----------------------------\n");
+
     //return ((
     //         ^ (hash<string>()(k.second) << 1)) >> 1)
     //         ^ (hash<int>()(k.third) << 1);
-    return Sum;
+    return Itteration;
   }
 };
 
@@ -270,12 +375,9 @@ struct std::hash<TTT>
 
 void TTT::SetUpBoard()
 {
-  for (int Row = 0; Row < 3; Row++)
+  for (int EachPositions = 0; EachPositions < 9; EachPositions++)
   {
-    for (int Col = 0; Col < 3; Col++)
-    {
-        Board[Row][Col] = ' ';
-    }
+    Board[EachPositions] = ' ';
   }
 }
 
@@ -319,7 +421,7 @@ bool TTT::ValidMove(GameMove* Move)
   //printf("TTTMove->Row:%d\n",TTTMove->Row);
   //printf("TTTMove->Col:%d\n",TTTMove->Col);
   //printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
-  if (Board[TTTMove->Row][TTTMove->Col] == ' ')
+  if (Board[TTTMove->Row*3+TTTMove->Col] == ' ')
   {
     //Valid Move
     //printf("TTT Valid Move\n");
@@ -343,7 +445,7 @@ bool TTT::Move(GameMove* Move)
     MovesRemaining--;
 
     // move first element to the end
-    Board[TTTMove->Row][TTTMove->Col] = Players.front()->GameRepresentation;
+    Board[TTTMove->Row*3+TTTMove->Col] = Players.front()->GameRepresentation;
     TestForWinner();
     RotatePlayers();
     return true;
@@ -381,7 +483,7 @@ std::string TTT::Generate_StringRepresentation()
   {
     for (int Col = 0; Col < 3; Col++)
     {
-        char position = Board[Row][Col];
+        char position = Board[Row*3+Col];
         Game.append(&position);
         Game.append("|");
     }
@@ -433,9 +535,9 @@ TTT_Player* TTT::TestForWinner()
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
     if(
-      Board[Row_Col][0] == Board[Row_Col][1] &&
-      Board[Row_Col][0] == Board[Row_Col][2] &&
-      Board[Row_Col][0] != ' '
+      Board[Row_Col*3] == Board[Row_Col*3+1] &&
+      Board[Row_Col*3] == Board[Row_Col*3+2] &&
+      Board[Row_Col*3] != ' '
     )
     {
       /*
@@ -451,9 +553,9 @@ TTT_Player* TTT::TestForWinner()
 
     }
     else if(
-      Board[0][Row_Col] == Board[1][Row_Col] &&
-      Board[0][Row_Col] == Board[2][Row_Col] &&
-      Board[0][Row_Col] != ' '
+      Board[Row_Col] == Board[3+Row_Col] &&
+      Board[Row_Col] == Board[6+Row_Col] &&
+      Board[Row_Col] != ' '
     )
     {
       /*
@@ -471,9 +573,9 @@ TTT_Player* TTT::TestForWinner()
 
 
   if(
-    Board[0][0] == Board[1][1] &&
-    Board[0][0] == Board[2][2] &&
-    Board[0][0] != ' '
+    Board[0] == Board[4] &&
+    Board[0] == Board[8] &&
+    Board[0] != ' '
   )
   {
 /*
@@ -488,9 +590,9 @@ Winning Diagonal Method Found. Example:
 
   }
   else if(
-    Board[0][2] == Board[1][1] &&
-    Board[0][2] == Board[2][0] &&
-    Board[0][2] != ' '
+    Board[2] == Board[4] &&
+    Board[2] == Board[6] &&
+    Board[2] != ' '
   )
   {
 /*
@@ -521,7 +623,7 @@ std::list<TTT_Move*> TTT::PossibleMoves()
   {
     for (int Col = 0; Col < 3; Col++)
     {
-        if (Board[Row][Col] == ' ')
+        if (Board[Row*3+Col] == ' ')
         {
           TTT_Move* TTTMove = new TTT_Move(Row,Col);
           //GameMove* Move = static_cast<GameMove*>(TTTMove);
@@ -609,5 +711,118 @@ void TTT::PlayGame()
     TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
 }
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Save and Read from Files using JSON.
+//////////////////////////////////////////////////////////////////////////////
+
+/*
+#include<jsoncpp/json/value.h>
+#include<jsoncpp/json/json.h>
+//#include <json.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+*/
+
+
+
+
+void JSON_ExampleRead(){
+  nlohmann::json data;
+  std::ifstream file("../../Files/Example01.json");
+  file >> data;
+}
+
+
+void JSON_ExampleWrite(){
+  nlohmann::json data;
+  data["M_final"] = std::vector<double>(1);
+  data["beta"]    = 10.0;
+/*
+nlohmann::json data = R"(
+    {
+        "happy": true,
+        "pi": 3.141
+    }
+)"_json;
+*/
+  std::ofstream file("Test01.json");
+  file << std::setw(4) << data << std::endl;
+}
+
+
+
+void Add(nlohmann::json &j, TTT &p) {
+    j = nlohmann::json{
+        {"Board",  p.Board},
+        {"MovesRemaining", p.MovesRemaining}};
+}
+
+nlohmann::json Json(TTT &p) {
+  nlohmann::json data;
+  Add(data,p);
+  return data;
+}
+
+
+
+
+void TTT::Save(std::string LogPath){
+  nlohmann::json data;
+
+  data["Game"]=Json(*this);
+
+  //nlohmann::json JsonObjects;
+  data["Players"] = nlohmann::json::array();
+  //nlohmann::json Player;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // For Each Player within JSON file, place Players into list.
+  // NOTE: When Saving TTT Players to JSON file, the order is swapped(The First
+  //   player is at the bottom of the list). Reading the JSON file for loop
+  //   automatically adds the players back into the correct order(The first
+  //   player within the JSON file becomes the last player within the Player order).
+  for (TTT_Player* i : this->Players) { // c++11 range-based for loop
+    //Player = (const TTT &)* i;
+    data["Players"].push_back(Json(*i));
+  }
+
+  std::ofstream file(LogPath);
+  file << std::setw(4) << data << std::endl;
+}
+
+
+TTT* Read_TTT_JSON(std::string LogPath){
+    //nlohmann::json data;
+    //std::ifstream file(LogPath);
+    //file >> data;
+    std::ifstream ifs(LogPath);
+    nlohmann::json jf = nlohmann::json::parse(ifs);
+    TTT *_Game = new TTT(jf);
+
+
+    //TTT* p = (TTT*)malloc( sizeof(TTT) );
+
+    //TTT p = jf.at("Game");
+
+    _Game->Generate_StringRepresentation();
+    return _Game;
+}
+
+
+
+
+
+
+
+
 
 #endif //TTT_CU

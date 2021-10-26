@@ -16,7 +16,6 @@
 
 
 
-#include <jsoncpp/json/value.h>
 #include <fstream>
 
 #include "TreeSearch.cu"

@@ -28,8 +28,8 @@ Email:          as3379@nau.edu
 #include <list>
 
 
-#include "Game.cu"
-#include "TTT.cu"
+#include "../Game.cpp"
+#include "../TTT/TTT.cpp"
 #include "UTTT.h"
 
 

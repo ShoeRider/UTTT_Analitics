@@ -31,15 +31,23 @@ Description: Remove Game* from TTT to create usable version for MCTS Templates.
 //////////////////////////////////////////////////////////////////////////////
 // Game Library for inheritance structure.
 //////////////////////////////////////////////////////////////////////////////
-#include "Game.cu"
+#include "../Game.h"
 
-struct GameMove;
-struct Player;
+
+
+
+//struct GameMove;
+//struct Player;
+
 
 
 class TTT_Move;
 class TTT_Player;
 class TTT;
+
+#include "JSON_TTT.cpp"
+#include "TTT.cpp"
+//#include "../SRC/TTT.cpp"
 
 #define Pause int ASDF; std::cin >> ASDF;
 

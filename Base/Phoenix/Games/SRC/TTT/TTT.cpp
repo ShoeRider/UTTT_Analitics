@@ -8,7 +8,6 @@ Contains(Classes):
   TTT_Move
   TTT
 TODO:
-  Fix Memory Leak.
   Add *Radio?* Player functionality: Takes Pointer to code -> Runs -> returns move
 ====================================================================================================
 Date:           NA
@@ -54,17 +53,19 @@ TODO: Generalize JSON Saves to account for different Player Oders,
   IE: Player0 has different game representation than X.
 ==========================================================
 */
-#ifndef TTT_CU
-#define TTT_CU
+#ifndef TTT_CPP
+#define TTT_CPP
 
 
 //////////////////////////////////////////////////////////////////////////////
 // Game Library for inheritance structure.
 //////////////////////////////////////////////////////////////////////////////
+
 #include "TTT.h"
 
 #include <iostream>
 #include <fstream>
+#include <jsoncpp/json/json.h>
 
 //#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
 
@@ -77,6 +78,8 @@ TODO: Generalize JSON Saves to account for different Player Oders,
 
 //picojson
 #include <iomanip>
+#include <unordered_map>
+
 
 
 //TODO Move to Basic Libaries
@@ -235,10 +238,11 @@ void Add(TTT_Player &p) {
 
 
 
+/*
 void Json(TTT_Player &p) {
 
 }
-
+*/
 
 
 
@@ -383,16 +387,16 @@ public:
     void PlayGame();
     //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
     bool equal(TTT* OtherGame);
-    void Save(std::string LogPath);
-    void Read(std::string LogPath);
+    //void Save(std::string LogPath);
+    //void Read(std::string LogPath);
     std::size_t Hash();
+
+    //Json::Value* JSON();
 };
 
 //#include<bits/stdc++>
 //template< class Key >
 //struct hash<class template>;
-
-#include <unordered_map>
 
 
 
@@ -798,22 +802,11 @@ void Add(TTT*p) {
 
 }
 
+/*
 void Json(TTT *p) {
 
 }
-
-
-
-
-void TTT::Save(std::string LogPath){
-
-}
-
-
-
-TTT* Read_TTT_JSON(std::string LogPath){
-  return 0;
-}
+*/
 
 
 
@@ -823,4 +816,7 @@ TTT* Read_TTT_JSON(std::string LogPath){
 
 
 
-#endif //TTT_CU
+
+
+
+#endif //TTT_CPP

@@ -1,7 +1,7 @@
 #ifndef TTT_Tests_CU
 #define TTT_Tests_CU
 
-#include "../SRC/TTT.cu"
+#include "../SRC/TTT/TTT.h"
 
 #include <list>
 #include <stdlib.h>
@@ -26,7 +26,7 @@ int main() {
   //f->PlayGame();
   //_Game->RollOut();
 
-  printf("Final Hash: %zu\n",Hash(_Game));
+  printf("Final Hash: %zu\n",_Game->Hash());
 
   //TTT_Move* Move = Player0->MakeMove(_Game);
 
@@ -34,14 +34,15 @@ int main() {
   _Game->Move(TTTMove);
   printf("Freeing  TTTMove\n");
   delete TTTMove;
-  printf("Final Hash: %zu\n",Hash(_Game));
+  printf("Final Hash: %zu\n",_Game->Hash());
   std::cout << _Game->Generate_StringRepresentation();
   //Hash(_Game);
 
 
 
   std::string LogPath = std::string("Test02.json");
-  _Game->Save(LogPath);
+  //_Game->Save(LogPath);
+  JSON();
   Pause;
 
   //printf("Reading file\n");

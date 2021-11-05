@@ -27,8 +27,9 @@ Email:          as3379@nau.edu
 //////////////////////////////////////////////////////////////////////////////
 // Game Library for inheritance structure.
 //////////////////////////////////////////////////////////////////////////////
-#include "Game.cu"
-#include "TTT.cu"
+#include "../Game.cpp"
+#include "../TTT/TTT.cpp"
+#include "UTTT.cpp"
 
 struct UTTT_Player;
 struct UTTT_Move;

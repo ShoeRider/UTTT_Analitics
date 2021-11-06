@@ -51,14 +51,14 @@ int main() {
 
   std::cout << _UTTTGame->Generate_StringRepresentation();
 
-//  std::string LogPath = std::string("Test03.json");
-  //_UTTTGame->Save(LogPath);
+  std::string LogPath = std::string("Test03.json");
+  _UTTTGame->Save(LogPath);
   //Pause;
 
 
 
   //printf("Reading file\n");
-  //UTTT* _Game2 = Read_UTTT_JSON(LogPath);
+  UTTT* _Game2 = Read_UTTT_JSON(LogPath);
 
 
   printf("Freeing  _UTTTGame\n");

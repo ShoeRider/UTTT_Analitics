@@ -42,7 +42,10 @@ int main() {
 
   std::string LogPath = std::string("Test02.json");
   //_Game->Save(LogPath);
-  JSON();
+  //_Game->JSON();
+  _Game->Save(LogPath);
+    std::cout <<"Read_TTT_JSON:\n";
+  Read_TTT_JSON(LogPath);
   Pause;
 
   //printf("Reading file\n");

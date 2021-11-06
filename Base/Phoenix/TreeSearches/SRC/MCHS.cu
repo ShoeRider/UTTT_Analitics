@@ -1,6 +1,7 @@
 /*
 ====================================================================================================
 Description MCHS(Conte-Carlo-Hash-Search):
+
 - Contains MCHS(Conte-Carlo-Hash-Search), and MCHS_Node to search a search space
 based on the given rules within Game.cu
 
@@ -13,6 +14,17 @@ conjunction with the standard MCTS search tree. This uses the game hash to
 quickly find the duplicate game’s within different branches and prevents
 identical branches from searching the same space.
 ==========================================================
+
+=======
+- Contains MCTS(Conte-Carlo-Hash-Search), and MCHS_Node to search a search space
+based on the given rules within Game.cu. MCHS adapts the MCTS Tree search but Uses a Hash algorithm and a Hash Table to centralize duplicate games and remove overlapping search tree branches. 
+
+NOTE: Implementing Parallel threads will be a challenge. 
+I need to figure out how to BackPropigation.
+Problem: When duplicate games occur, there are multiple parents, creating the need for mutex locks and a list of all parents for each node.
+
+
+====================================================================================================
 
 */
 
@@ -51,6 +63,7 @@ Great step by step example found here: https://www.youtube.com/watch?v=UXW2yZndl
  */
 template <typename Game_Tp, typename Player_Tp>
 class MCHS_Node
+
 {
 private:
 
@@ -65,11 +78,14 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   // List of _Players to maintain turn order.
   //////////////////////////////////////////////////////////////////////////////
+
   std::list<Player_Tp*> Players;
+
 
   //////////////////////////////////////////////////////////////////////////////
   // pointers to maintain tree structure.
   //////////////////////////////////////////////////////////////////////////////
+
   //MCHS_Node*           Parent       = NULL;
   std::list<MCHS_Node<Game_Tp,Player_Tp>*> Parents;
   MCHS_Node<Game_Tp,Player_Tp>*           RollOutChild = NULL;
@@ -547,16 +563,19 @@ class MCHS: public TreeSimulation
 {
 public:
 
+
   //////////////////////////////////////////////////////////////////////////////
   // The current head node.
   //////////////////////////////////////////////////////////////////////////////
   Game_Tp* GivenGame;
+
   MCHS_Node<Game_Tp,Player_Tp>* HeadNode;
   //Pointer to current game state.
   Game_Tp* SimulatedGame;
 
   //HashTable
   HashTable_t<MCHS_Node<Game_Tp,Player_Tp>>*HashTable;
+
 
   //////////////////////////////////////////////////////////////////////////////
   // The current head node.
@@ -567,6 +586,7 @@ public:
 
   //////////////////////////////////////////////////////////////////////////////
   // Initialization method.
+
   MCHS(Game_Tp*_Game,std::list<Player_Tp*> _GivenPlayers){
 
     Players = _GivenPlayers;
@@ -817,6 +837,7 @@ void MCHS<Game_Tp,Player_Tp>::ParallelSearch(int Depth)
     std::cout << "Searching Depth:" << Depth << "\n";
 
 }
+
 
 
 #endif //MCHS_CU

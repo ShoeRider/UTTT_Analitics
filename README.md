@@ -8,11 +8,12 @@ This repository contains a simple CPP program to find the best strategies/moves 
 Finished:
 + Basic MCTS.
 + Parallel MCTS to decrease search time.
++ Basic MCHS. HashTable and hashes of game states to remove overlapping game branches.
+
 
 In progress: 
 + Save/Read Book Moves for faster initial searches.
 + Unit Testing Through GTest
-+ Implementing HashTable and hashes of game states to remove overlapping game branches.
 + Machine learning with Neural Networks with backpropagation to help find moves faster 
 
 
@@ -21,6 +22,7 @@ requirements:
 
 gcc
 valgrind
+
 
 My System:
 nvcc --version:
@@ -35,3 +37,4 @@ R5 2600
 
 
 export PATH="/usr/local/bin:$PATH"
+

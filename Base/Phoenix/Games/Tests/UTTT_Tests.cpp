@@ -1,8 +1,8 @@
 #ifndef UTTT_Tests_CU
 #define UTTT_Tests_CU
 
-#include "../SRC/TTT/TTT.cpp"
-#include "../SRC/UTTT/UTTT.cpp"
+#include "../SRC/TTT.cpp"
+#include "../SRC/UTTT.cpp"
 
 
 
@@ -57,7 +57,7 @@ int main() {
 
 
 
-  //printf("Reading file\n");
+  printf("Reading file\n");
   UTTT* _Game2 = Read_UTTT_JSON(LogPath);
 
 
@@ -68,7 +68,7 @@ int main() {
 delete Player0;
   printf("Freeing  Player1\n");
 delete Player1;
-//delete _Game2;
+delete _Game2;
 }
 
 #endif //UTTT_Tests_CU

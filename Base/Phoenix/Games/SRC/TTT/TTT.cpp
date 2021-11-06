@@ -8,7 +8,6 @@ Contains(Classes):
   TTT_Move
   TTT
 TODO:
-  Fix Memory Leak.
   Add *Radio?* Player functionality: Takes Pointer to code -> Runs -> returns move
 ====================================================================================================
 Date:           NA
@@ -54,18 +53,21 @@ TODO: Generalize JSON Saves to account for different Player Oders,
   IE: Player0 has different game representation than X.
 ==========================================================
 */
-#ifndef TTT_CU
-#define TTT_CU
+#ifndef TTT_CPP
+#define TTT_CPP
 
 
 //////////////////////////////////////////////////////////////////////////////
 // Game Library for inheritance structure.
 //////////////////////////////////////////////////////////////////////////////
+
 #include "TTT.h"
 
 #include <iostream>
 #include <fstream>
+#include <jsoncpp/json/json.h>
 
+#include <string.h>
 //#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
 
 //https://stackoverflow.com/questions/63503620/cant-use-m128i-in-cuda-kernel
@@ -77,6 +79,13 @@ TODO: Generalize JSON Saves to account for different Player Oders,
 
 //picojson
 #include <iomanip>
+#include <unordered_map>
+
+
+//Read and save Game states.
+#include <iostream>
+#include <jsoncpp/json/json.h>
+//#include "TTT.cu"
 
 
 //TODO Move to Basic Libaries
@@ -154,7 +163,40 @@ struct TTT_Player : public Player
 
     //////////////////////////////////////////////////////////////////////////////
     // Initialization method.
-    TTT_Player(){}
+    TTT_Player(Json::Value root){
+      std::cout <<"creating TTT_Player:\n";
+          Json::FastWriter fastWriter;
+          std::string Temp;
+      //////////////////////////////////////////////////////////////////////////////
+      //Gather Player Number
+        std::cout <<"gathering PlayerNumber:'"<<root["PlayerNumber"]<<"'\n";
+      Temp = fastWriter.write(root["PlayerNumber"]);
+      //Temp.erase(0, 1);                          //Remove leading  '"'
+      //Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
+      PlayerNumber = atoi(Temp.c_str());
+
+      //////////////////////////////////////////////////////////////////////////////
+      //Gather Player's GameRepresentation.
+        std::cout <<"gathering GameRepresentation:\n";
+      Temp = fastWriter.write(root["GameRepresentation"]);
+      Temp.erase(0, 1);                          //Remove leading  '"'
+      Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
+      const char* MOD_JSON_BoardRep =Temp.c_str();   //Cast as Char* for copy
+
+      //char* MOD_JSON_BoardRep  = JSON_BoardRep;#.c_str()
+      //strcat produces Valgrind error.
+      //https://codereview.stackexchange.com/questions/46619/conditional-jump-or-move-depends-on-uninitialised-value
+      strncpy(&GameRepresentation, MOD_JSON_BoardRep, strlen(MOD_JSON_BoardRep) + 1);
+
+
+      //////////////////////////////////////////////////////////////////////////////
+      //Gather (is)HumanPlayer value.
+/*
+Temp = fastWriter.write(root["HumanPlayer"]);
+Temp.erase(0, 1);                          //Remove leading  '"'
+Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
+PlayerNumber = atoi(Temp.c_str());*/
+    }
 
     //////////////////////////////////////////////////////////////////////////////
     // Initialization method from JSON Files
@@ -169,6 +211,10 @@ struct TTT_Player : public Player
    TTT_Move* MakeMove(TTT* GivenGame);
    void Display();
    std::size_t Hash();
+   Json::Value* JSON();
+   Json::Value* ADD(Json::Value*);
+
+   void Save(std::string FilePath);
 };
 
 std::size_t TTT_Player::Hash(){
@@ -226,22 +272,57 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
 }
 
 
-void Add(TTT_Player &p) {
 
+Json::Value* TTT_Player::ADD(Json::Value* JSONValue){
+  Json::Value Player;
+  Player["PlayerNumber"]       = PlayerNumber;
+  Player["GameRepresentation"] = std::string(1,GameRepresentation);
+  Player["HumanPlayer"]        = HumanPlayer;
+  (*JSONValue)["Player"+PlayerNumber]       = Player;
+  return JSONValue;
+}
+
+Json::Value* TTT_Player::JSON(){
+  Json::Value* Player = new Json::Value();
+  (*Player)["PlayerNumber"]       = PlayerNumber;
+  (*Player)["GameRepresentation"] = std::string(1,GameRepresentation);
+  (*Player)["HumanPlayer"]        = HumanPlayer;
+  //std::cout << (*Player) << std::endl;
+  return Player;
 }
 
 
 
+void TTT_Player::Save(std::string FilePath){
+  Json::Value* value_obj = JSON();
 
+  std::ofstream file_id;
+  file_id.open(FilePath);
 
+  //populate 'value_obj' with the objects, arrays etc.
 
-void Json(TTT_Player &p) {
+  Json::StyledWriter styledWriter;
+  file_id << styledWriter.write(*value_obj);
 
+  file_id.close();
+  delete value_obj;
 }
 
+TTT_Player* Read_TTT_Player_JSON(std::string FilePath){
+    //std::cout << "Reading File" << std::endl;
+    std::ifstream file(FilePath);
+    Json::Value root;
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse( file, root );
+    if ( !parsingSuccessful )
+    {
+        std::cout << "Error parsing the string" << std::endl;
+    }
 
+    std::cout << root << std::endl;
 
-
+    return new TTT_Player(root);
+}
 
 /*
 void Add(nlohmann::json &j,std::list<TTT_Player*> &Players) {
@@ -331,9 +412,38 @@ public:
 
   //////////////////////////////////////////////////////////////////////////////
   // JSON Initialization method(Reading from file).
-  //TTT(){
+  TTT(Json::Value ReadJSValue){
+  printf("Redeclare TTT:\n");
+    std::cout << ReadJSValue << std::endl;
+    JsonRead = true;
 
-  //}
+    //Preform string manipulation to recreate the TTT Board.
+    Json::FastWriter fastWriter;
+    std::string JSON_BoardRep = fastWriter.write(ReadJSValue["Board"]);
+    //ReadJSValue["Board"] has the format: "123456789"\n
+    JSON_BoardRep.erase(0, 1);                          //Remove leading  '"'
+    JSON_BoardRep.erase(JSON_BoardRep.size() - 2);      //Remove trailing '"\n'
+    const char* MOD_JSON_BoardRep =JSON_BoardRep.c_str();   //Cast as Char* for copy
+
+    //char* MOD_JSON_BoardRep  = JSON_BoardRep;#.c_str()
+    //strcat produces Valgrind error.
+    //https://codereview.stackexchange.com/questions/46619/conditional-jump-or-move-depends-on-uninitialised-value
+    strncpy(Board, MOD_JSON_BoardRep, strlen(MOD_JSON_BoardRep) + 1);
+    //std::cout << Board << "-asdf\n";
+    std::cout << strlen(MOD_JSON_BoardRep) << "\n";
+
+    //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
+
+    //////////////////////////////////////////////////////////////////////////////
+    //Redeclare Players
+    //printf("Redeclare TTT_Players :\n");
+    for (auto const& id : ReadJSValue["Players"].getMemberNames()) {
+      std::cout << id << std::endl;
+        Players.push_back(new TTT_Player(ReadJSValue["Players"][id]));
+    }
+
+
+  }
 
   TTT(std::list<TTT_Player*> GivenPlayers){
       //this->DeclarePlayers(GivenPlayers);
@@ -383,16 +493,17 @@ public:
     void PlayGame();
     //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
     bool equal(TTT* OtherGame);
+
     void Save(std::string LogPath);
     void Read(std::string LogPath);
     std::size_t Hash();
+
+    Json::Value* JSON();
 };
 
 //#include<bits/stdc++>
 //template< class Key >
 //struct hash<class template>;
-
-#include <unordered_map>
 
 
 
@@ -788,39 +899,91 @@ void TTT::PlayGame()
 */
 
 
+//
+/*
+void TTT::Add(TTT*p) {
+    int a_size = sizeof(p->Board) / sizeof(char);
+    std::string str = convertToString(p->Board, a_size);
+    Json::Value JSONValue = new Json::Value();
 
-
-
-
-
-void Add(TTT*p) {
+    JSONValue["Board"]          = str;
+    Json::Int64 Hash = p->Hash();
+    JSONValue["Hash"]           = Hash;
+    JSONValue["MovesRemaining"] = p->MovesRemaining;
 
 
 }
+*/
 
-void Json(TTT *p) {
 
+
+
+
+
+
+
+//TTT*TTT_Object
+Json::Value* TTT::JSON(){
+  int a_size = sizeof(Board) / sizeof(char);
+  std::string _str = convertToString(Board, a_size);
+  Json::Value* JSONValue = new Json::Value();
+
+  (*JSONValue)["Board"]          = _str;
+  (*JSONValue)["Hash"]           = std::to_string(Hash());
+  (*JSONValue)["MovesRemaining"] = MovesRemaining;
+    //delete JSONValue;
+  return JSONValue;
+}
+
+void TTT::Save(std::string FilePath){
+  Json::Value* value_obj = JSON();
+  Json::Value tmp;
+  for (TTT_Player* i : Players) { // c++11 range-based for loop
+      //std::cout << *(i->JSON()) << std::endl;
+      //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
+      //TODO Change GameRepresentation to Player number/ID.
+      //Create Original Player order Logic.
+      (*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+
+    }
+
+    //std::cout << (*value_obj) << std::endl;
+
+  std::ofstream file_id;
+  file_id.open(FilePath);
+
+  //populate 'value_obj' with the objects, arrays etc.
+
+  Json::StyledWriter styledWriter;
+  file_id << styledWriter.write(*value_obj);
+
+  file_id.close();
+  delete value_obj;
 }
 
 
 
 
-void TTT::Save(std::string LogPath){
+TTT* Read_TTT_JSON(std::string FilePath){
+    //std::cout << "Reading File" << std::endl;
+    std::ifstream file(FilePath);
+    Json::Value root;
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse( file, root );
+    if ( !parsingSuccessful )
+    {
+        std::cout << "Error parsing the string" << std::endl;
+    }
+    TTT* Game = new TTT(root);
+    //std::cout << root << std::endl;
 
+    return Game;
 }
 
 
 
-TTT* Read_TTT_JSON(std::string LogPath){
-  return 0;
-}
 
 
 
 
-
-
-
-
-
-#endif //TTT_CU
+#endif //TTT_CPP

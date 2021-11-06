@@ -2,7 +2,7 @@
 #define Game_H
 
 
-
+#include "Game.cpp"
 
 struct GameMove;
 struct Player;

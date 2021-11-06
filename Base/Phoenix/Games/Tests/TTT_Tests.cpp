@@ -17,28 +17,34 @@ int main() {
   //std::cout << "Hello World!";
   TTT_Player* Player0 = new TTT_Player(0,'X');
   TTT_Player* Player1 = new TTT_Player(1,'O');
+
   TTT *_Game = new TTT({Player0,Player1});
   //f->PlayGame();
   //_Game->RollOut();
-  std::hash<TTT>* Hash = new std::hash<TTT>;// = std::hash<TTT>(* _Game)
-  printf("Final Hash: %zu\n",Hash->Hash(_Game));
+
+  printf("Final Hash: %zu\n",Hash(_Game));
 
   //TTT_Move* Move = Player0->MakeMove(_Game);
 
-  TTT_Move* TTTMove = new TTT_Move(1,1);
+  TTT_Move* TTTMove = new TTT_Move(2,2);
   _Game->Move(TTTMove);
+  printf("Freeing  TTTMove\n");
+  delete TTTMove;
+  printf("Final Hash: %zu\n",Hash(_Game));
   std::cout << _Game->Generate_StringRepresentation();
-  Hash->Hash(_Game);
+  //Hash(_Game);
 
 
 
-  JSON_ExampleWrite();
   std::string LogPath = std::string("Test02.json");
-  _Game->Save(LogPath);
+  //_Game->Save(LogPath);
   Pause;
+
+  printf("Reading file\n");
   TTT* _Game2 = Read_TTT_JSON(LogPath);
   std::cout << _Game2->Generate_StringRepresentation();
   //_Game2->Read(LogPath);
+
 
 
  /*
@@ -53,10 +59,15 @@ int main() {
  //_Game->TestForWinner();
  //_Game->DisplayWinner();
 
- delete (TTTMove);
- delete (Hash);
+
+   printf("Freeing  _Game\n");
   delete _Game;
+    printf("Freeing  _Game2\n");
   delete _Game2;
+    printf("Freeing  Player0\n");
+  delete Player0;
+    printf("Freeing  Player1\n");
+  delete Player1;
  return 0;
 }
 

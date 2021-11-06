@@ -23,3 +23,18 @@ requirements:
 gcc
 valgrind
 
+
+My System:
+nvcc --version:
+nvcc: NVIDIA (R) Cuda compiler driver Copyright (c) 2005-2019 NVIDIA Corporation Built on Sun_Jul_28_19:07:16_PDT_2019 Cuda compilation tools, release 10.1, V10.1.243
+
+nvcc-smi:
+NVIDIA-SMI 470.74 Driver Version: 470.74 CUDA Version: 11.4 
+
+
+R5 2600 
+48 GB Ram
+
+
+export PATH="/usr/local/bin:$PATH"
+

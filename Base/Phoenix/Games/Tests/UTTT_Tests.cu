@@ -49,17 +49,26 @@ int main() {
 
   UTTT *_UTTTGame = new UTTT({Player0,Player1});
 
+
+  UTTT_Move* TTTMove = new UTTT_Move(2,2,2,2);
+  _UTTTGame->Move(TTTMove);
+  printf("Freeing  TTTMove\n");
+  delete TTTMove;
+
+
   std::cout << _UTTTGame->Generate_StringRepresentation();
 
-  std::string LogPath = std::string("Test03.json");
-  _UTTTGame->Save(LogPath);
+
+
+  //std::string LogPath = std::string("Test03.json");
+  //_UTTTGame->Save(LogPath);
   //Pause;
 
 
 
   //printf("Reading file\n");
-  UTTT* _Game2 = Read_UTTT_JSON(LogPath);
-
+  //UTTT* _Game2 = Read_UTTT_JSON(LogPath);
+  //std::cout << _Game2->Generate_StringRepresentation();
 
   printf("Freeing  _UTTTGame\n");
  delete _UTTTGame;

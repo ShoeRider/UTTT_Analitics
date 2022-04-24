@@ -19,7 +19,7 @@ TTT_Tests:
 	nvcc -o TTT_Tests ./Tests/TTT_Tests.cu -ljsoncpp
 	#gcc -std=c++11 ./Tests/TTT_Tests.cpp ./../ExternalLibraries/simdjson/singleheader/simdjson.cpp -lstdc++ -o ./TTT_Tests
 	@echo "Running(Tests) ..."
-	valgrind --leak-check=yes ./TTT_Tests
+	valgrind --leak-check=full --show-leak-kinds=all ./TTT_Tests
 	#./MCTS_Tests
 #gcc -std=c++11 ./Tests/TTT_Tests.cpp -lstdc++ -o ./TTT_Tests
 

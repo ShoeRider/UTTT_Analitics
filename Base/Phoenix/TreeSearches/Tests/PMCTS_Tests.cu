@@ -2,10 +2,10 @@
 #define MCTS_Tests_CU
 
 #include "../../Games/SRC/Game.cpp"
-#include "../../Games/SRC/TTT.cu"
-#include "../../Games/SRC/UTTT.cu"
+#include "../../Games/SRC/TTT/TTT.cpp"
+#include "../../Games/SRC/UTTT/UTTT.cpp"
 #include "../SRC/MCTS.cpp"
-#include "../SRC/PMCTS.cpp"
+#include "../SRC/PMCTS.cu"
 
 
 /*
@@ -60,7 +60,24 @@ void DisplayDataTypeSizes(){
 
 
 
-int main() {
+int main(int argc, char *argv[]) {
+  int Threads = 1;
+  long int SearchDepth = 10;
+  bool DisplayResults = false;
+  for (int i = 1; i < argc; i++) {
+      if (strcmp(argv[i],"-t")==0) {
+          Threads = atol(argv[i+1]);
+          printf("SearchDepth: %ld",SearchDepth);
+      }
+      else if (strcmp(argv[i],"-sd")==0) {
+          SearchDepth = atol(argv[i+1]);
+          printf("SearchDepth: %ld",SearchDepth);
+      } else if (strcmp(argv[i],"-d")==0) {
+          DisplayResults = true;
+      }
+
+  }
+
  //std::cout << "Hello World!";
  UTTT_Player Player0 = UTTT_Player(0,'X');
  UTTT_Player Player1 = UTTT_Player(1,'O');
@@ -71,7 +88,10 @@ int main() {
 
  PMCTS<UTTT,UTTT_Player> *Sim = new PMCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
 //Pause;
- Sim->Search(12,3000000);
+ Sim->Search(Threads,SearchDepth);
+
+
+
  //Sim->SaveSearch(std::string("Test04.json"),1,10);
  delete Sim;
  return 0;

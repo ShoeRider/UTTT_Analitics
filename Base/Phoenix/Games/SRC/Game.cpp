@@ -18,6 +18,7 @@ Using a method called: Pure Virtual Functions.
 
 #include <list>
 #include "Game.h"
+#include <jsoncpp/json/json.h>
 
 //Game Move interface. Used as a place holder for child classes holding
 //   game move data.
@@ -113,6 +114,7 @@ class Game
       virtual Game* RollOut()            = 0;
       virtual void DisplayWinner()            = 0;
 
+      //virtual Json::Value* add(Json::Value* JSONValue);
 /*
 virtual void DeclarePlayers(std::list<Player*> GivenPlayers) {
   for (Player* i : GivenPlayers) { // c++11 range-based for loop

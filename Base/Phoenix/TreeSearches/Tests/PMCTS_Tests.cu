@@ -90,8 +90,10 @@ int main(int argc, char *argv[]) {
 //Pause;
  Sim->Search(Threads,SearchDepth);
 
+ std::string LogPath = std::string("Test04.json");
+ Sim->Save(LogPath);
 
-
+ //delete JValue;
  //Sim->SaveSearch(std::string("Test04.json"),1,10);
  delete Sim;
  return 0;

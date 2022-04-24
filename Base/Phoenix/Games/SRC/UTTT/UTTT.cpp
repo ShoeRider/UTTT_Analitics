@@ -264,7 +264,7 @@ class UTTT_SubGame : public TTT
     std::list<UTTT_Move*> PossibleMoves();
     bool equal(TTT* OtherGame);
     Json::Value* JSON();
-    Json::Value* ADD(Json::Value* JSONValue);
+    Json::Value* Add(Json::Value* JSONValue);
     //bool ValidMove(GameMove* Move);
 };
 
@@ -352,7 +352,7 @@ bool UTTT_SubGame::equal(TTT* OtherGame)
 
 
 //TTT*TTT_Object
-Json::Value* UTTT_SubGame::ADD(Json::Value* JSONValue){
+Json::Value* UTTT_SubGame::Add(Json::Value* JSONValue){
   int a_size = sizeof(Board) / sizeof(char);
   std::string _str = convertToString(Board, a_size);
 
@@ -366,7 +366,7 @@ Json::Value* UTTT_SubGame::ADD(Json::Value* JSONValue){
       //TODO Change GameRepresentation to Player number/ID.
       //Create Original Player order Logic.
       //(*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
-      i->ADD(&(*JSONValue)["Players"][std::string(1,i->GameRepresentation)]);
+      i->Add(&(*JSONValue)["Players"][std::string(1,i->GameRepresentation)]);
 
     }
   return JSONValue;
@@ -597,6 +597,7 @@ public:
     void Save(std::string LogPath);
     std::size_t Hash();
     Json::Value* JSON();
+    void Add(Json::Value* JsonValue);
 };
 
 
@@ -1172,12 +1173,8 @@ nlohmann::json Json(UTTT* p) {
   return data;
 }*/
 
-Json::Value* UTTT::JSON(){
 
-
-  //int a_size = sizeof(Board) / sizeof(char);
-  //std::string _str = convertToString(Board, a_size);
-  Json::Value* JSONValue = new Json::Value();
+void UTTT::Add(Json::Value* JSONValue){
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
@@ -1185,8 +1182,8 @@ Json::Value* UTTT::JSON(){
       //std::cout << Row*3+Col << "\n";
       //std::cout << (*(Boards[Row][Col])->JSON()) << "\n";
       //(*JSONValue)["Board"][std::to_string(Row*3+Col)] =(*(Boards[Row][Col])->JSON());
-      //i->ADD(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
-      (*(Boards[Row][Col])->ADD(&(*JSONValue)["Board"][std::to_string(Row*3+Col)]));
+      //i->Add(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
+      (*(Boards[Row][Col])->Add(&(*JSONValue)["Board"][std::to_string(Row*3+Col)]));
     }
   }
 
@@ -1199,6 +1196,17 @@ Json::Value* UTTT::JSON(){
 
 
     //std::cout <<(*JSONValue) << "\n";
+  //return JSONValue;
+}
+
+Json::Value* UTTT::JSON(){
+
+
+  //int a_size = sizeof(Board) / sizeof(char);
+  //std::string _str = convertToString(Board, a_size);
+  Json::Value* JSONValue = new Json::Value();
+  Add(JSONValue);
+    //std::cout <<(*JSONValue) << "\n";
   return JSONValue;
 }
 
@@ -1209,13 +1217,13 @@ Json::Value* UTTT::JSON(){
 void UTTT::Save(std::string FilePath){
   Json::Value* JSONValue = JSON();
   Json::Value tmp;
-  for (TTT_Player* i : Players) { // c++11 range-based for loop
+  for (TTT_Player* Player : Players) { // c++11 range-based for loop
       //std::cout << *(i->JSON()) << std::endl;
       //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
       //TODO Change GameRepresentation to Player number/ID.
       //Create Original Player order Logic.
       //(*JSONValue)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
-      i->ADD(&(*JSONValue)["Players"][std::string(1,i->GameRepresentation)]);
+      Player->Add(&(*JSONValue)["Players"][std::string(1,Player->GameRepresentation)]);
 
 
     }

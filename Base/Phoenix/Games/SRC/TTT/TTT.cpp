@@ -211,7 +211,7 @@ PlayerNumber = atoi(Temp.c_str());*/
    void Display();
    std::size_t Hash();
    Json::Value* JSON();
-   Json::Value* ADD(Json::Value*);
+   Json::Value* Add(Json::Value*);
 
    void Save(std::string FilePath);
 };
@@ -272,7 +272,7 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
 
 
 
-Json::Value* TTT_Player::ADD(Json::Value* JSONValue){
+Json::Value* TTT_Player::Add(Json::Value* JSONValue){
   (*JSONValue)["PlayerNumber"]       = PlayerNumber;
   (*JSONValue)["GameRepresentation"] = std::string(1,GameRepresentation);
   (*JSONValue)["HumanPlayer"]        = HumanPlayer;
@@ -952,7 +952,7 @@ void TTT::Save(std::string FilePath){
       //TODO Change GameRepresentation to Player number/ID.
       //Create Original Player order Logic.
       //(*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
-      i->ADD(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
+      i->Add(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
 
     }
 

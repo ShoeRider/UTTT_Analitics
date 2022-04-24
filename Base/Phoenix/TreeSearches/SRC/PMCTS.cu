@@ -160,12 +160,103 @@ public:
   double Get_UCB1_ChildrenSum();
   double AssignSoftMAX();
   double Get_ChildrenValueSum();
+
+  void Add(Json::Value* JSONValue);
+  void Add(Json::Value* JSONValue,int Depth);
+  Json::Value* JSON();
+  Json::Value* JSON(int depth);
 };
 
 
 
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS_Node<Game_Tp,Player_Tp>::Add(Json::Value* JSONValue){
+  //(*JSONValue)["PastNodeVisits"]           = PastNodeVisits;
+  //(*JSONValue)["PastValueSum"]           = PastValueSum;
+
+  (*JSONValue)["NodeVisits"]           = NodeVisits;
+  (*JSONValue)["ValueSum"]           = ValueSum;
+  GivenGame->Add(&(*JSONValue)["Game"]);
+  (*JSONValue)["UCB1Value"]           = UCB1Value;
+  (*JSONValue)["SoftMAX"]           = SoftMAX;
+
+  for (Player_Tp* Player : Players) { // c++11 range-based for loop
+      //(*(Boards[Row][Col])->Add(
+      Player->Add(&(*JSONValue)["Players"][std::string(1,Player->GameRepresentation)]);
+    }
 
 
+  int Order = 0;
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Child : Children) { // c++11 range-based for loop
+      Child->Add(&(*JSONValue)["ChildNode_"+std::to_string(Order)]);
+      Order+=1;
+
+    }
+  //return JSONValue;
+}
+
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS_Node<Game_Tp,Player_Tp>::Add(Json::Value* JSONValue,int depth){
+  //(*JSONValue)["PastNodeVisits"]           = PastNodeVisits;
+  //(*JSONValue)["PastValueSum"]           = PastValueSum;
+
+  (*JSONValue)["NodeVisits"]           = NodeVisits;
+  (*JSONValue)["ValueSum"]           = ValueSum;
+  GivenGame->Add(&(*JSONValue)["Game"]);
+  (*JSONValue)["UCB1Value"]           = UCB1Value;
+  (*JSONValue)["SoftMAX"]           = SoftMAX;
+
+  for (Player_Tp* Player : Players) { // c++11 range-based for loop
+      //(*(Boards[Row][Col])->Add(
+      Player->Add(&(*JSONValue)["Players"][std::string(1,Player->GameRepresentation)]);
+    }
+
+  if (depth > 0){
+    int Order = 0;
+    for (PMCTS_Node<Game_Tp,Player_Tp>* Child : Children) { // c++11 range-based for loop
+        Child->Add(&(*JSONValue)["ChildNode_"+std::to_string(Order)],depth-1);
+        Order+=1;
+
+      }
+  }
+
+  //return JSONValue;
+}
+
+template <typename Game_Tp, typename Player_Tp>
+Json::Value* PMCTS_Node<Game_Tp,Player_Tp>::JSON(){
+
+
+  //int a_size = sizeof(Board) / sizeof(char);
+  //std::string _str = convertToString(Board, a_size);
+  Json::Value* JSONValue = new Json::Value();
+
+/*
+(*JSONValue)["Hash"]           = std::to_string(Hash());
+(*JSONValue)["NextMove_Row"] = NextMove_Row;
+(*JSONValue)["NextMove_Col"] = NextMove_Col;
+(*JSONValue)["MovesRemaining"] = MovesRemaining;
+(*JSONValue)["WinningPlayer"] = WinningPlayer;
+(*JSONValue)["SimulationFinished"] = SimulationFinished;
+*/
+
+
+
+    //std::cout <<(*JSONValue) << "\n";
+  return JSONValue;
+}
+
+template <typename Game_Tp, typename Player_Tp>
+Json::Value* PMCTS_Node<Game_Tp,Player_Tp>::JSON(int depth){
+  Json::Value* JSONValue = new Json::Value();
+  //std::list<PMCTS_Node<Game_Tp,Player_Tp>*> Children;
+  for (PMCTS_Node<Game_Tp,Player_Tp>* Child : Children) { // c++11 range-based for loop
+      //(*(Boards[Row][Col])->Add(
+
+    }
+
+  return JSONValue;
+}
 
 
 
@@ -1129,6 +1220,7 @@ public:
   ~MCTS_UCB1Threads(){
     _JoinAllThreads<Game_Tp,Player_Tp>(ThreadList);
 
+
   }
 
   void JoinFinishedThreads(std::list<PMCTS_ThreadData_t<Game_Tp,Player_Tp>*>ThreadList)
@@ -1475,7 +1567,9 @@ class PMCTS: public TreeSimulation
   void Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double Depth);
 
 
+  void Save(std::string LogPath);
   void Save(std::string LogPath,int Depth);
+  Json::Value* JSON();
   void SaveSearch(std::string Dir,double Threads, double Depth);
 
 
@@ -1520,6 +1614,7 @@ class PMCTS: public TreeSimulation
 template <typename Game_Tp, typename Player_Tp>
 void PMCTS<Game_Tp,Player_Tp>::Search(PMCTS_Node<Game_Tp,Player_Tp>* TransversedNode,double Threads, double Depth)
 {
+  //Preform initial Search to build Search tree.
   MCTS_Search(TransversedNode,37);
   //PMCTS_DispatchThreads(TransversedNode, Threads, Depth);
   //PMCTS_Search(TransversedNode,Threads, Depth);
@@ -1529,7 +1624,12 @@ void PMCTS<Game_Tp,Player_Tp>::Search(PMCTS_Node<Game_Tp,Player_Tp>* Transversed
 
   //MCTS_UCB1PrioritySearch(TransversedNode,Threads,Depth);
 
-  MCTS_UCB1Search(TransversedNode,Threads,Depth);
+  if(Threads==1){
+    MCTS_Search(TransversedNode,Depth);
+  }
+  else{
+    MCTS_UCB1Search(TransversedNode,Threads,Depth);
+  }
 }
 
 
@@ -1544,9 +1644,50 @@ void PMCTS<Game_Tp,Player_Tp>::Search(double Threads, double Depth)
 }
 
 
+template <typename Game_Tp, typename Player_Tp>
+Json::Value* PMCTS<Game_Tp,Player_Tp>::JSON(){
+  Json::Value* JSONValue = new Json::Value();
+  for (Player_Tp* i : Players) { // c++11 range-based for loop
+      //std::cout << *(i->JSON()) << std::endl;
+      //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
+      //TODO Change GameRepresentation to Player number/ID.
+      //Create Original Player order Logic.
+      //(*JSONValue)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+      i->Add(&(*JSONValue)["Players"][std::string(1,i->GameRepresentation)]);
+
+
+    }
+
+     HeadNode->Add(&(*JSONValue)["ChildNode_0"],5);
+
+
+  return JSONValue;
+}
+
+template <typename Game_Tp, typename Player_Tp>
+void PMCTS<Game_Tp,Player_Tp>::Save(std::string FilePath){
+  Json::Value* JSONValue = JSON();
+  Json::Value tmp;
+
+  std::ofstream file_id;
+  file_id.open(FilePath);
+
+  //populate 'value_obj' with the objects, arrays etc.
+
+  Json::StyledWriter styledWriter;
+  file_id << styledWriter.write(*JSONValue);
+
+  file_id.close();
+  delete JSONValue;
+}
 
 /*
 
+template <typename Game_Tp, typename Player_Tp>
+void MCTS_UCB1Threads<Game_Tp,Player_Tp>::Save(std::string LogPath,int Depth){
+  Json::Value* JSONValue = JSON();
+  Json::Value tmp;
+}
 
 
 template <typename Game_Tp, typename Player_Tp>
@@ -1559,20 +1700,6 @@ void Add(nlohmann::json &j, PMCTS<Game_Tp,Player_Tp>*p,int Depth) {
 }
 
 
-template <typename Game_Tp, typename Player_Tp>
-void PMCTS<Game_Tp,Player_Tp>::Save(std::string LogPath,int Depth){
-  //printf("Save  _UTTTGame\n");
-  nlohmann::json data;
-
-
-  Add(data["Games"],this,Depth);
-
-
-
-
-  std::ofstream file(LogPath);
-  file << std::setw(4) << data << std::endl;
-}
 
 
 template <typename Game_Tp, typename Player_Tp>

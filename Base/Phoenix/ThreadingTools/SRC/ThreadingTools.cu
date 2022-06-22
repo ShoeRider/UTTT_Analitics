@@ -78,7 +78,7 @@ class ThreadControl
 };
 
 
-template <typename Game_Tp, typename Player_Tp>
+
 class ParallelControlBlock
 {
 

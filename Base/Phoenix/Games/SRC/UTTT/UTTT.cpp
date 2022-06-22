@@ -205,12 +205,16 @@ class UTTT_SubGame : public TTT
       // JSON Initialization method(Reading from file).
 
       UTTT_SubGame(Json::Value ReadJSValue){
-        //printf("creating TTT:\n");
+
+        Json::FastWriter fastWriter;
+        printf("creating UTTT_SubGame:\n");
+
+        MovesRemaining       = atoi(fastWriter.write(ReadJSValue["MovesRemaining"]).c_str());
+        SimulationFinished = atoi(fastWriter.write(ReadJSValue["SimulationFinished"]).c_str());
+
         std::cout << ReadJSValue << std::endl;
-        JsonRead = true;
 
         //Preform string manipulation to recreate the TTT Board.
-        Json::FastWriter fastWriter;
         std::string JSON_BoardRep = fastWriter.write(ReadJSValue["Board"]);
         //ReadJSValue["Board"] has the format: "123456789"\n
         JSON_BoardRep.erase(0, 1);                          //Remove leading  '"'
@@ -236,6 +240,10 @@ class UTTT_SubGame : public TTT
         }
 
 
+        GameHash = this->Hash();
+        this->WinningPlayer  = NULL;
+        JsonRead = true;
+        TestForWinner();
       }
 
       ~UTTT_SubGame(){
@@ -244,7 +252,7 @@ class UTTT_SubGame : public TTT
         if(JsonRead){
           for (TTT_Player* Player: Players) { // c++11 range-based for loop
             //free(Player);
-            delete Player;
+            //delete Player;
           }
         }
 
@@ -256,6 +264,7 @@ class UTTT_SubGame : public TTT
     std::list<UTTT_Move*> PossibleMoves();
     bool equal(TTT* OtherGame);
     Json::Value* JSON();
+    Json::Value* Add(Json::Value* JSONValue);
     //bool ValidMove(GameMove* Move);
 };
 
@@ -339,6 +348,28 @@ bool UTTT_SubGame::equal(TTT* OtherGame)
     }
   }
   return true;
+}
+
+
+//TTT*TTT_Object
+Json::Value* UTTT_SubGame::Add(Json::Value* JSONValue){
+  int a_size = sizeof(Board) / sizeof(char);
+  std::string _str = convertToString(Board, a_size);
+
+  (*JSONValue)["Board"]          = _str;
+  (*JSONValue)["Hash"]           = std::to_string(Hash());
+  (*JSONValue)["MovesRemaining"] = MovesRemaining;
+    //delete JSONValue;
+  for (TTT_Player* i : Players) { // c++11 range-based for loop
+      //std::cout << *(i->JSON()) << std::endl;
+      //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
+      //TODO Change GameRepresentation to Player number/ID.
+      //Create Original Player order Logic.
+      //(*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+      i->Add(&(*JSONValue)["Players"][std::string(1,i->GameRepresentation)]);
+
+    }
+  return JSONValue;
 }
 
 //TTT*TTT_Object
@@ -433,18 +464,33 @@ public:
   // JSON Initialization method(Reading from file).
   UTTT(Json::Value ReadJSValue){
   printf("creating UTTT:\n");
-    std::cout << ReadJSValue << std::endl;
+
+    //std::cout << ReadJSValue << std::endl;
     JsonRead = true;
+    Json::FastWriter fastWriter;
+    std::string Temp;
+
+
+    Temp = fastWriter.write(ReadJSValue["NextMove_Row"]);
+
+    NextMove_Row   = atoi(fastWriter.write(ReadJSValue["NextMove_Row"]).c_str());
+    NextMove_Col   = atoi(fastWriter.write(ReadJSValue["NextMove_Col"]).c_str());
+    MovesRemaining = atoi(fastWriter.write(ReadJSValue["MovesRemaining"]).c_str());
+    printf("MovesRemaining:%d\n",MovesRemaining);
+    SimulationFinished = atoi(fastWriter.write(ReadJSValue["SimulationFinished"]).c_str());;
+    WinningPlayer  = NULL;
 
     //////////////////////////////////////////////////////////////////////////////
     //Redeclare Boards
     printf("Redeclare Boards :\n");
     //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
-    for (auto const& id : ReadJSValue["Boards"].getMemberNames()) {
-      int Value = atoi( id.c_str());
+    for (auto const& id : ReadJSValue["Board"].getMemberNames()) {
+      std::cout << id << std::endl;
+        int Value = atoi( id.c_str());
         int Row = Value/3;
-          int Col = Value%3;
-        Boards[Row][Col] = (new UTTT_SubGame(ReadJSValue["Boards"][id]));
+        int Col = Value%3;
+        printf("%d(%d,%d):\n",Value,Row,Col);
+        Boards[Row][Col] = (new UTTT_SubGame(ReadJSValue["Board"][id]));
     }
     //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
 
@@ -455,9 +501,6 @@ public:
       std::cout << id << std::endl;
         Players.push_back(new UTTT_Player(ReadJSValue["Players"][id]));
     }
-
-
-
   }
   /*
   UTTT(nlohmann::json &j){
@@ -519,6 +562,11 @@ public:
     }
     ~UTTT(){
       this->FreeBoards();
+      if(JsonRead){
+        for (UTTT_Player* i : Players) { // c++11 range-based for loop
+            delete i;
+          }
+      }
       //delete Boards;
     }
 
@@ -549,6 +597,7 @@ public:
     void Save(std::string LogPath);
     std::size_t Hash();
     Json::Value* JSON();
+    void Add(Json::Value* JsonValue);
 };
 
 
@@ -855,12 +904,16 @@ void UTTT::DisplayWinner(){
 
 UTTT_Player* UTTT::TestForWinner()
 {
-//printf("TestForWinner\n");
+  //printf("TestForWinner(UTTT Game)\n");
+  //std::cout <<"MovesRemaining: "<< this->MovesRemaining<<"\n";
+  //std::cout <<"WinningPlayer: "<< WinningPlayer<<"\n";
+
   if(
     WinningPlayer != NULL
   ){
     return WinningPlayer;
   }
+    //printf("TestForWinner(UTTT Game) Game by Game\n");
   //printf("UTTT Winner%p\n",WinningPlayer);
   for (int Row_Col = 0; Row_Col < 3; Row_Col++)
   {
@@ -881,6 +934,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
 }*/
 
 
+  //printf("TestForWinner(UTTT Game) Row-COL:%d\n",Row_Col);
 
     if(
       Boards[Row_Col][0]->TestForWinner() == Boards[Row_Col][1]->TestForWinner() &&
@@ -888,6 +942,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
       Boards[Row_Col][0]->TestForWinner() != NULL
     )
     {
+        //printf("TestForWinner(UTTT Game) Row\n");
       /*
       Winning Row Method Found. Example:
       X|X|X|
@@ -906,7 +961,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
       Boards[0][Row_Col]->TestForWinner() != NULL
     )
     {
-
+  //printf("TestForWinner(UTTT Game) COL\n");
       /*
       Winning Column Method Found. Example:
       X| | |
@@ -923,12 +978,14 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
   }
 
 
+  //printf("TestForWinner(UTTT Game) Diag\n");
   if(
     Boards[0][0]->TestForWinner() == Boards[1][1]->TestForWinner() &&
     Boards[0][0]->TestForWinner() == Boards[2][2]->TestForWinner() &&
     Boards[0][0]->TestForWinner() != NULL
   )
   {
+  //printf("TestForWinner(UTTT Game) Diag1\n");
 /*
 Winning Diagonal Method Found. Example:
   X| | |
@@ -947,6 +1004,7 @@ Winning Diagonal Method Found. Example:
     Boards[0][2]->TestForWinner() != NULL
   )
   {
+  //printf("TestForWinner(UTTT Game) Diag2\n");
 /*
 Winning Diagonal Method Found. Example:
    | |X|
@@ -956,13 +1014,14 @@ Winning Diagonal Method Found. Example:
   X| | |
   */
   //printf("Found solution\n");
-  return DeclareWinner(static_cast<UTTT_Player*>(Boards[0][2]->TestForWinner()));
+    return DeclareWinner(static_cast<UTTT_Player*>(Boards[0][2]->TestForWinner()));
   }
   if(this->MovesRemaining == 0){
     WinningPlayer = &Draw;
     //printf("No Remaining Moves\n");
     return WinningPlayer;
   }
+  //printf("returning WinningPlayer\n");
   //printf("Reached End Returning NULL:%p\n",WinningPlayer);
   return WinningPlayer;
 }
@@ -1114,24 +1173,39 @@ nlohmann::json Json(UTTT* p) {
   return data;
 }*/
 
-Json::Value* UTTT::JSON(){
-  //int a_size = sizeof(Board) / sizeof(char);
-  //std::string _str = convertToString(Board, a_size);
-  Json::Value* JSONValue = new Json::Value();
+
+void UTTT::Add(Json::Value* JSONValue){
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
     {
       //std::cout << Row*3+Col << "\n";
       //std::cout << (*(Boards[Row][Col])->JSON()) << "\n";
-      (*JSONValue)["Board"][std::to_string(Row*3+Col)] =(*(Boards[Row][Col])->JSON());
+      //(*JSONValue)["Board"][std::to_string(Row*3+Col)] =(*(Boards[Row][Col])->JSON());
+      //i->Add(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
+      (*(Boards[Row][Col])->Add(&(*JSONValue)["Board"][std::to_string(Row*3+Col)]));
     }
   }
 
   (*JSONValue)["Hash"]           = std::to_string(Hash());
+  (*JSONValue)["NextMove_Row"] = NextMove_Row;
+  (*JSONValue)["NextMove_Col"] = NextMove_Col;
   (*JSONValue)["MovesRemaining"] = MovesRemaining;
+  (*JSONValue)["WinningPlayer"] = WinningPlayer;
+  (*JSONValue)["SimulationFinished"] = SimulationFinished;
 
 
+    //std::cout <<(*JSONValue) << "\n";
+  //return JSONValue;
+}
+
+Json::Value* UTTT::JSON(){
+
+
+  //int a_size = sizeof(Board) / sizeof(char);
+  //std::string _str = convertToString(Board, a_size);
+  Json::Value* JSONValue = new Json::Value();
+  Add(JSONValue);
     //std::cout <<(*JSONValue) << "\n";
   return JSONValue;
 }
@@ -1143,12 +1217,14 @@ Json::Value* UTTT::JSON(){
 void UTTT::Save(std::string FilePath){
   Json::Value* JSONValue = JSON();
   Json::Value tmp;
-  for (TTT_Player* i : Players) { // c++11 range-based for loop
+  for (TTT_Player* Player : Players) { // c++11 range-based for loop
       //std::cout << *(i->JSON()) << std::endl;
       //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
       //TODO Change GameRepresentation to Player number/ID.
       //Create Original Player order Logic.
-      (*JSONValue)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+      //(*JSONValue)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+      Player->Add(&(*JSONValue)["Players"][std::string(1,Player->GameRepresentation)]);
+
 
     }
     std::cout <<(*JSONValue) << "\n";

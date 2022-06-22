@@ -9,11 +9,22 @@
 
 
 /*
-
+https://github.com/open-source-parsers/jsoncpp/issues/507
 */
 
-int main() {
+int main(int argc, char *argv[]) {
+  //long int SearchDepth = 10;
+  bool DisplayResults = false;
+  for (int i = 1; i < argc; i++) {
 
+      if (strcmp(argv[i],"-sd")==0) {
+          //SearchDepth = atol(argv[i+1]);
+          //printf("SearchDepth: %ld",SearchDepth);
+      } else if (strcmp(argv[i],"-d")==0) {
+          DisplayResults = true;
+      }
+
+  }
 
 
 
@@ -45,13 +56,11 @@ int main() {
   //_Game->JSON();
   _Game->Save(LogPath);
     std::cout <<"Read_TTT_JSON:\n";
-  Read_TTT_JSON(LogPath);
-  Pause;
+  //Pause;
 
   //printf("Reading file\n");
   //TTT* _Game2 = Read_TTT_JSON(LogPath);
   //std::cout << _Game2->Generate_StringRepresentation();
-  //_Game2->Read(LogPath);
 
 
  /*
@@ -72,7 +81,7 @@ int main() {
    printf("Freeing  _Game\n");
   delete _Game;
     printf("Freeing  _Game2\n");
-  //delete _Game2;
+  delete _Game2;
     printf("Freeing  Player0\n");
   delete Player0;
     printf("Freeing  Player1\n");

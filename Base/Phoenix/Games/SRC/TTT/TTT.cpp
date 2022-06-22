@@ -65,7 +65,6 @@ TODO: Generalize JSON Saves to account for different Player Oders,
 
 #include <iostream>
 #include <fstream>
-#include <jsoncpp/json/json.h>
 
 #include <string.h>
 //#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
@@ -212,7 +211,7 @@ PlayerNumber = atoi(Temp.c_str());*/
    void Display();
    std::size_t Hash();
    Json::Value* JSON();
-   Json::Value* ADD(Json::Value*);
+   Json::Value* Add(Json::Value*);
 
    void Save(std::string FilePath);
 };
@@ -273,12 +272,10 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
 
 
 
-Json::Value* TTT_Player::ADD(Json::Value* JSONValue){
-  Json::Value Player;
-  Player["PlayerNumber"]       = PlayerNumber;
-  Player["GameRepresentation"] = std::string(1,GameRepresentation);
-  Player["HumanPlayer"]        = HumanPlayer;
-  (*JSONValue)["Player"+PlayerNumber]       = Player;
+Json::Value* TTT_Player::Add(Json::Value* JSONValue){
+  (*JSONValue)["PlayerNumber"]       = PlayerNumber;
+  (*JSONValue)["GameRepresentation"] = std::string(1,GameRepresentation);
+  (*JSONValue)["HumanPlayer"]        = HumanPlayer;
   return JSONValue;
 }
 
@@ -414,11 +411,14 @@ public:
   // JSON Initialization method(Reading from file).
   TTT(Json::Value ReadJSValue){
   printf("Redeclare TTT:\n");
-    std::cout << ReadJSValue << std::endl;
-    JsonRead = true;
-
-    //Preform string manipulation to recreate the TTT Board.
     Json::FastWriter fastWriter;
+    std::cout << ReadJSValue << std::endl;
+
+
+    MovesRemaining     = atoi(fastWriter.write(ReadJSValue["MovesRemaining"]).c_str());
+    SimulationFinished = atoi(fastWriter.write(ReadJSValue["SimulationFinished"]).c_str());
+    //Preform string manipulation to recreate the TTT Board.
+
     std::string JSON_BoardRep = fastWriter.write(ReadJSValue["Board"]);
     //ReadJSValue["Board"] has the format: "123456789"\n
     JSON_BoardRep.erase(0, 1);                          //Remove leading  '"'
@@ -442,6 +442,7 @@ public:
         Players.push_back(new TTT_Player(ReadJSValue["Players"][id]));
     }
 
+    JsonRead = true;
 
   }
 
@@ -678,8 +679,8 @@ TTT_Player* TTT::GetWinner(){
 // Returns True/False If Winner is found
 TTT_Player* TTT::TestForWinner()
 {
+  //std::cout <<"Moves remaining(TTT Game): "<< this->MovesRemaining<<"\n";
   if(
-    WinningPlayer == &Draw ||
     WinningPlayer != NULL
   ){
     return WinningPlayer;
@@ -931,19 +932,27 @@ Json::Value* TTT::JSON(){
   (*JSONValue)["Board"]          = _str;
   (*JSONValue)["Hash"]           = std::to_string(Hash());
   (*JSONValue)["MovesRemaining"] = MovesRemaining;
+
+  if(WinningPlayer==NULL){
+    (*JSONValue)["WinningPlayer"] = MovesRemaining;
+  }
+  else{
+
+  }
+
     //delete JSONValue;
   return JSONValue;
 }
 
 void TTT::Save(std::string FilePath){
   Json::Value* value_obj = JSON();
-  Json::Value tmp;
   for (TTT_Player* i : Players) { // c++11 range-based for loop
       //std::cout << *(i->JSON()) << std::endl;
       //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
       //TODO Change GameRepresentation to Player number/ID.
       //Create Original Player order Logic.
-      (*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+      //(*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
+      i->Add(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
 
     }
 
@@ -958,6 +967,7 @@ void TTT::Save(std::string FilePath){
   file_id << styledWriter.write(*value_obj);
 
   file_id.close();
+
   delete value_obj;
 }
 

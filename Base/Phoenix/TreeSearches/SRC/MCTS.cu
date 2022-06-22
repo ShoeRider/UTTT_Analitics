@@ -32,7 +32,7 @@ Description: Started modifying MCTS as a template<typename Game_Tp, typename Pla
 #include <bits/stdc++.h>
 
 #include "TreeSearch.cu"
-#include "../../Games/SRC/Game.cu"
+#include "../../Games/SRC/Game.cpp"
 
 
 
@@ -498,6 +498,12 @@ public:
   // Method Declarations.
   //////////////////////////////////////////////////////////////////////////////
     MCTS_Node<Game_Tp,Player_Tp>* Algorithm(MCTS_Node<Game_Tp,Player_Tp>* TransversedNode);
+
+    void CreateChildren();
+    void TreeTraversal();
+    void CreateNode();
+    void RollOut();
+
     void EvaluateStep(MCTS_Node<Game_Tp,Player_Tp>* TransversedNode,Player_Tp* GivenPlayer);
     //double BackPropagation(MCTS_Node* TransversedNode,double GivenPlayer);
     void Search(int Depth); //,Player* GivenPlayer
@@ -510,10 +516,10 @@ public:
     //MCTS* OpenBookMoves(char* Path);
     //MCTS_Node* Find_Highest_UCB1(std::list<MCTS_Node*>MCTS_List);
 
-    void CreateChildren();
-    void TreeTraversal();
-    void CreateNode();
-    void RollOut();
+
+
+    void Save(std::string FilePath);
+    //MCTS* Read_MCTS_UTTT_JSON(std::string FilePath);
 };
 
 
@@ -709,6 +715,14 @@ void MCTS<Game_Tp,Player_Tp>::ParallelSearch(int Depth)
     std::cout << "Searching Depth:" << Depth << "\n";
 
 }
+
+
+void MCTS<Game_Tp,Player_Tp>::Save(std::string FilePath){
+
+}
+
+
+
 
 
 #endif //MCTS_CU

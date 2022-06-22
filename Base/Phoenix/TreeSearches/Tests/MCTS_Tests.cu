@@ -1,10 +1,12 @@
 #ifndef MCTS_Tests_CU
 #define MCTS_Tests_CU
 
-#include "../../Games/SRC/Game.cu"
-#include "../../Games/SRC/TTT.cu"
-#include "../../Games/SRC/UTTT.cu"
+#include "../../Games/SRC/Game.cpp"
+#include "../../Games/SRC/TTT/TTT.cpp"
+#include "../../Games/SRC/UTTT/UTTT.cpp"
 #include "../SRC/MCTS.cu"
+
+
 
 #include <iostream>
 #include <chrono>
@@ -70,7 +72,7 @@ int main() {
   UTTT *_Game = new UTTT({&Player0,&Player1});
 
   MCTS<UTTT,UTTT_Player> *Sim = new MCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
-  Sim->Search(250000);
+  Sim->Search(1000000);
 
   //delete &Player0;
   //delete &Player1;

@@ -1,9 +1,9 @@
 #ifndef MCTS_Tests_CU
 #define MCTS_Tests_CU
 
-#include "../../Games/SRC/Game.cu"
-#include "../../Games/SRC/TTT.cu"
-#include "../../Games/SRC/UTTT.cu"
+#include "../../Games/SRC/Game.cpp"
+#include "../../Games/SRC/TTT/TTT.cpp"
+#include "../../Games/SRC/UTTT/UTTT.cpp"
 #include "../SRC/MCHS.cu"
 
 
@@ -71,7 +71,20 @@ TODO: Fix Rotating Winner priority.
 As of right now, Both players are attempting to give Player0 the win.
 +I belive its fixed, need further testing, MCTS_Node values are (negative).
 */
-int main() {
+int main(int argc, char *argv[]) {
+  long int SearchDepth = 10;
+  bool DisplayResults = false;
+  for (int i = 1; i < argc; i++) {
+
+      if (strcmp(argv[i],"-sd")==0) {
+          SearchDepth = atol(argv[i+1]);
+          printf("SearchDepth: %ld",SearchDepth);
+      } else if (strcmp(argv[i],"-d")==0) {
+          DisplayResults = true;
+      }
+
+  }
+
   std::clock_t    start;
   start = std::clock();
 
@@ -84,8 +97,11 @@ int main() {
   UTTT *_Game = new UTTT({&Player0,&Player1});
 
   MCHS<UTTT,UTTT_Player> *Sim = new MCHS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
-  Sim->Search(250000);
+  Sim->Search(SearchDepth);
 
+  if(DisplayResults){
+    Sim->DisplayStats(1);
+  }
   //delete &Player0;
   //delete &Player1;
   //delete _Game;

@@ -52,6 +52,11 @@ Description:
 TODO: Generalize JSON Saves to account for different Player Oders,
   IE: Player0 has different game representation than X.
 ==========================================================
+Date:           20 October 2024
+Script Version: 1.5
+Description:
+Modify TTT to support Binary Writer.
+==========================================================
 */
 #ifndef TTT_CPP
 #define TTT_CPP
@@ -66,25 +71,19 @@ TODO: Generalize JSON Saves to account for different Player Oders,
 #include <iostream>
 #include <fstream>
 
-#include <string.h>
-//#include "../../ExternalLibraries/json-develop/single_include/nlohmann/json.hpp"
+#include <cstring>
 
-//https://stackoverflow.com/questions/63503620/cant-use-m128i-in-cuda-kernel
-//#include "../../ExternalLibraries/simdjson/singleheader/simdjson.h"
-
-//////////////////////////////////////////////////////////////////////////////
-//https://github.com/kazuho/picojson/
-//#include "../../ExternalLibraries/picojson/picojson.h"
-
-//picojson
 #include <iomanip>
 #include <unordered_map>
 
 
 //Read and save Game states.
-#include <iostream>
-#include <jsoncpp/json/json.h>
+
 //#include "TTT.cu"
+
+//Move to Bit format.
+#include <fstream>
+#include <bitset>
 
 
 //TODO Move to Basic Libaries
@@ -104,7 +103,36 @@ std::string convertToString(char* a, int size)
     //std::cout << s << "\n";
     return s;
 }
-
+/**
+ * @brief Retrieve the element at a specific index in a list of pointers.
+ *
+ * This template function allows you to retrieve a pointer to an element at the given index
+ * from a `std::list` of pointers. The function iterates through the list and returns a pointer
+ * to the element at the specified index.
+ *
+ * @tparam T The type of the elements pointed to in the list.
+ * @param _list The list of pointers to elements of type T.
+ * @param _i The zero-based index of the element you wish to retrieve.
+ * @return T* A pointer to the element at the given index, or undefined behavior if the index is out of bounds.
+ *
+ * @note The index is zero-based, meaning that 0 refers to the first element in the list.
+ *       If `_i` is greater than or equal to the size of the list, it will result in undefined behavior.
+ *
+ * @example
+ * // Define a list of integers and retrieve the element at index 2.
+ * std::list<int*> numbers;
+ * numbers.push_back(new int(10));
+ * numbers.push_back(new int(20));
+ * numbers.push_back(new int(30));
+ *
+ * int* thirdElement = get(numbers, 2); // Retrieves the element at index 2 (30)
+ * std::cout << *thirdElement << std::endl; // Output: 30
+ *
+ * // Clean up memory
+ * for (auto& num : numbers) {
+ *     delete num;
+ * }
+ */
 template <typename T>
 T* get(std::list<T*> _list, int _i){
     typename std::list<T*>::iterator it = _list.begin();
@@ -140,9 +168,32 @@ struct TTT_Move : public GameMove
       Row = GivenRow;
       Col = GivenCol;
     }
+    std::tuple<std::size_t, const char*>  convertToBinary();
+    bool convertFromBinary(std::size_t, const char*);
     virtual ~TTT_Move(){}
 };
 
+std::tuple<std::size_t, const char*> TTT_Move::convertToBinary()
+{
+  std::size_t dataSize = sizeof(TTT_Move);
+  const char* byteArray = reinterpret_cast<const char*>(this);
+  return std::make_tuple(dataSize,byteArray);
+}
+
+bool TTT_Move::convertFromBinary(std::size_t size, const char* byteArray)
+{
+  std::size_t dataSize = sizeof(TTT_Move);
+
+  // Check if the size of the provided binary data matches the size of TTT_Move
+  if (size != dataSize) {
+    return false; // Size mismatch, can't safely convert
+  }
+
+  // Copy the binary data into the object
+  std::memcpy(reinterpret_cast<void*>(this), byteArray, dataSize);
+
+  return true; // Successful conversion
+}
 
 /*
 TTT_Player
@@ -162,44 +213,16 @@ struct TTT_Player : public Player
 
     //////////////////////////////////////////////////////////////////////////////
     // Initialization method.
-    TTT_Player(Json::Value root){
-      std::cout <<"creating TTT_Player:\n";
-          Json::FastWriter fastWriter;
-          std::string Temp;
-      //////////////////////////////////////////////////////////////////////////////
-      //Gather Player Number
-        std::cout <<"gathering PlayerNumber:'"<<root["PlayerNumber"]<<"'\n";
-      Temp = fastWriter.write(root["PlayerNumber"]);
-      //Temp.erase(0, 1);                          //Remove leading  '"'
-      //Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
-      PlayerNumber = atoi(Temp.c_str());
+    TTT_Player(){}
 
-      //////////////////////////////////////////////////////////////////////////////
-      //Gather Player's GameRepresentation.
-        std::cout <<"gathering GameRepresentation:\n";
-      Temp = fastWriter.write(root["GameRepresentation"]);
-      Temp.erase(0, 1);                          //Remove leading  '"'
-      Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
-      const char* MOD_JSON_BoardRep =Temp.c_str();   //Cast as Char* for copy
-
-      //char* MOD_JSON_BoardRep  = JSON_BoardRep;#.c_str()
-      //strcat produces Valgrind error.
-      //https://codereview.stackexchange.com/questions/46619/conditional-jump-or-move-depends-on-uninitialised-value
-      strncpy(&GameRepresentation, MOD_JSON_BoardRep, strlen(MOD_JSON_BoardRep) + 1);
-
-
-      //////////////////////////////////////////////////////////////////////////////
-      //Gather (is)HumanPlayer value.
-/*
-Temp = fastWriter.write(root["HumanPlayer"]);
-Temp.erase(0, 1);                          //Remove leading  '"'
-Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
-PlayerNumber = atoi(Temp.c_str());*/
+  TTT_Player(int GivenPlayer,char GivenGameRepresentation, bool Human){
+      PlayerNumber = GivenPlayer;
+      GameRepresentation = GivenGameRepresentation;
+      HumanPlayer = Human;
     }
 
     //////////////////////////////////////////////////////////////////////////////
-    // Initialization method from JSON Files
-
+    //
    TTT_Player(int GivenPlayer,char GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
     GameRepresentation = GivenGameRepresentation;
@@ -210,8 +233,6 @@ PlayerNumber = atoi(Temp.c_str());*/
    TTT_Move* MakeMove(TTT* GivenGame);
    void Display();
    std::size_t Hash();
-   Json::Value* JSON();
-   Json::Value* Add(Json::Value*);
 
    void Save(std::string FilePath);
 };
@@ -236,7 +257,7 @@ TTT_Move* TTT_Player::MakeMove(TTT* GivenGame)
    std::cout << "Please Enter Y Axis: ";
    std::cin >> Y;
    TTT_Move* TTTMove = new TTT_Move(X,Y);
-   //GameMove* Move = static_cast<GameMove*>(TTTMove);
+   //TTT_Move* Move = static_cast<TTT_Move*>(TTTMove);
 
    //TODO: Include Move call here
    //GivenGame->Move(TTTMove);
@@ -255,10 +276,9 @@ void TTT_Player::Display()
 
 void Free_TTTMoveList(std::list<TTT_Move*> GameMoves)
 {
-  //std::list<GameMove*> Moves = PossibleMoves();
-  for (TTT_Move* GMove : GameMoves) { // c++11 range-based for loop
-      //TTT_Move* Move = static_cast<TTT_Move*>(GMove);
-      delete GMove;
+    // Iterate through the list of TTT_Move* pointers
+    for (TTT_Move* GMove : GameMoves) {
+        delete GMove;  // Free the memory for TTT_Move
     }
 }
 
@@ -272,74 +292,7 @@ TTT_Player* CreateHuman_TTT_Player(int PlayerID, char PlayerCharacter){
 
 
 
-Json::Value* TTT_Player::Add(Json::Value* JSONValue){
-  (*JSONValue)["PlayerNumber"]       = PlayerNumber;
-  (*JSONValue)["GameRepresentation"] = std::string(1,GameRepresentation);
-  (*JSONValue)["HumanPlayer"]        = HumanPlayer;
-  return JSONValue;
-}
 
-Json::Value* TTT_Player::JSON(){
-  Json::Value* Player = new Json::Value();
-  (*Player)["PlayerNumber"]       = PlayerNumber;
-  (*Player)["GameRepresentation"] = std::string(1,GameRepresentation);
-  (*Player)["HumanPlayer"]        = HumanPlayer;
-  //std::cout << (*Player) << std::endl;
-  return Player;
-}
-
-
-
-void TTT_Player::Save(std::string FilePath){
-  Json::Value* value_obj = JSON();
-
-  std::ofstream file_id;
-  file_id.open(FilePath);
-
-  //populate 'value_obj' with the objects, arrays etc.
-
-  Json::StyledWriter styledWriter;
-  file_id << styledWriter.write(*value_obj);
-
-  file_id.close();
-  delete value_obj;
-}
-
-TTT_Player* Read_TTT_Player_JSON(std::string FilePath){
-    //std::cout << "Reading File" << std::endl;
-    std::ifstream file(FilePath);
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse( file, root );
-    if ( !parsingSuccessful )
-    {
-        std::cout << "Error parsing the string" << std::endl;
-    }
-
-    std::cout << root << std::endl;
-
-    return new TTT_Player(root);
-}
-
-/*
-void Add(nlohmann::json &j,std::list<TTT_Player*> &Players) {
-
-
-  j = nlohmann::json::array();
-  //nlohmann::json Player;
-
-  //////////////////////////////////////////////////////////////////////////////
-  // For Each Player within JSON file, place Players into list.
-  // NOTE: When Saving TTT Players to JSON file, the order is swapped(The First
-  //   player is at the bottom of the list). Reading the JSON file for loop
-  //   automatically adds the players back into the correct order(The first
-  //   player within the JSON file becomes the last player within the Player order).
-  for (TTT_Player* i : Players) { // c++11 range-based for loop
-    //Player = (const TTT &)* i;
-    j.push_back(Json(*i));
-  }
-}
-*/
 
 
 
@@ -375,10 +328,10 @@ public:
   // Player(s) DATA
   //TODO: Take Draw player during Initialization.
   //////////////////////////////////////////////////////////////////////////////
-  TTT_Player Draw    = TTT_Player(-1,'C');
+  TTT_Player* Draw = new TTT_Player(-1, 'C');
 
   std::list<TTT_Player*> Players;
-  TTT_Player*  WinningPlayer = NULL;
+  TTT_Player*  WinningPlayer = nullptr;
 
   //////////////////////////////////////////////////////////////////////////////
   // Game Data
@@ -386,73 +339,35 @@ public:
   //MovesRemaining is a decrementing counter to determine if there are any remaining moves.
   int MovesRemaining;
   int MovesMade;  //TODO, Implement MovesMade
-  bool SimulationFinished;
+  bool isGameFinished;
   //Represenation of the game.
   //char Board[3][3];
   //TTTMove->Row*3+TTTMove->Col
   char Board[9];
   std::size_t GameHash;
 
-  //////////////////////////////////////////////////////////////////////////////
-  // JSON File Data
-  //////////////////////////////////////////////////////////////////////////////
-  bool JsonRead;
+
+
+  //std::string SaveGameMoves;
 
   //////////////////////////////////////////////////////////////////////////////
   // Initialization method.
   TTT(){
     //printf("Calling Default Constructor... \n");
     //throw "Calling Default Constructor... \n";
-    JsonRead = false;
+
 
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // JSON Initialization method(Reading from file).
-  TTT(Json::Value ReadJSValue){
-  printf("Redeclare TTT:\n");
-    Json::FastWriter fastWriter;
-    std::cout << ReadJSValue << std::endl;
 
-
-    MovesRemaining     = atoi(fastWriter.write(ReadJSValue["MovesRemaining"]).c_str());
-    SimulationFinished = atoi(fastWriter.write(ReadJSValue["SimulationFinished"]).c_str());
-    //Preform string manipulation to recreate the TTT Board.
-
-    std::string JSON_BoardRep = fastWriter.write(ReadJSValue["Board"]);
-    //ReadJSValue["Board"] has the format: "123456789"\n
-    JSON_BoardRep.erase(0, 1);                          //Remove leading  '"'
-    JSON_BoardRep.erase(JSON_BoardRep.size() - 2);      //Remove trailing '"\n'
-    const char* MOD_JSON_BoardRep =JSON_BoardRep.c_str();   //Cast as Char* for copy
-
-    //char* MOD_JSON_BoardRep  = JSON_BoardRep;#.c_str()
-    //strcat produces Valgrind error.
-    //https://codereview.stackexchange.com/questions/46619/conditional-jump-or-move-depends-on-uninitialised-value
-    strncpy(Board, MOD_JSON_BoardRep, strlen(MOD_JSON_BoardRep) + 1);
-    //std::cout << Board << "-asdf\n";
-    std::cout << strlen(MOD_JSON_BoardRep) << "\n";
-
-    //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
-
-    //////////////////////////////////////////////////////////////////////////////
-    //Redeclare Players
-    //printf("Redeclare TTT_Players :\n");
-    for (auto const& id : ReadJSValue["Players"].getMemberNames()) {
-      std::cout << id << std::endl;
-        Players.push_back(new TTT_Player(ReadJSValue["Players"][id]));
-    }
-
-    JsonRead = true;
-
-  }
 
   TTT(std::list<TTT_Player*> GivenPlayers){
       //this->DeclarePlayers(GivenPlayers);
       Players = GivenPlayers;
       this->WinningPlayer  = NULL;
       MovesRemaining       = 9;
-      JsonRead = false;
-      SimulationFinished = false;
+
+      isGameFinished = false;
       this->SetUpBoard();
       GameHash = this->Hash();
       //std::cout<< "GameHash:" << GameHash <<"\n";
@@ -460,12 +375,7 @@ public:
     virtual ~TTT(){
 
 
-      if(JsonRead){
-        for (TTT_Player* Player: Players) { // c++11 range-based for loop
-          //free(Player);
-          delete Player;
-        }
-      }
+
 
     }
 
@@ -475,31 +385,39 @@ public:
     TTT_Player* GetWinner();
     void DisplayWinner();
     void DeclarePlayers(std::list<TTT_Player*> GivenPlayers);
+    void PrintPlayers();
     void SetUpBoard();
-    TTT* CopyGame();
+
     void RotatePlayers();
-    bool Move(GameMove* Move);
+    bool Move(TTT_Move* Move);
+    TTT* Move_ReturnNewGame(TTT_Move* Move);
 
     bool ValidMove(GameMove* Move);
     TTT_Player* TestForWinner();
 
     std::list<TTT_Move*> PossibleMoves();
     std::list<TTT*>     PossibleGames();
+    std::list<TTT*>     PossibleGames(std::list<TTT_Move*> Moves);
     std::string Generate_StringRepresentation();
 
     TTT_Player* DeclareWinner(TTT_Player* Winner);
     char GetWinnersCharacter();
     //void DisplayInTerminal();
+    TTT_Move* FindRandomMove();
     TTT* RollOut();
+    std::list<TTT_Move> RollOut_ReturnGameMoves();
     void PlayGame();
     //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
     bool equal(TTT* OtherGame);
 
-    void Save(std::string LogPath);
-    void Read(std::string LogPath);
+    uint16_t MoveToBits(TTT_Move* Move);
+    uint16_t CharToBits(char c);
+    char BitsToChar(uint8_t bits);
     std::size_t Hash();
 
-    Json::Value* JSON();
+
+    TTT* CopyGame();
+
 };
 
 //#include<bits/stdc++>
@@ -548,6 +466,14 @@ void TTT::DeclarePlayers(std::list<TTT_Player*> GivenPlayers)
     }
 }
 
+void TTT::PrintPlayers()
+{
+  //printf("Adding Players\n");
+  for (TTT_Player* i : Players) { // c++11 range-based for loop
+    printf("     GivenPlayer:%p\n",i);
+    printf("     PlayerREP:%c\n",i->GameRepresentation);
+  }
+}
 
 void TTT::RotatePlayers(){
   Players.splice(Players.end(),        // destination position
@@ -563,13 +489,12 @@ void TTT::RotatePlayers(){
 
 bool TTT::ValidMove(GameMove* Move)
 {
+  TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
   //printf("TTT MovesRemaining:%d\n",MovesRemaining);
   if(MovesRemaining == 0 ){
-    DeclareWinner(&Draw);
+    DeclareWinner(Draw);
     return false;
   }
-
-  TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
 
   //printf("TTTMove->Row:%d\n",TTTMove->Row);
   //printf("TTTMove->Col:%d\n",TTTMove->Col);
@@ -589,11 +514,9 @@ bool TTT::ValidMove(GameMove* Move)
 }
 
 
-bool TTT::Move(GameMove* Move)
+bool TTT::Move(TTT_Move* TTTMove)
 {
-  TTT_Move* TTTMove = static_cast<TTT_Move*>(Move);
-
-  if (this->ValidMove(Move))
+  if (this->ValidMove(TTTMove))
   {
     MovesRemaining--;
 
@@ -605,6 +528,36 @@ bool TTT::Move(GameMove* Move)
   }
   return false;
 }
+
+TTT* TTT::Move_ReturnNewGame(TTT_Move* TTTMove)
+{
+    // Create a new game object as a copy of the current game (deep copy)
+    TTT* newGame = static_cast<TTT*>(new TTT(*this));  // Use copy constructor to clone the current game
+
+    // Check if the move is valid on the new game object
+    if (newGame->ValidMove(TTTMove))
+    {
+        newGame->MovesRemaining--;  // Decrease the moves remaining
+
+        // Make the move on the new game board
+        newGame->Board[TTTMove->Row * 3 + TTTMove->Col] = newGame->Players.front()->GameRepresentation;
+
+        // Test for winner on the new game object
+        newGame->TestForWinner();
+
+        // Rotate players for the next turn
+        newGame->RotatePlayers();
+
+        // Return the new game (as a pointer to Game)
+        return newGame;  // Return as Game* (pointer to base class)
+    }
+
+    // If the move is not valid, clean up and return null
+    delete newGame;  // Clean up if invalid move
+    return nullptr;  // Return nullptr to signal failure
+}
+
+
 
 void TTT::DisplayWinner(){
   printf("WinningPlayer:%p\n",WinningPlayer);
@@ -637,7 +590,8 @@ std::string TTT::Generate_StringRepresentation()
     for (int Col = 0; Col < 3; Col++)
     {
         char position = Board[Row*3+Col];
-        Game.append(&position);
+        //Game.append(&position);
+        Game.push_back(position);
         Game.append("|");
     }
     Game.append("\n--------\n");
@@ -647,10 +601,10 @@ std::string TTT::Generate_StringRepresentation()
 
 TTT_Player* TTT::DeclareWinner(TTT_Player* GivenWinner)
 {
-  if(WinningPlayer == NULL){
+  if(WinningPlayer == nullptr){
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
-    SimulationFinished = true;
+    isGameFinished = true;
     //std::cout << this->Generate_StringRepresentation();
     //printf("WinningPlayer:%p\n",WinningPlayer);
 
@@ -681,7 +635,7 @@ TTT_Player* TTT::TestForWinner()
 {
   //std::cout <<"Moves remaining(TTT Game): "<< this->MovesRemaining<<"\n";
   if(
-    WinningPlayer != NULL
+    WinningPlayer != nullptr
   ){
     return WinningPlayer;
   }
@@ -702,7 +656,6 @@ TTT_Player* TTT::TestForWinner()
       --------
        | | |
       */
-
       return this->DeclareWinner(Players.front());
 
     }
@@ -761,9 +714,8 @@ Winning Diagonal Method Found. Example:
   }
 
   if(this->MovesRemaining == 0){
-    //WinningPlayer = &Draw;
     //return WinningPlayer;
-    return this->DeclareWinner(&Draw);
+    return this->DeclareWinner(Draw);
   }
   return WinningPlayer;
 }
@@ -771,23 +723,26 @@ Winning Diagonal Method Found. Example:
 
 std::list<TTT_Move*> TTT::PossibleMoves()
 {
-  std::list<TTT_Move*>Moves;
+    std::list<TTT_Move*> Moves;  // This will store GameMove pointers
 
-  //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
-  for (int Row = 0; Row < 3; Row++)
-  {
-    for (int Col = 0; Col < 3; Col++)
+    // Iterate over the board and check for empty spots
+    for (int Row = 0; Row < 3; Row++)
     {
-        if (Board[Row*3+Col] == ' ')
+        for (int Col = 0; Col < 3; Col++)
         {
-          TTT_Move* TTTMove = new TTT_Move(Row,Col);
-          //GameMove* Move = static_cast<GameMove*>(TTTMove);
-          Moves.push_back(TTTMove);
+            if (Board[Row * 3 + Col] == ' ')
+            {
+                // Create a new TTT_Move object for the valid move
+                TTT_Move* TTTMove = new TTT_Move(Row, Col);
+
+                // Cast TTT_Move* to TTT_Move* and add it to the list
+                Moves.push_back(TTTMove);
+            }
         }
     }
-  }
-  return Moves;
+    return Moves;  // Return the list of possible moves as GameMove pointers
 }
+
 
 std::list<TTT*> TTT::PossibleGames()
 {
@@ -815,9 +770,23 @@ for (Player* _Pl : Branch->_Players){
 }
 
 
-TTT* TTT::CopyGame(){
-  return (new TTT(*this));
+std::list<TTT*> TTT::PossibleGames(std::list<TTT_Move*> Moves)
+{
+  std::list<TTT*>Games;
+  TTT* Branch;
+  for (TTT_Move* GMove : Moves) { // c++11 range-based for loop
+       Branch = new TTT(*this);
+       Branch->Move(GMove);
+       Games.push_back(Branch);
+       //Free each Move Structure
+       delete GMove;
+    }
+  //printf("Freeing Moves list \n");
+  //delete &Moves;
+  return Games;
 }
+
+
 
 
 bool TTT::equal(TTT* OtherGame)
@@ -834,14 +803,26 @@ bool TTT::equal(TTT* OtherGame)
   return true;
 }
 
+TTT_Move* TTT::FindRandomMove(){
+  TTT_Move* Move;
+  int Range;
+    std::list<TTT_Move*>GameMoves = PossibleMoves();
+    Range = GameMoves.size();
+    //printf("Range:%d\n",Range);
+    Move          = get(GameMoves,(rand() % (Range)));
+    Move = new TTT_Move(*Move);
+    //printf("Freeing memory\n");
+    Free_TTTMoveList(GameMoves);
+    return Move;
+}
 
 
 TTT* TTT::RollOut(){
-  GameMove* Move;
+  TTT_Move* Move;
   int Range;
 
   //TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-  while(WinningPlayer == NULL){
+  while(WinningPlayer == nullptr){
 
     //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
     std::list<TTT_Move*>GameMoves = PossibleMoves();
@@ -861,139 +842,128 @@ TTT* TTT::RollOut(){
   return this;
 }
 
+std::list<TTT_Move> TTT::RollOut_ReturnGameMoves(){
+  std::list<TTT_Move> GameHistory;
+  TTT_Move* Move;
+  int Range;
+  //TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+  while(WinningPlayer == NULL){
+
+    //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+    std::list<TTT_Move*>GameMoves = PossibleMoves();
+    Range = GameMoves.size();
+    //printf("Range:%d\n",Range);
+    Move          = get(GameMoves,(rand() % (Range)));
+    GameHistory.push_back(*Move);
+    this->Move(Move);
+    //printf("Freeing memory\n");
+    Free_TTTMoveList(GameMoves);
+  }
+  return GameHistory;
+}
+
 void TTT::PlayGame()
 {
-  GameMove* Move;
+  TTT_Move* Move;
   TTT_Player* Currentplayer;
 
   TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-  while(TTTPlayer == NULL){
+  while(!isGameFinished){
     Currentplayer = Players.front();
 
     Move          = (*Currentplayer).MakeMove(this);
     this->Move(Move);
     delete Move;
 
-    //std::cout << this->Generate_StringRepresentation();
-    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
+    std::cout << this->Generate_StringRepresentation();
+    //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
 }
 
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Save and Read from Files using JSON.
-//////////////////////////////////////////////////////////////////////////////
-
-/*
-#include<jsoncpp/json/value.h>
-#include<jsoncpp/json/json.h>
-//#include <json.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-*/
-
-
-//
-/*
-void TTT::Add(TTT*p) {
-    int a_size = sizeof(p->Board) / sizeof(char);
-    std::string str = convertToString(p->Board, a_size);
-    Json::Value JSONValue = new Json::Value();
-
-    JSONValue["Board"]          = str;
-    Json::Int64 Hash = p->Hash();
-    JSONValue["Hash"]           = Hash;
-    JSONValue["MovesRemaining"] = p->MovesRemaining;
-
-
+TTT* TTT::CopyGame() {
+  	//return static_cast<Game*>(new TTT(*this));
+  	return new TTT(*this);
 }
-*/
 
 
 
 
 
 
+// Helper function to create unit8 move representation.
+uint16_t TTT::MoveToBits(TTT_Move* Move) {
+    /*
+    int Row;
+    int Col;
+    */
+
+    return 0b00;                // empty = 00
+}
 
 
-//TTT*TTT_Object
-Json::Value* TTT::JSON(){
-  int a_size = sizeof(Board) / sizeof(char);
-  std::string _str = convertToString(Board, a_size);
-  Json::Value* JSONValue = new Json::Value();
+// Helper function to convert char to 2-bit representation
+uint16_t TTT::CharToBits(char c) {
+    if (c == 'X'){
+        std::cout << "--> " << 0b01 << std::endl;
+      return 0b01;
+    }  // X = 01
 
-  (*JSONValue)["Board"]          = _str;
-  (*JSONValue)["Hash"]           = std::to_string(Hash());
-  (*JSONValue)["MovesRemaining"] = MovesRemaining;
+    if (c == 'O'){
+        std::cout << "--> " << 0b10 << std::endl;
+     return 0b10;
+    }  // O = 10
 
-  if(WinningPlayer==NULL){
-    (*JSONValue)["WinningPlayer"] = MovesRemaining;
+    return 0b00;                // empty = 00
+}
+
+// Helper function to convert 2-bit representation to char
+char TTT::BitsToChar(uint8_t bits) {
+    if (bits == 0b01) return 'X';
+    if (bits == 0b10) return 'O';
+    return ' ';
+}
+
+std::string ToBinaryString(uint32_t value, int bitSize) {
+    return std::bitset<32>(value).to_string().substr(32 - bitSize, bitSize);
+}
+
+
+
+
+
+
+// Assuming TTT_Move has Row and Col as public members
+void SaveMovesToFile(const std::list<TTT_Move*>& RolloutMoves, const std::string& filename) {
+
+  // Open an output file stream to write to a file
+  std::ofstream outFile(filename, std::ios::app);
+
+  // Check if the file was successfully opened
+  if (!outFile.is_open()) {
+    std::cerr << "Error: Could not open the file for writing!" << std::endl;
+    return;
   }
-  else{
 
+  // Iterate through the moves and write to the file
+  for (const TTT_Move* p : RolloutMoves) {
+
+    outFile << p->Row << p->Col << ",";  // Write the row and column to the file
+
+    // Conditionally print to the screen if PRINT_TO_SCREEN is defined
+#ifdef PRINT_TO_SCREEN
+    std::cout << p->Row << p->Col << ",";
+#endif
   }
+  outFile << std::endl;  // Write a new line after all moves are written
 
-    //delete JSONValue;
-  return JSONValue;
+  // Conditionally print a new line to the screen if PRINT_TO_SCREEN is defined
+#ifdef PRINT_TO_SCREEN
+  std::cout << std::endl;
+#endif
+
+  // Close the file stream
+  outFile.close();
 }
-
-void TTT::Save(std::string FilePath){
-  Json::Value* value_obj = JSON();
-  for (TTT_Player* i : Players) { // c++11 range-based for loop
-      //std::cout << *(i->JSON()) << std::endl;
-      //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
-      //TODO Change GameRepresentation to Player number/ID.
-      //Create Original Player order Logic.
-      //(*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
-      i->Add(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
-
-    }
-
-    //std::cout << (*value_obj) << std::endl;
-
-  std::ofstream file_id;
-  file_id.open(FilePath);
-
-  //populate 'value_obj' with the objects, arrays etc.
-
-  Json::StyledWriter styledWriter;
-  file_id << styledWriter.write(*value_obj);
-
-  file_id.close();
-
-  delete value_obj;
-}
-
-
-
-
-TTT* Read_TTT_JSON(std::string FilePath){
-    //std::cout << "Reading File" << std::endl;
-    std::ifstream file(FilePath);
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse( file, root );
-    if ( !parsingSuccessful )
-    {
-        std::cout << "Error parsing the string" << std::endl;
-    }
-    TTT* Game = new TTT(root);
-    //std::cout << root << std::endl;
-
-    return Game;
-}
-
-
-
-
-
 
 
 #endif //TTT_CPP

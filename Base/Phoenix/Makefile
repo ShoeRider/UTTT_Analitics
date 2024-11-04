@@ -25,6 +25,10 @@ TTT:
 	nvcc -o ./TTT_Test ./Tests/TTT_Tests.cu
 	./TTT_Test
 
+TTT_GenerateGameData:
+	nvcc -o TTT_GenerateRandomGames ./Tests/TTT_GenerateRandomGames.cu -ljsoncpp
+	./TTT_GenerateRandomGames -g 1000 -p 1000_RandomResults.csv
+
 .PHONY: clean
 clean :
 	for dir in $(SUBDIRS); do \

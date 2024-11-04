@@ -6,7 +6,9 @@
 #include <list>
 #include <stdlib.h>
 
-
+bool TTT_Test(){
+   
+}
 
 /*
 https://github.com/open-source-parsers/jsoncpp/issues/507
@@ -41,7 +43,9 @@ int main(int argc, char *argv[]) {
 
   //TTT_Move* Move = Player0->MakeMove(_Game);
 
-  TTT_Move* TTTMove = new TTT_Move(2,2);
+  TTT_Move* TTTMove = new TTT_Move(0,0);
+  _Game->Move(TTTMove);
+  TTTMove = new TTT_Move(2,2);
   _Game->Move(TTTMove);
   printf("Freeing  TTTMove\n");
   delete TTTMove;
@@ -51,7 +55,7 @@ int main(int argc, char *argv[]) {
 
 
 
-  std::string LogPath = std::string("Test02.json");
+  std::string LogPath = std::string("Test02.GBIN");
   //_Game->Save(LogPath);
   //_Game->JSON();
   _Game->Save(LogPath);
@@ -59,8 +63,9 @@ int main(int argc, char *argv[]) {
   //Pause;
 
   //printf("Reading file\n");
-  //TTT* _Game2 = Read_TTT_JSON(LogPath);
-  //std::cout << _Game2->Generate_StringRepresentation();
+  TTT* _Game2  = new TTT({Player0,Player1});
+  _Game2->Read(LogPath);
+  std::cout << _Game2->Generate_StringRepresentation();
 
 
  /*

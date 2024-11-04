@@ -46,3 +46,84 @@ clean :
 		$(MAKE) -C $$dir clean; \
 	done
 	rm -f *.o *.gch
+
+
+TTT_MCTS_Play_Tests:
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./TTT_MCTS_Play_Tests ./Tests/TTT_MCTS_Play_Tests.cu -ljsoncpp
+	#gcc -std=c++11 ./Tests/MCTS_Tests.cpp -lstdc++ -o ./MCTS_Tests
+	@echo "Running(Tests) ..."
+	valgrind --leak-check=yes ./TTT_MCTS_Play_Tests
+	#./TTT_MCTS_Tests
+
+TTT_PMCTS_Play_Tests1:
+	rm -f TTT_MCTS_Tests
+.PHONY: TTT_PMCTS_Play_Tests
+TTT_PMCTS_Play_Tests:
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./TTT_PMCTS_Play_Tests ./Tests/TTT_PMCTS_Play_Tests.cu -ljsoncpp
+	#gcc -std=c++11 ./Tests/MCTS_Tests.cpp -lstdc++ -o ./MCTS_Tests
+	@echo "Running(Tests) ..."
+	valgrind --leak-check=yes ./TTT_PMCTS_Play_Tests
+	#./TTT_PMCTS_Play_Tests
+
+
+
+
+.PHONY: UTTT_MCTS_Play_Tests
+UTTT_MCTS_Play_Tests:
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./UTTT_MCTS_Play_Tests ./Tests/UTTT_MCTS_Play_Tests.cu -ljsoncpp
+	#gcc -std=c++11 ./Tests/MCTS_Tests.cpp -lstdc++ -o ./MCTS_Tests
+	@echo "Running(Tests) ..."
+	valgrind --leak-check=yes ./UTTT_MCTS_Play_Tests
+	#./TTT_MCTS_Tests
+
+.PHONY: UTTT_PMCTS_Play_Tests
+UTTT_PMCTS_Play_Tests:
+	@echo "Compiling(Tests) ..."
+	nvcc -o ./UTTT_PMCTS_Play_Tests ./Tests/UTTT_PMCTS_Play_Tests.cu -ljsoncpp
+	#gcc -std=c++11 ./Tests/MCTS_Tests.cpp -lstdc++ -o ./MCTS_Tests
+	@echo "Running(Tests) ..."
+	valgrind --leak-check=yes ./UTTT_PMCTS_Play_Tests
+	#./UTTT_PMCTS_Play_Tests
+
+
+
+
+
+
+
+
+TTT_MCTS_GenerateGameData:
+	nvcc -DPRINT_TO_SCREEN -o TTT_MCTS_GenerateSearchGames ./Tests/TTT_MCTS_GenerateSearchGames.cu -ljsoncpp
+	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./TTT_MCTS_GenerateSearchGames -g 10 -p TTT_MCTS_GenerateSearchGames.csv
+
+TTT_MCHS_GenerateGameData:
+	nvcc -DPRINT_TO_SCREEN -o TTT_MCHS_GenerateGameData ./Tests/TTT_MCHS_GenerateGameData.cu -ljsoncpp
+	#./TTT_MCHS_GenerateGameData -g 10000 -p 10000_RandomSearchResults.csv
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./TTT_MCHS_GenerateGameData -g 10 -p TTT_MCHS_GenerateGameData.csv
+
+TTT_PMCTS_GenerateGameData:
+	nvcc -DPRINT_TO_SCREEN -o TTT_PMCTS_GenerateSearchGames ./Tests/TTT_PMCTS_GenerateSearchGames.cu -ljsoncpp
+	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
+	#valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./TTT_PMCTS_GenerateSearchGames -g 10 -p TTT_PMCTS_GenerateSearchGames.csv
+	./TTT_PMCTS_GenerateSearchGames -g 1 -p TTT_PMCTS_GenerateSearchGames.csv
+
+
+
+
+UTTT_MCTS_GenerateGameData:
+	nvcc -DPRINT_TO_SCREEN -o UTTT_MCTS_GenerateSearchGames ./Tests/UTTT_MCTS_GenerateSearchGames.cu -ljsoncpp
+	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
+	#./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
+	#./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
+
+.PHONY: UTTT_PMCTS_GenerateGameData
+UTTT_PMCTS_GenerateGameData:
+	nvcc -DPRINT_TO_SCREEN -o UTTT_PMCTS_GenerateSearchGames ./Tests/UTTT_PMCTS_GenerateSearchGames.cu -ljsoncpp
+	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+	#./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv

@@ -23,6 +23,12 @@ TTT_Tests:
 	#./MCTS_Tests
 #gcc -std=c++11 ./Tests/TTT_Tests.cpp -lstdc++ -o ./TTT_Tests
 
+TTT_GenerateGameData:
+	nvcc -o TTT_GenerateRandomGames ./Tests/TTT_GenerateRandomGames.cu -ljsoncpp
+	./TTT_GenerateRandomGames -g 1000 -p 1000_RandomResults.csv
+
+
+
 #Compile and run tests within ./Tests Folder
 UTTT_Tests:
 	@echo "Compiling(UTTT_Tests) ..."

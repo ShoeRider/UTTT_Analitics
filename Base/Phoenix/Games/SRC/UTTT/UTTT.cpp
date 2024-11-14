@@ -35,6 +35,11 @@ Email:          as3379@nau.edu
 
 
 
+#include <algorithm>
+#include <vector>
+
+
+
 /*
 UTTT_Player
 @Purpose: Class to track UTTT Players.
@@ -52,42 +57,13 @@ struct UTTT_Player : public TTT_Player
 
     //////////////////////////////////////////////////////////////////////////////
     // Initialization method.
-    UTTT_Player(Json::Value root):
-    TTT_Player(root){
-      std::cout <<"creating UTTT_Player:\n";
-          Json::FastWriter fastWriter;
-          std::string Temp;
-      //////////////////////////////////////////////////////////////////////////////
-      //Gather Player Number
-        std::cout <<"gathering PlayerNumber:'"<<root["PlayerNumber"]<<"'\n";
-      Temp = fastWriter.write(root["PlayerNumber"]);
-      //Temp.erase(0, 1);                          //Remove leading  '"'
-      //Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
-      PlayerNumber = atoi(Temp.c_str());
-
-      //////////////////////////////////////////////////////////////////////////////
-      //Gather Player's GameRepresentation.
-        std::cout <<"gathering GameRepresentation:\n";
-      Temp = fastWriter.write(root["GameRepresentation"]);
-      Temp.erase(0, 1);                          //Remove leading  '"'
-      Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
-      const char* MOD_JSON_BoardRep =Temp.c_str();   //Cast as Char* for copy
-
-      //char* MOD_JSON_BoardRep  = JSON_BoardRep;#.c_str()
-      //strcat produces Valgrind error.
-      //https://codereview.stackexchange.com/questions/46619/conditional-jump-or-move-depends-on-uninitialised-value
-      strncpy(&GameRepresentation, MOD_JSON_BoardRep, strlen(MOD_JSON_BoardRep) + 1);
-
-
-      //////////////////////////////////////////////////////////////////////////////
-      //Gather (is)HumanPlayer value.
-/*
-Temp = fastWriter.write(root["HumanPlayer"]);
-Temp.erase(0, 1);                          //Remove leading  '"'
-Temp.erase(Temp.size() - 2);      //Remove trailing '"\n'
-PlayerNumber = atoi(Temp.c_str());*/
-    }
-
+  UTTT_Player(int GivenPlayer,char GivenGameRepresentation,bool Human):
+    TTT_Player(GivenPlayer,GivenGameRepresentation){
+    PlayerNumber = GivenPlayer;
+    HumanPlayer = Human;
+    GameRepresentation = GivenGameRepresentation;
+    //printf("Player:%p:%c\n",this,GameRepresentation);
+  }
   UTTT_Player(int GivenPlayer,char GivenGameRepresentation):
     TTT_Player(GivenPlayer,GivenGameRepresentation){
     PlayerNumber = GivenPlayer;
@@ -160,9 +136,9 @@ struct UTTT_Move : public TTT_Move
 
 
 
-void Free_UTTTMoveList(std::list<UTTT_Move*> GameMoves)
+void Free_UTTTMoveList(std::vector<UTTT_Move*> GameMoves)
 {
-  //std::list<GameMove*> Moves = PossibleMoves();
+  //std::vector<GameMove*> Moves = PossibleMoves();
   for (UTTT_Move* Move : GameMoves) { // c++11 range-based for loop
       //UTTT_Move* Move = static_cast<UTTT_Move*>(GMove);
       delete Move;
@@ -189,14 +165,18 @@ UTTT_Move* UTTT_Player::MakeMove(UTTT* GivenGame)
 
 class UTTT_SubGame : public TTT
 {
+
   public:
-    UTTT_Player Draw    = UTTT_Player(-1,'C');
+    UTTT_Player* Draw;
+    std::vector<UTTT_Player*>* Players;
+    UTTT_Player*  WinningPlayer = nullptr;
 
-    UTTT_SubGame(std::list<UTTT_Player*> GivenPlayers){
-        this->DeclarePlayers(GivenPlayers);
-        SimulationFinished = false;
+    UTTT_SubGame(std::vector<UTTT_Player*>* GivenPlayers,UTTT_Player* UTTTDraw){
+        Players = GivenPlayers;
+        isGameFinished = false;
+        Draw    = UTTTDraw;
 
-        this->WinningPlayer  = NULL;
+        this->WinningPlayer  = nullptr;
         MovesRemaining       = 9;
         this->SetUpBoard();
         GameHash = this->Hash();
@@ -204,83 +184,116 @@ class UTTT_SubGame : public TTT
       //////////////////////////////////////////////////////////////////////////////
       // JSON Initialization method(Reading from file).
 
-      UTTT_SubGame(Json::Value ReadJSValue){
-
-        Json::FastWriter fastWriter;
-        printf("creating UTTT_SubGame:\n");
-
-        MovesRemaining       = atoi(fastWriter.write(ReadJSValue["MovesRemaining"]).c_str());
-        SimulationFinished = atoi(fastWriter.write(ReadJSValue["SimulationFinished"]).c_str());
-
-        std::cout << ReadJSValue << std::endl;
-
-        //Preform string manipulation to recreate the TTT Board.
-        std::string JSON_BoardRep = fastWriter.write(ReadJSValue["Board"]);
-        //ReadJSValue["Board"] has the format: "123456789"\n
-        JSON_BoardRep.erase(0, 1);                          //Remove leading  '"'
-        JSON_BoardRep.erase(JSON_BoardRep.size() - 2);      //Remove trailing '"\n'
-        const char* MOD_JSON_BoardRep =JSON_BoardRep.c_str();   //Cast as Char* for copy
-
-        //char* MOD_JSON_BoardRep  = JSON_BoardRep;#.c_str()
-        //strcat produces Valgrind error.
-        //https://codereview.stackexchange.com/questions/46619/conditional-jump-or-move-depends-on-uninitialised-value
-        strncpy(Board, MOD_JSON_BoardRep, strlen(MOD_JSON_BoardRep) + 1);
-        //std::cout << Board << "-asdf\n";
-        std::cout << strlen(MOD_JSON_BoardRep) << "\n";
-
-
-
-        //////////////////////////////////////////////////////////////////////////////
-        //Redeclare Players
-        //printf("creating TTT_Players :\n");
-        //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
-        for (auto const& id : ReadJSValue["Players"].getMemberNames()) {
-          std::cout << id << std::endl;
-            Players.push_back(new UTTT_Player(ReadJSValue["Players"][id]));
-        }
-
-
-        GameHash = this->Hash();
-        this->WinningPlayer  = NULL;
-        JsonRead = true;
-        TestForWinner();
-      }
-
       ~UTTT_SubGame(){
 
-
-        if(JsonRead){
-          for (TTT_Player* Player: Players) { // c++11 range-based for loop
-            //free(Player);
-            //delete Player;
-          }
-        }
-
       }
-    bool Move(UTTT_Move* Move);
-    void DeclarePlayers(std::list<UTTT_Player*> GivenPlayers);
-    void AddPlayers(std::list<UTTT_Player*> Players);
+    bool Move(UTTT_Move* Move,UTTT_Player* Player);
+    void DeclarePlayers(std::vector<UTTT_Player*> GivenPlayers);
+    void AddPlayers(std::vector<UTTT_Player*> Players);
     UTTT_Player* DeclareWinner(UTTT_Player* GivenWinner);
-    std::list<UTTT_Move*> PossibleMoves();
-    bool equal(TTT* OtherGame);
-    Json::Value* JSON();
-    Json::Value* Add(Json::Value* JSONValue);
+    std::vector<UTTT_Move*> PossibleMoves();
+
+  bool ValidMove(UTTT_Move *Move);
+
+  bool equal(TTT* OtherGame);
     //bool ValidMove(GameMove* Move);
+  UTTT_Player* TestForWinner();
 };
 
-
-void UTTT_SubGame::DeclarePlayers(std::list<UTTT_Player*> GivenPlayers)
+// Returns True/False If Winner is found
+UTTT_Player* UTTT_SubGame::TestForWinner()
 {
-  //printf("Adding Players\n");
-  for (UTTT_Player* player : GivenPlayers) { // c++11 range-based for loop
-      Players.push_back(player);
-      //_Players.push_back(i);
+  //std::cout <<"Moves remaining(TTT Game): "<< this->MovesRemaining<<"\n";
+  if(
+    WinningPlayer != nullptr
+  ){
+    return WinningPlayer;
+  }
+
+  for (int Row_Col = 0; Row_Col < 3; Row_Col++)
+  {
+    if(
+      Board[Row_Col*3] == Board[Row_Col*3+1] &&
+      Board[Row_Col*3] == Board[Row_Col*3+2] &&
+      Board[Row_Col*3] != ' '
+    )
+    {
+      /*
+      Winning Row Method Found. Example:
+      X|X|X|
+      --------
+       | | |
+      --------
+       | | |
+      */
+      return this->DeclareWinner(Players->front());
+
     }
+    else if(
+      Board[Row_Col] == Board[3+Row_Col] &&
+      Board[Row_Col] == Board[6+Row_Col] &&
+      Board[Row_Col] != ' '
+    )
+    {
+      /*
+      Winning Column Method Found. Example:
+      X| | |
+      --------
+      X| | |
+      --------
+      X| | |
+      */
+      return this->DeclareWinner(Players->front());
+
+    }
+  }
+
+
+  if(
+    Board[0] == Board[4] &&
+    Board[0] == Board[8] &&
+    Board[0] != ' '
+  )
+  {
+    /*
+    Winning Diagonal Method Found. Example:
+      X| | |
+      --------
+       |X| |
+      --------
+       | |X|
+      */
+    return this->DeclareWinner(Players->front());
+
+  }
+  else if(
+    Board[2] == Board[4] &&
+    Board[2] == Board[6] &&
+    Board[2] != ' '
+  )
+  {
+    /*
+    Winning Diagonal Method Found. Example:
+       | |X|
+      --------
+       |X| |
+      --------
+      X| | |
+      */
+    return this->DeclareWinner(Players->front());
+  }
+
+  if(this->MovesRemaining == 0){
+    //return WinningPlayer;
+    return this->DeclareWinner(Draw);
+  }
+  return WinningPlayer;
 }
 
-std::list<UTTT_Move*> UTTT_SubGame::PossibleMoves()
+
+std::vector<UTTT_Move*> UTTT_SubGame::PossibleMoves()
 {
-  std::list<UTTT_Move*>Moves;
+  std::vector<UTTT_Move*>Moves;
 
   //GameMove TTTPlayer = static_cast<GameMove>(TTT_Move(0,0));
   for (int Row = 0; Row < 3; Row++)
@@ -296,31 +309,51 @@ std::list<UTTT_Move*> UTTT_SubGame::PossibleMoves()
   }
   return Moves;
 }
-/*
-Player* UTTT_SubGame::DeclareWinner(UTTT_Player* GivenWinner)
+
+UTTT_Player* UTTT_SubGame::DeclareWinner(UTTT_Player* GivenWinner)
 {
-  if(WinningPlayer == NULL){
+  if(WinningPlayer == nullptr){
     //Player* Winner = static_cast<Player*>(GivenWinner);
     WinningPlayer=GivenWinner;
   }
-  return static_cast<Player*>(WinningPlayer);
+  return WinningPlayer;
 }
-*/
 
-bool UTTT_SubGame::Move(UTTT_Move* Move)
+
+bool UTTT_SubGame::ValidMove(UTTT_Move* Move)
 {
+  //printf("TTT MovesRemaining:%d\n",MovesRemaining);
+  if(MovesRemaining == 0 ){
+    return false;
+  }
 
+  //printf("TTTMove->Row:%d\n",TTTMove->Row);
+  //printf("TTTMove->Col:%d\n",TTTMove->Col);
+  //printf("Board[TTTMove->Row][TTTMove->Col]:%c\n",Board[TTTMove->Row][TTTMove->Col]);
+  if (Board[Move->Row*3+Move->Col] == ' ')
+  {
+    //Valid Move
+    //printf("TTT Valid Move\n");
+    return true;
+  }
+  else
+  {
+    //Invalid Move
+    //printf("TTT InValid Move\n");
+    return false;
+  }
+}
+
+bool UTTT_SubGame::Move(UTTT_Move* Move,UTTT_Player* GamePlayer)
+{
   //////////////////////////////////////////////////////////////////////////////
   // Validate Move is legal, before preforming move.
   if (this->ValidMove(Move))
   {
     //////////////////////////////////////////////////////////////////////////////
     // Modify Sub Game's Board, by adding the current Player's GameRepresentation
-    Board[Move->Row*3+Move->Col] = Move->Player->GameRepresentation;
+    Board[Move->Row*3+Move->Col] = GamePlayer->GameRepresentation;
 
-    Players.splice(Players.end(),        // destination position
-                   Players,              // source list
-                   Players.begin());     // source position
     //printf("TestForWinner() \n");
     TestForWinner();
     return true;
@@ -329,7 +362,7 @@ bool UTTT_SubGame::Move(UTTT_Move* Move)
 }
 
 
-void UTTT_SubGame::AddPlayers(std::list<UTTT_Player*> Players)
+void UTTT_SubGame::AddPlayers(std::vector<UTTT_Player*> Players)
 {
   for (UTTT_Player* Player: Players) { // c++11 range-based for loop
     Players.push_back(Player);
@@ -351,39 +384,6 @@ bool UTTT_SubGame::equal(TTT* OtherGame)
 }
 
 
-//TTT*TTT_Object
-Json::Value* UTTT_SubGame::Add(Json::Value* JSONValue){
-  int a_size = sizeof(Board) / sizeof(char);
-  std::string _str = convertToString(Board, a_size);
-
-  (*JSONValue)["Board"]          = _str;
-  (*JSONValue)["Hash"]           = std::to_string(Hash());
-  (*JSONValue)["MovesRemaining"] = MovesRemaining;
-    //delete JSONValue;
-  for (TTT_Player* i : Players) { // c++11 range-based for loop
-      //std::cout << *(i->JSON()) << std::endl;
-      //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
-      //TODO Change GameRepresentation to Player number/ID.
-      //Create Original Player order Logic.
-      //(*value_obj)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
-      i->Add(&(*JSONValue)["Players"][std::string(1,i->GameRepresentation)]);
-
-    }
-  return JSONValue;
-}
-
-//TTT*TTT_Object
-Json::Value* UTTT_SubGame::JSON(){
-  int a_size = sizeof(Board) / sizeof(char);
-  std::string _str = convertToString(Board, a_size);
-  Json::Value* JSONValue = new Json::Value();
-
-  (*JSONValue)["Board"]          = _str;
-  (*JSONValue)["Hash"]           = std::to_string(Hash());
-  (*JSONValue)["MovesRemaining"] = MovesRemaining;
-    //delete JSONValue;
-  return JSONValue;
-}
 
 
 std::size_t Hash(UTTT_SubGame* k)
@@ -410,7 +410,7 @@ std::size_t Hash(UTTT_SubGame* k)
 UTTT - (Ultimate Tic Tac Toe) buisness logic.
 This class simulates UTTT (Ultimate Tic Tac Toe) and follows the Game class interface structure to allow for the easy integration of Tree Searches.
 
-@param (std::list<Player*> GivenPlayers), as the players to play the game.
+@param (std::vector<Player*> GivenPlayers), as the players to play the game.
 
 @relatesalso Game, TTT
 
@@ -430,14 +430,14 @@ public:
   // Player(s) DATA
   //TODO: Take Draw player during Initialization.
   //////////////////////////////////////////////////////////////////////////////
-  UTTT_Player Draw    = UTTT_Player(-1,'C');
+  UTTT_Player* Draw    = new UTTT_Player(-1,'C');
 
   //Players are placed in the following list as a rotating queue.
-  //Based on the structure, std::list<Player*> needs to be casted to std::list<UTTT_Player*>
-  std::list<UTTT_Player*> Players;
+  //Based on the structure, std::vector<Player*> needs to be cast to std::vector<UTTT_Player*>
+  std::vector<UTTT_Player*> Players;
 
   //Pointer to declare the winner.
-  UTTT_Player*  WinningPlayer;
+  UTTT_Player*  WinningPlayer = nullptr;
 
   //////////////////////////////////////////////////////////////////////////////
   // Game Data
@@ -448,7 +448,7 @@ public:
 
   //MovesRemaining is a decrementing counter to determine if there are any remaining moves.
   int MovesRemaining;
-  bool SimulationFinished;
+  bool isGameFinished;
 
   //Represenations of each game within the larger 3x3 game.
   UTTT_SubGame* Boards[3][3];
@@ -456,133 +456,44 @@ public:
 
 
   //////////////////////////////////////////////////////////////////////////////
-  // JSON File Data
-  //////////////////////////////////////////////////////////////////////////////
-  bool JsonRead;
-
-  //////////////////////////////////////////////////////////////////////////////
-  // JSON Initialization method(Reading from file).
-  UTTT(Json::Value ReadJSValue){
-  printf("creating UTTT:\n");
-
-    //std::cout << ReadJSValue << std::endl;
-    JsonRead = true;
-    Json::FastWriter fastWriter;
-    std::string Temp;
-
-
-    Temp = fastWriter.write(ReadJSValue["NextMove_Row"]);
-
-    NextMove_Row   = atoi(fastWriter.write(ReadJSValue["NextMove_Row"]).c_str());
-    NextMove_Col   = atoi(fastWriter.write(ReadJSValue["NextMove_Col"]).c_str());
-    MovesRemaining = atoi(fastWriter.write(ReadJSValue["MovesRemaining"]).c_str());
-    printf("MovesRemaining:%d\n",MovesRemaining);
-    SimulationFinished = atoi(fastWriter.write(ReadJSValue["SimulationFinished"]).c_str());;
-    WinningPlayer  = NULL;
-
-    //////////////////////////////////////////////////////////////////////////////
-    //Redeclare Boards
-    printf("Redeclare Boards :\n");
-    //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
-    for (auto const& id : ReadJSValue["Board"].getMemberNames()) {
-      std::cout << id << std::endl;
-        int Value = atoi( id.c_str());
-        int Row = Value/3;
-        int Col = Value%3;
-        printf("%d(%d,%d):\n",Value,Row,Col);
-        Boards[Row][Col] = (new UTTT_SubGame(ReadJSValue["Board"][id]));
-    }
-    //std::cout <<"Size:"<<ReadJSValue["Players"].size()<<"\n";
-
-    //////////////////////////////////////////////////////////////////////////////
-    //Redeclare Players
-    printf("Redeclare UTTT_Players :\n");
-    for (auto const& id : ReadJSValue["Players"].getMemberNames()) {
-      std::cout << id << std::endl;
-        Players.push_back(new UTTT_Player(ReadJSValue["Players"][id]));
-    }
-  }
-  /*
-  UTTT(nlohmann::json &j){
-
-    NextMove_Row   = -1;
-    NextMove_Col   = -1;
-    MovesRemaining = 81;
-    WinningPlayer  = NULL;
-
-    //////////////////////////////////////////////////////////////////////////////
-    // For Each Player within JSON file, place back within Players list.
-    // NOTE: When Saving TTT Players to JSON file, the order is swapped(The
-    //   First player is at the bottom of the list); the for loop automatically
-    //   adds the players back into the order(The first player within the JSON
-    //   file becomes the last player within the Player order).
-    for (nlohmann::json ji: j["Players"]) { // c++11 range-based for loop
-      Players.push_back(new UTTT_Player(ji));
-    }
-
-
-    //this->SetUpBoards(Players);
-
-    for (int Row = 0; Row < 3; Row++)
-    {
-      for (int Col = 0; Col < 3; Col++)
-      {
-        std::cout <<"Game"+std::to_string(Row)+std::to_string(Col)<< '\n';
-
-        Boards[Row][Col] = new UTTT_SubGame(j["Games"]["Game"+std::to_string(Row)+std::to_string(Col)]);
-
-        if(j["Games"]["Game"+std::to_string(Row)+std::to_string(Col)].empty()){
-          throw std::invalid_argument( "TTT JSON File doesnt contain Board(char[9])." );
-          //throw "TTT JSON File doesnt contain Board(char[9]).";
-          exit(1);
-        }
-      }
-    }
-
-
-    JsonRead = true;
-  }
-  */
-
-  //////////////////////////////////////////////////////////////////////////////
   // Initialization method.
-  UTTT(std::list<UTTT_Player*> GivenPlayers){
+  UTTT(std::vector<UTTT_Player*> GivenPlayers){
       Players = GivenPlayers;
       //this->DeclarePlayers(GivenPlayers);
 
-      this->WinningPlayer  = NULL;
+      this->WinningPlayer  = nullptr;
       NextMove_Row   = -1;
       NextMove_Col   = -1;
       MovesRemaining = 81;
-      this->SetUpBoards(GivenPlayers);
-      JsonRead = false;
-      SimulationFinished = false;
+      this->SetUpBoards(&Players);
+      isGameFinished = false;
       GameHash = this->Hash();
-
     }
     ~UTTT(){
+    //std::cout << "Free:" << std::endl;
+      //this->PrintPointers();
       this->FreeBoards();
-      if(JsonRead){
-        for (UTTT_Player* i : Players) { // c++11 range-based for loop
-            delete i;
-          }
-      }
+
+      //delete Draw;
       //delete Boards;
     }
 
     //////////////////////////////////////////////////////////////////////////////
     // Method Declarations.
     //////////////////////////////////////////////////////////////////////////////
-    void SetUpBoards(std::list<UTTT_Player*> GivenPlayers);
+    void PrintPointers() const;
+    void SetUpBoards(std::vector<UTTT_Player *> *GivenPlayers);
     void FreeBoards();
-
+    void PrintPlayers();
+    void RotatePlayers();
     bool Move(UTTT_Move* Move);
-
-    bool ValidMove(GameMove* Move);
+    UTTT* Move_ReturnNewGame(UTTT_Move* Move);
+    bool ValidMove(UTTT_Move* Move);
     UTTT_Player* TestForWinner();
     void DisplayWinner();
-    std::list<UTTT_Move*> PossibleMoves();
-    std::list<UTTT*>     PossibleGames();
+    std::vector<UTTT_Move*> PossibleMoves();
+    std::vector<UTTT*>     PossibleGames();
+    UTTT_Move *FindRandomMove();
     std::string Generate_GameRowRepresentation(int Row);
     std::string Generate_StringRepresentation();
 
@@ -590,16 +501,45 @@ public:
     UTTT* RollOut();
     UTTT* CopyGame();
     void PlayGame();
-    void DeclarePlayers(std::list<UTTT_Player*> GivenPlayers);
+
+
+  void DeclarePlayers(std::vector<UTTT_Player*> GivenPlayers);
     UTTT_Player* DeclareWinner(UTTT_Player* Winner);
     bool equal(UTTT* OtherGame);
 
     void Save(std::string LogPath);
     std::size_t Hash();
-    Json::Value* JSON();
-    void Add(Json::Value* JsonValue);
 };
 
+#include <iostream>
+
+void UTTT::PrintPointers() const {
+  // Print the address of the UTTT instance itself
+  std::cout << "Self (UTTT instance): " << this << std::endl;
+
+  // Print the address of WinningPlayer
+  std::cout << "WinningPlayer pointer: " << WinningPlayer << std::endl;
+
+  // Print all players' pointers in the Players list
+  std::cout << "Players list pointers:" << std::endl;
+  for (const auto& player : Players) {
+    std::cout << "  - " << player << std::endl;
+  }
+
+  // Print pointers to the Boards (3x3 array of UTTT_SubGame*)
+  std::cout << "Boards (3x3 UTTT_SubGame pointers):" << std::endl;
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      std::cout << "  - Boards[" << row << "][" << col << "]: " << Boards[row][col] << std::endl;
+    }
+  }
+
+  // Print the address of the Draw player
+  std::cout << "Draw player address: " << Draw << std::endl;
+
+  // Summary of dynamic memory info
+  std::cout << "Note: Only dynamic memory pointers are shown for UTTT_SubGame, UTTT_Player, and WinningPlayer." << std::endl;
+}
 
 std::size_t UTTT::Hash()
 {
@@ -644,16 +584,15 @@ for (UTTT_Player* Player: Players) { // c++11 range-based for loop
 SetUpBoard
   Generic method to initilize each sub-Game class within the 3x3 game.
 
-param (std::list<Player*> GivenPlayers), as the players to play the game.
+param (std::vector<Player*> GivenPlayers), as the players to play the game.
 */
-void UTTT::SetUpBoards(std::list<UTTT_Player*> GivenPlayers)
+void UTTT::SetUpBoards(std::vector<UTTT_Player*>* GivenPlayers)
 {
-
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
     {
-        Boards[Row][Col] =  new UTTT_SubGame(GivenPlayers);
+        Boards[Row][Col] =  new UTTT_SubGame(GivenPlayers,Draw);
     }
   }
 }
@@ -670,12 +609,13 @@ void UTTT::FreeBoards()
         delete Boards[Row][Col];
     }
   }
+
 }
 
 /*
 DeclarePlayers
  */
-void UTTT::DeclarePlayers(std::list<UTTT_Player*> GivenPlayers)
+void UTTT::DeclarePlayers(std::vector<UTTT_Player*> GivenPlayers)
 {
   for (UTTT_Player* i : GivenPlayers) { // c++11 range-based for loop
       //UTTT_Player* UTTTPlayer = static_cast<UTTT_Player*>(i);
@@ -712,6 +652,7 @@ CopyGame creates a complete copy of the game representation(Except for Players).
 UTTT* UTTT::CopyGame(){
 
   UTTT* New_UTTT = new UTTT(*this);
+  New_UTTT->DeclarePlayers(Players);
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
@@ -723,11 +664,11 @@ UTTT* UTTT::CopyGame(){
   /*
   TODO: Check Players List Pointers are created.
   */
-
-  //for (Player* i : New_UTTT->Players) { // c++11 range-based for loop
-      //printf("UTTT Player List:%p\n",i);
-    //}
-
+  //std::cout << "Copy:" << std::endl;
+  //this->PrintPointers();
+  //std::cout << "----------------" << std::endl;
+  //New_UTTT->PrintPointers();
+  //std::cout << "end copy ----------------" << std::endl;
   return (New_UTTT);
 }
 
@@ -737,55 +678,83 @@ UTTT* UTTT::CopyGame(){
 //////////////////////////////////////////////////////////////////////////////
 /*
 */
-bool UTTT::ValidMove(GameMove* Move)
+bool UTTT::ValidMove(UTTT_Move* Move)
 {
 
-  UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
   if(
     NextMove_Row == -1 ||
     NextMove_Col == -1
   ){
-    return Boards[UTTTMove->GameRow][UTTTMove->GameCol]->ValidMove(Move);
+    return Boards[Move->GameRow][Move->GameCol]->ValidMove(Move);
   }
 
   if(
-    UTTTMove->GameRow == NextMove_Row &&
-    UTTTMove->GameCol == NextMove_Col
+    Move->GameRow == NextMove_Row &&
+    Move->GameCol == NextMove_Col
   ){
-    return Boards[UTTTMove->GameRow][UTTTMove->GameCol]->ValidMove(Move);
+    return Boards[Move->GameRow][Move->GameCol]->ValidMove(Move);
   }
 
   return false;
 }
 
+UTTT* UTTT::Move_ReturnNewGame(UTTT_Move* UTTTMove)
+{
+  // Create a new game object as a copy of the current game (deep copy)
+  UTTT* newGame = CopyGame();  // Use copy constructor to clone the current game
+  if (newGame->ValidMove(UTTTMove)) {
+    newGame->Move(UTTTMove);
+    return newGame;
+  }
+
+
+  // If the move is not valid, clean up and return nullptr
+  delete newGame;  // Clean up if invalid move
+  return nullptr;  // Return nullptr to signal failure
+}
+
+void UTTT::PrintPlayers()
+{
+  //printf("Adding Players\n");
+  for (TTT_Player* i : Players) { // c++11 range-based for loop
+    printf("     GivenPlayer:%p\n",i);
+    printf("     PlayerREP:%c\n",i->GameRepresentation);
+  }
+}
+void UTTT::RotatePlayers(){
+
+  std::rotate(Players.begin(), Players.begin() + 1, Players.end());
+}
 
 
 bool UTTT::Move(UTTT_Move* Move)
 {
-  UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
+  if(this->isGameFinished) {
+    return false;
+  }
+  //UTTT_Move* UTTTMove = dynamic_cast<UTTT_Move*>(Move);
+
+
   //printf("UTTTMove:%p\n",&UTTTMove);
   //printf("UTTTMove->GameRow:%d\n",UTTTMove->GameRow);
   //printf("UTTTMove->GameCol:%d\n",UTTTMove->GameCol);
 
-  UTTTMove->Player = *Players.begin();
   //printf("UTTTMove->Row:%d\n",UTTTMove->Row);
   //printf("UTTTMove->Col:%d\n",UTTTMove->Col);
 
-
-  if (this->ValidMove(Move))
+  if(this->ValidMove(Move))
   {
     MovesRemaining--;
 
     // move first element to the end
-    Boards[UTTTMove->GameRow][UTTTMove->GameCol]->Move(Move);
+    Boards[Move->GameRow][Move->GameCol]->Move(Move,Players.front());
+    //Boards[Move->GameRow][Move->GameCol]->TestForWinner();
+    // Rotate players for the next turn
+    NextMove_Row = Move->Row;
+    NextMove_Col = Move->Col;
 
-    NextMove_Row = UTTTMove->Row;
-    NextMove_Col = UTTTMove->Col;
-    TestForWinner();
-
-    Players.splice(Players.end(),        // destination position
-                   Players,              // source list
-                   Players.begin());     // source position
+    this->TestForWinner();
+    this->RotatePlayers();
     //printf("valid Move");
     return true;
   }
@@ -822,7 +791,7 @@ std::string UTTT::Generate_GameRowRepresentation(int Row)
         for (int SubCol = 0; SubCol < 3; SubCol++)
         {
             char GameCharacter = Boards[Row][Col]->Board[SubRow*3+SubCol];
-            GameRep.append(&GameCharacter);
+            GameRep.push_back(GameCharacter);
             GameRep.append("|");
         }
         GameRep.append("   ");
@@ -831,15 +800,19 @@ std::string UTTT::Generate_GameRowRepresentation(int Row)
   }
 
   return GameRep;
-
 }
+
+
 
 std::string UTTT::Generate_StringRepresentation()
 {
   TestForWinner();
+
   std::string GameRep = "UTTT Winner: ";
+
+
   //printf("UTTT Winner:%p\n",WinningPlayer);
-  if (WinningPlayer != NULL){
+  if (WinningPlayer != nullptr){
     //Convert from Generic Player to TTT_Player Structure
     UTTT_Player* UTTTPlayer = static_cast<UTTT_Player*>(WinningPlayer);
 
@@ -850,6 +823,13 @@ std::string UTTT::Generate_StringRepresentation()
   }
   GameRep.append("\n");
 
+  GameRep.append("MovesRemaining:");
+  GameRep.append(std::to_string(MovesRemaining));
+  GameRep.append("\n");
+
+  GameRep.append("ActiveGame:");
+  GameRep.append(std::to_string(isGameFinished));
+  GameRep.append("\n");
 
   for (int Row = 0; Row < 3; Row++)
   {
@@ -859,11 +839,12 @@ std::string UTTT::Generate_StringRepresentation()
       //std::cout << Boards[Row][Col].Generate_StringRepresentation();
       //std::cout << "\n";
       //
-      if (Boards[Row][Col]->WinningPlayer != NULL){
-        TTT_Player* TTTPlayer = static_cast<TTT_Player*>(Boards[Row][Col]->WinningPlayer);
+      if (Boards[Row][Col]->WinningPlayer != nullptr){
+        TTT_Player* TTTPlayer = Boards[Row][Col]->WinningPlayer;
+        printf("TTTPlayer: %p\n",TTTPlayer);
         char position = TTTPlayer->GameRepresentation;
-        GameRep.append(&position);
-
+        //GameRep.append(&position);
+        GameRep.push_back(position);
       }
       else{
         GameRep.append("C");
@@ -872,6 +853,7 @@ std::string UTTT::Generate_StringRepresentation()
     }
     GameRep.append("\n--------\n");
   }
+
   GameRep.append("\n\n");
   for (int Row = 0; Row < 3; Row++)
   {
@@ -886,17 +868,17 @@ UTTT_Player* UTTT::DeclareWinner(UTTT_Player* GivenWinner)
 {
   //printf("DeclareWinner:%p\n",GivenWinner);
 
-  if(WinningPlayer == NULL){
+  if(WinningPlayer == nullptr){
     //Player* Winner = static_cast<Player*>(GivenWinner);
 
-    SimulationFinished = true;
+    isGameFinished = true;
     WinningPlayer = GivenWinner;
   }
   return (WinningPlayer);
 }
 
 void UTTT::DisplayWinner(){
-  if(WinningPlayer!=NULL){
+  if(WinningPlayer!=nullptr){
     printf("Player %d Has won!",WinningPlayer->PlayerNumber);
   }
 };
@@ -904,12 +886,13 @@ void UTTT::DisplayWinner(){
 
 UTTT_Player* UTTT::TestForWinner()
 {
+
   //printf("TestForWinner(UTTT Game)\n");
   //std::cout <<"MovesRemaining: "<< this->MovesRemaining<<"\n";
   //std::cout <<"WinningPlayer: "<< WinningPlayer<<"\n";
 
   if(
-    WinningPlayer != NULL
+    WinningPlayer != nullptr
   ){
     return WinningPlayer;
   }
@@ -920,15 +903,15 @@ UTTT_Player* UTTT::TestForWinner()
 
 
 /*
-if(Boards[Row_Col][0]->WinningPlayer != NULL)
+if(Boards[Row_Col][0]->WinningPlayer != nulptr)
 {
   std::cout << "[Row_Col][0]" << Boards[Row_Col][0]->WinningPlayer <<"'"<< static_cast<TTT_Player*>(Boards[Row_Col][0]->WinningPlayer)->GameRepresentation << "'\n";
 }
-if(Boards[Row_Col][1]->WinningPlayer != NULL)
+if(Boards[Row_Col][1]->WinningPlayer != nulptr)
 {
   std::cout << "[Row_Col][1]" << Boards[Row_Col][1]->WinningPlayer <<"'"<< static_cast<TTT_Player*>(Boards[Row_Col][1]->WinningPlayer)->GameRepresentation << "'\n";
 }
-if(Boards[Row_Col][2]->WinningPlayer != NULL)
+if(Boards[Row_Col][2]->WinningPlayer != nulptr)
 {
   std::cout << "[Row_Col][2]" << Boards[Row_Col][2]->WinningPlayer <<"'"<< static_cast<TTT_Player*>(Boards[Row_Col][2]->WinningPlayer)->GameRepresentation << "'\n\n";
 }*/
@@ -939,7 +922,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
     if(
       Boards[Row_Col][0]->TestForWinner() == Boards[Row_Col][1]->TestForWinner() &&
       Boards[Row_Col][0]->TestForWinner() == Boards[Row_Col][2]->TestForWinner() &&
-      Boards[Row_Col][0]->TestForWinner() != NULL
+      Boards[Row_Col][0]->TestForWinner() != nullptr
     )
     {
         //printf("TestForWinner(UTTT Game) Row\n");
@@ -958,7 +941,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
     else if(
       Boards[0][Row_Col]->TestForWinner() == Boards[1][Row_Col]->TestForWinner() &&
       Boards[0][Row_Col]->TestForWinner() == Boards[2][Row_Col]->TestForWinner() &&
-      Boards[0][Row_Col]->TestForWinner() != NULL
+      Boards[0][Row_Col]->TestForWinner() != nullptr
     )
     {
   //printf("TestForWinner(UTTT Game) COL\n");
@@ -982,7 +965,7 @@ if(Boards[Row_Col][2]->WinningPlayer != NULL)
   if(
     Boards[0][0]->TestForWinner() == Boards[1][1]->TestForWinner() &&
     Boards[0][0]->TestForWinner() == Boards[2][2]->TestForWinner() &&
-    Boards[0][0]->TestForWinner() != NULL
+    Boards[0][0]->TestForWinner() != nullptr
   )
   {
   //printf("TestForWinner(UTTT Game) Diag1\n");
@@ -1001,7 +984,7 @@ Winning Diagonal Method Found. Example:
   else if(
     Boards[0][2]->TestForWinner() == Boards[1][1]->TestForWinner() &&
     Boards[0][2]->TestForWinner() == Boards[2][0]->TestForWinner() &&
-    Boards[0][2]->TestForWinner() != NULL
+    Boards[0][2]->TestForWinner() != nullptr
   )
   {
   //printf("TestForWinner(UTTT Game) Diag2\n");
@@ -1017,19 +1000,20 @@ Winning Diagonal Method Found. Example:
     return DeclareWinner(static_cast<UTTT_Player*>(Boards[0][2]->TestForWinner()));
   }
   if(this->MovesRemaining == 0){
-    WinningPlayer = &Draw;
+    WinningPlayer = Draw;
     //printf("No Remaining Moves\n");
     return WinningPlayer;
   }
   //printf("returning WinningPlayer\n");
-  //printf("Reached End Returning NULL:%p\n",WinningPlayer);
+  //printf("Reached End Returning nullptr:%p\n",WinningPlayer);
   return WinningPlayer;
 }
 
-std::list<UTTT_Move*> UTTT::PossibleMoves()
+
+std::vector<UTTT_Move*> UTTT::PossibleMoves()
 {
   //printf("NextMove(%i,%i)\n",NextMove_Row,NextMove_Col);
-  std::list<UTTT_Move*>Moves;
+  std::vector<UTTT_Move*>Moves;
   if(
     NextMove_Row == -1 ||
     NextMove_Col == -1
@@ -1038,7 +1022,7 @@ std::list<UTTT_Move*> UTTT::PossibleMoves()
     {
       for (int Col = 0; Col < 2; Col++)
       {
-        std::list<UTTT_Move*> GMoves = Boards[Row][Col]->PossibleMoves();
+        std::vector<UTTT_Move*> GMoves = Boards[Row][Col]->PossibleMoves();
         //printf("GMoves(%lu)\n",(GMoves.size()));
         for (GameMove* GMove : GMoves) { // c++11 range-based for loop
 
@@ -1051,33 +1035,38 @@ std::list<UTTT_Move*> UTTT::PossibleMoves()
           }
       }
     }
-    //printf("Moves(%lu)\n",(Moves.size()));
-    return Moves;
   }
   else{
+    std::vector<UTTT_Move *> SubGame_PossibleMoves = Boards[NextMove_Row][NextMove_Col]->PossibleMoves();
+    if (SubGame_PossibleMoves.size() != 0) {
+      for (UTTT_Move* GMove : SubGame_PossibleMoves) { // c++11 range-based for loop
+        UTTT_Move* UTTT_GMove = GMove;
+        UTTT_GMove->GameRow = NextMove_Row;
+        UTTT_GMove->GameCol = NextMove_Col;
 
-    for (UTTT_Move* GMove : Boards[NextMove_Row][NextMove_Col]->PossibleMoves()) { // c++11 range-based for loop
-         UTTT_Move* UTTT_GMove = static_cast<UTTT_Move*>(GMove);
-         UTTT_GMove->GameRow = NextMove_Row;
-         UTTT_GMove->GameCol = NextMove_Col;
-
-         //GMove = static_cast<GameMove*>(UTTT_GMove);
-         Moves.push_back(UTTT_GMove);
+        //GMove = static_cast<GameMove*>(UTTT_GMove);
+        Moves.push_back(UTTT_GMove);
       }
-    //printf("UTTT_:NextMove_Row:%d\n",NextMove_Row);
-    //printf("UTTT_:NextMove_Col:%d\n",NextMove_Col);
-    return Moves;
+    }
+    else {
+      NextMove_Row = -1;
+      NextMove_Col = -1;
+      Moves = PossibleMoves();
+    }
   }
+  //printf("UTTT_:NextMove_Row:%d\n",NextMove_Row);
+  //printf("UTTT_:NextMove_Col:%d\n",NextMove_Col);
+  //printf("Moves(%lu)\n",(Moves.size()));
+  return Moves;
 
 }
-std::list<UTTT*> UTTT::PossibleGames()
+std::vector<UTTT*> UTTT::PossibleGames()
 {
-  std::list<UTTT_Move*> Moves = PossibleMoves();
-  std::list<UTTT*>Games;
+  std::vector<UTTT_Move*> Moves = PossibleMoves();
+  std::vector<UTTT*>Games;
   UTTT* Branch;
-  for (UTTT_Move* GMove : Moves) { // c++11 range-based for loop
-       //Branch = new UTTT(*this);
-       Branch = static_cast<UTTT*>(CopyGame());
+  for (UTTT_Move* GMove : Moves) {
+       Branch = this->CopyGame();
        Branch->Move(GMove);
        Games.push_back(Branch);
        //Free each Move Structure
@@ -1098,7 +1087,7 @@ void UTTT::PlayGame()
   UTTT_Player* Currentplayer;
 
   UTTT_Player* TTTPlayer = static_cast<UTTT_Player*>(TestForWinner());
-  while(TTTPlayer == NULL){
+  while(TTTPlayer == nullptr){
 
     Currentplayer = Players.front();
 
@@ -1111,6 +1100,23 @@ void UTTT::PlayGame()
   }
 }
 
+UTTT_Move* UTTT::FindRandomMove(){
+  UTTT_Move* Move;
+  int Range;
+  std::vector<UTTT_Move*>GameMoves = PossibleMoves();
+  Range = GameMoves.size();
+  if (Range==0) {
+    std::cout << this->Generate_StringRepresentation()<< std::endl;
+    return nullptr;
+  }
+  //printf("Range:%d\n",Range);
+  Move          = get(GameMoves,(rand() % (Range)));
+  Move = new UTTT_Move(*Move);
+  //printf("Freeing memory\n");
+  Free_UTTTMoveList(GameMoves);
+  return Move;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // MCTS/TreeSearch Functionality
@@ -1119,20 +1125,17 @@ UTTT* UTTT::RollOut()
 {
   //std::cout << Generate_StringRepresentation();
   //printf("Prefoming Rollout\n");
-  UTTT_Move* Move;
 
-  int Range;
 
-  TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-  while(TTTPlayer == NULL){
+  while(WinningPlayer == nullptr){
 
-    std::list<UTTT_Move*>GameMoves = PossibleMoves();
-    Range = GameMoves.size();
+    std::vector<UTTT_Move*>GameMoves = PossibleMoves();
+    unsigned long Range = GameMoves.size();
     if(Range == 0){
-      return this;
+      return nullptr;
     }
     //printf("Range:%d\n",Range);
-    Move          = get(GameMoves,(rand() % (Range)));
+    UTTT_Move *Move = get(GameMoves, (rand() % (Range)));
     //printf("Move:%p\n",Move);
     this->Move(Move);
     //printf("Freeing memory\n");
@@ -1141,7 +1144,6 @@ UTTT* UTTT::RollOut()
     //delete Move;
 
     //std::cout << this->Generate_StringRepresentation();
-    TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   }
   return this;
 }
@@ -1174,91 +1176,43 @@ nlohmann::json Json(UTTT* p) {
 }*/
 
 
-void UTTT::Add(Json::Value* JSONValue){
-  for (int Row = 0; Row < 3; Row++)
-  {
-    for (int Col = 0; Col < 3; Col++)
-    {
-      //std::cout << Row*3+Col << "\n";
-      //std::cout << (*(Boards[Row][Col])->JSON()) << "\n";
-      //(*JSONValue)["Board"][std::to_string(Row*3+Col)] =(*(Boards[Row][Col])->JSON());
-      //i->Add(&(*value_obj)["Players"][std::string(1,i->GameRepresentation)]);
-      (*(Boards[Row][Col])->Add(&(*JSONValue)["Board"][std::to_string(Row*3+Col)]));
-    }
+
+
+
+
+
+
+
+void SaveMovesToFile(const std::vector<UTTT_Move*>& RolloutMoves, const std::string& filename) {
+
+  // Open an output file stream to write to a file
+  std::ofstream outFile(filename, std::ios::app);
+
+  // Check if the file was successfully opened
+  if (!outFile.is_open()) {
+    std::cerr << "Error: Could not open the file for writing!" << std::endl;
+    return;
   }
 
-  (*JSONValue)["Hash"]           = std::to_string(Hash());
-  (*JSONValue)["NextMove_Row"] = NextMove_Row;
-  (*JSONValue)["NextMove_Col"] = NextMove_Col;
-  (*JSONValue)["MovesRemaining"] = MovesRemaining;
-  (*JSONValue)["WinningPlayer"] = WinningPlayer;
-  (*JSONValue)["SimulationFinished"] = SimulationFinished;
+  // Iterate through the moves and write to the file
+  for (const UTTT_Move* p : RolloutMoves) {
 
+    outFile  << p->GameRow << p->GameCol << p->Row << p->Col << ",";  // Write the row and column to the file
 
-    //std::cout <<(*JSONValue) << "\n";
-  //return JSONValue;
+    // Conditionally print to the screen if PRINT_TO_SCREEN is defined
+#ifdef PRINT_TO_SCREEN
+    std::cout << p->GameRow << p->GameCol << p->Row << p->Col << ",";
+#endif
+  }
+  outFile << std::endl;  // Write a new line after all moves are written
+
+  // Conditionally print a new line to the screen if PRINT_TO_SCREEN is defined
+#ifdef PRINT_TO_SCREEN
+  std::cout << std::endl;
+#endif
+
+  // Close the file stream
+  outFile.close();
 }
-
-Json::Value* UTTT::JSON(){
-
-
-  //int a_size = sizeof(Board) / sizeof(char);
-  //std::string _str = convertToString(Board, a_size);
-  Json::Value* JSONValue = new Json::Value();
-  Add(JSONValue);
-    //std::cout <<(*JSONValue) << "\n";
-  return JSONValue;
-}
-
-
-
-
-
-void UTTT::Save(std::string FilePath){
-  Json::Value* JSONValue = JSON();
-  Json::Value tmp;
-  for (TTT_Player* Player : Players) { // c++11 range-based for loop
-      //std::cout << *(i->JSON()) << std::endl;
-      //(*value_obj)["Players"][std::string(i->GameRepresentation)] = *(i->JSON());
-      //TODO Change GameRepresentation to Player number/ID.
-      //Create Original Player order Logic.
-      //(*JSONValue)["Players"][std::string(1,i->GameRepresentation)] = *(i->JSON());
-      Player->Add(&(*JSONValue)["Players"][std::string(1,Player->GameRepresentation)]);
-
-
-    }
-    std::cout <<(*JSONValue) << "\n";
-    //std::cout << (*value_obj) << std::endl;
-
-  std::ofstream file_id;
-  file_id.open(FilePath);
-
-  //populate 'value_obj' with the objects, arrays etc.
-
-  Json::StyledWriter styledWriter;
-  file_id << styledWriter.write(*JSONValue);
-
-  file_id.close();
-  delete JSONValue;
-}
-
-UTTT* Read_UTTT_JSON(std::string FilePath){
-    //std::cout << "Reading File" << std::endl;
-    std::ifstream file(FilePath);
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse( file, root );
-    if ( !parsingSuccessful )
-    {
-        std::cout << "Error parsing the string" << std::endl;
-    }
-    UTTT* Game = new UTTT(root);
-    //std::cout << root << std::endl;
-
-    return Game;
-}
-
-
-
 
 #endif //UTTT_CU

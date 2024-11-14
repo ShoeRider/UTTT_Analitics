@@ -30,14 +30,17 @@ struct GameMove
 };
 
 
-GameMove* get(std::list<GameMove*> _list, int _i){
-    std::list<GameMove*>::iterator it = _list.begin();
-    for(int i=0; i<_i; i++){
-        ++it;
-    }
-    return *it;
-}
 
+
+
+template <typename Game_Tp>
+Game_Tp* get(std::vector<Game_Tp*> _vector, int _i) {
+    if (_i >= 0 && _i < _vector.size()) {
+        return _vector[_i];
+    } else {
+        throw std::out_of_range("Index is out of range");
+    }
+}
 
 //Player interface. Used as a place holder for child classes holding
 //   game Player data.
@@ -91,7 +94,7 @@ class Game
 
       //std::list<GameMove*> PossibleMoves() = 0;
       //std::list<Game*> PossibleGames()     = 0;
-      virtual bool ValidMove(GameMove* Move)       = 0;
+      //virtual bool ValidMove(GameMove* Move)       = 0;
       //virtual bool Move(GameMove* Move)            = 0;
       virtual Game* CopyGame()                     = 0;
       //virtual void AvaliableMoves(int Depth) = 0;

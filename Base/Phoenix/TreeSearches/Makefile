@@ -8,11 +8,11 @@ all: PMCTS_Tests
 #Compile and run tests within ./Tests Folder
 MCTS_Tests:
 	@echo "Compiling(Tests) ..."
-	nvcc -o ./MCTS_Tests ./Tests/MCTS_Tests.cu
+	nvcc -o ./MCTS_Tests ./Tests/MCTS_Tests.cu -ljsoncpp
 	#gcc -std=c++11 ./Tests/MCTS_Tests.cpp -lstdc++ -o ./MCTS_Tests
 	@echo "Running(Tests) ..."
-	valgrind --leak-check=yes ./MCTS_Tests
-	#./MCTS_Tests
+	#valgrind --leak-check=yes ./MCTS_Tests
+	./MCTS_Tests
 
 MCHS_Tests:
 	#rm ./TTT_Test
@@ -115,15 +115,28 @@ TTT_PMCTS_GenerateGameData:
 
 
 UTTT_MCTS_GenerateGameData:
-	nvcc -DPRINT_TO_SCREEN -o UTTT_MCTS_GenerateSearchGames ./Tests/UTTT_MCTS_GenerateSearchGames.cu -ljsoncpp
+	nvcc -DPRINT_TO_SCREEN -o UTTT_MCTS_GenerateSearchGames ./Tests/UTTT_MCTS_GenerateSearchGames.cu -ljsoncpp -O3 -lineinfo
 	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
-	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
-	#./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
+	#valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
+	./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
 	#./UTTT_MCTS_GenerateSearchGames -g 1 -p UTTT_MCTS_GenerateSearchGames.csv
 
 .PHONY: UTTT_PMCTS_GenerateGameData
 UTTT_PMCTS_GenerateGameData:
-	nvcc -DPRINT_TO_SCREEN -o UTTT_PMCTS_GenerateSearchGames ./Tests/UTTT_PMCTS_GenerateSearchGames.cu -ljsoncpp
+	nvcc -DPRINT_TO_SCREEN -o UTTT_PMCTS_GenerateSearchGames ./Tests/UTTT_PMCTS_GenerateSearchGames.cu -ljsoncpp -O3 -lineinfo
+
 	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
-	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
-	#./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+	#valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+	./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+
+
+.PHONY: Test
+Test:
+	nvcc -lprofiler -o Test ./Tests/Test.cu -ljsoncpp -O3 -lineinfo
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./Test
+
+
+.PHONY: Test1
+Test1:
+	nvcc -ltcmalloc -o Test ./Tests/Test.cu -ljsoncpp -O3 -lineinfo
+	pprof --text ./Test heap_example.0001.heap

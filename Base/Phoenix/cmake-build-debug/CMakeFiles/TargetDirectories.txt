@@ -1,0 +1,3 @@
+/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/cmake-build-debug/CMakeFiles/Phoenix.dir
+/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/cmake-build-debug/CMakeFiles/edit_cache.dir
+/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/cmake-build-debug/CMakeFiles/rebuild_cache.dir

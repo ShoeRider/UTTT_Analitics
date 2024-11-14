@@ -328,7 +328,7 @@ public:
   // Player(s) DATA
   //TODO: Take Draw player during Initialization.
   //////////////////////////////////////////////////////////////////////////////
-  TTT_Player* Draw = new TTT_Player(-1, 'C');
+  TTT_Player* Draw ;
 
   std::list<TTT_Player*> Players;
   TTT_Player*  WinningPlayer = nullptr;
@@ -362,6 +362,7 @@ public:
 
 
   TTT(std::list<TTT_Player*> GivenPlayers){
+      Draw = new TTT_Player(-1, 'C');
       //this->DeclarePlayers(GivenPlayers);
       Players = GivenPlayers;
       this->WinningPlayer  = NULL;
@@ -373,9 +374,6 @@ public:
       //std::cout<< "GameHash:" << GameHash <<"\n";
     }
     virtual ~TTT(){
-
-
-
 
     }
 

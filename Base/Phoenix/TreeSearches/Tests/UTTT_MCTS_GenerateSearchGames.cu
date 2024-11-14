@@ -1,8 +1,8 @@
-#ifndef TTT_Tests_CU
-#define TTT_Tests_CU
+#ifndef UTTT_Tests_CU
+#define UTTT_Tests_CU
 
-#include "../../Games/SRC/TTT/TTT.cpp"
-#include "../SRC/PMCTS.cu"
+#include "../../Games/SRC/UTTT/UTTT.cpp"
+#include "../SRC/MCTS.cu"
 
 #include <list>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <random>
 
 #define PRINT_TO_SCREEN
+
 
 
 template <typename T>
@@ -22,6 +23,9 @@ void DeleteAllItems(std::list<T> itemList) {
     // Clear the list itself
     //itemList.clear();
 }
+/*
+ */
+
 
 /**
   @brief Main function parameter options
@@ -30,28 +34,33 @@ void DeleteAllItems(std::list<T> itemList) {
 
  - **-g**:
     - Usage: `-g <Games to save>`
-    - Example: `./TTT_GenerateRandomGames -g`
+    - Example: `./UTTT_GenerateRandomGames -g`
 	- Default: 10
  - **-rc**:
     - Usage: `-rm <Random move Chance>`
     - Description: "Depth of random initial moves."
-    - Example: `./TTT_GenerateRandomGames -g`
+    - Example: `./UTTT_GenerateRandomGames -g`
  - **-rd**:
     - Usage: `-rd <Random move Chance>`
     - Description: "Depth of random initial moves."
-    - Example: `./TTT_GenerateRandomGames -g`
+    - Example: `./UTTT_GenerateRandomGames -g`
 - **-p**:
     - Usage: `-p <Path to save results>`
-    - Example: `./TTT_GenerateRandomGames -d`
+    - Example: `./UTTT_GenerateRandomGames -p `
+ - **-sd**:
+    - Usage: `-sd <MCTS Depth>`
+    - Example: `./UTTT_GenerateRandomGames -sd 1000`
+    - Default: 200
  - **-d**:
     - Usage: `-d`
     - Description: This option enables the display of results. When this flag is present, the program will print results to the console.
-    - Example: `./TTT_GenerateRandomGames -d`
+    - Example: `./UTTT_GenerateRandomGames -d`
 	- Default: false
 **/
 int main(int argc, char *argv[]) {
   float RandomMovePercentage = 20;
   long int GamesToSimulate = 20;
+  long int SearchDepth = 250000;
   bool DisplayResults = false;
   std::string ResultPath = "X_RandomSearchResults.csv";
   for (int i = 1; i < argc; i++) {
@@ -59,10 +68,16 @@ int main(int argc, char *argv[]) {
       if (strcmp(argv[i],"-g")==0) {
           GamesToSimulate = atol(argv[i+1]);
           //printf("GamesToSimulate: %ld",GamesToSimulate);
-      } else if (strcmp(argv[i],"-rd")==0) {
+      }
+      else if (strcmp(argv[i],"-sd")==0) {
+          SearchDepth = atof(argv[i+1]);  // Convert the argument to a float
+          i++;  // Skip the next argument since it's the value for -rd
+      }
+      else if (strcmp(argv[i],"-rd")==0) {
           RandomMovePercentage = atof(argv[i+1]);  // Convert the argument to a float
           i++;  // Skip the next argument since it's the value for -rd
-      } else if (strcmp(argv[i],"-p")==0) {
+      }
+      else if (strcmp(argv[i],"-p")==0) {
           if (i + 1 < argc) {      // Ensure the next argument exists
               ResultPath = argv[i + 1];  // Set the path to the next argument
               i++;                 // Increment i to skip over the path value
@@ -76,18 +91,17 @@ int main(int argc, char *argv[]) {
 
   }
 
-    TTT_Move* SearchMove;
+    UTTT_Move* SearchMove;
     float randomNumber = std::rand() % 100;
-    TTT_Player* Player0 = new TTT_Player(0,'X');
-    TTT_Player* Player1 = new TTT_Player(1,'O');
+    UTTT_Player* Player0 = new UTTT_Player(0,'X');
+    UTTT_Player* Player1 = new UTTT_Player(1,'O');
 
     for (int i = 0; i < GamesToSimulate; i++) {
-        TTT* Game = new TTT({Player0,Player1});
-        std::list<TTT_Move*> GameHistory;
+        UTTT* Game = new UTTT({Player0,Player1});
+        std::list<UTTT_Move*> GameHistory;
 
         while(!Game->isGameFinished){
             randomNumber = std::rand() % 100;
-            std::cout << randomNumber << std::endl;
             if (randomNumber < RandomMovePercentage) {
                 std::cout << "Adding Random Move." << std::endl;
                 SearchMove = Game->FindRandomMove();
@@ -96,19 +110,26 @@ int main(int argc, char *argv[]) {
                 //delete SearchMove;
 
             } else {
-                std::cout << "Performing 100 Node MTCS Search." << std::endl;
-                PMCTS<TTT,TTT_Player,TTT_Move> *Sim = new PMCTS<TTT,TTT_Player,TTT_Move>(Game);
-                Sim->Search(12,100);
-                SearchMove = new TTT_Move(*Sim->ReturnBestMove());
-                GameHistory.push_back(SearchMove);
+                std::cout << Game->Generate_StringRepresentation()<< std::endl;
 
+                std::cout << "Performing "<<SearchDepth<<" Node MTCS Search." << std::endl;
+                MCTS<UTTT,UTTT_Player,UTTT_Move> *Sim = new MCTS<UTTT,UTTT_Player,UTTT_Move>(Game);
+
+                Sim->Search(SearchDepth);
+                //printf("copy:SearchMove");
+                SearchMove = new UTTT_Move(*Sim->ReturnBestMove());
+                //printf("pushing:SearchMove");
+                GameHistory.push_back(SearchMove);
+                //printf("making:SearchMove");
                 Game->Move(SearchMove);
                 //delete SearchMove;
+                //printf("Deleting Sim");
                 delete Sim;
-                //Pause
+                Pause
             }
         }
 
+        std::cout << Game->Generate_StringRepresentation()<< std::endl;
         SaveMovesToFile(GameHistory,ResultPath);
         delete Game;
         DeleteAllItems(GameHistory);
@@ -120,9 +141,11 @@ int main(int argc, char *argv[]) {
   delete Player0;
   printf("Freeing  Player1\n");
   delete Player1;
+
+
   return 0;
 }
 
 
 
-#endif //TTT_Tests_CU
+#endif //UTTT_Tests_CU

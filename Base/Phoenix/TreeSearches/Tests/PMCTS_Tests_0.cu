@@ -5,7 +5,7 @@
 #include "../../Games/SRC/TTT/TTT.cpp"
 #include "../../Games/SRC/UTTT/UTTT.cpp"
 #include "../SRC/MCTS.cpp"
-#include "../SRC/PMCTS.cpp"
+#include "../SRC/PMCTS.cu"
 
 
 /*
@@ -71,7 +71,7 @@ int main() {
 
  PMCTS<UTTT,UTTT_Player> *Sim = new PMCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
 //Pause;
- Sim->Search(12,3000000);
+ Sim->Search(24,3000000);
  //Sim->SaveSearch(std::string("Test04.json"),1,10);
  delete Sim;
  return 0;

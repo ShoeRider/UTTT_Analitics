@@ -7,32 +7,33 @@
 #include "../SRC/MCTS.cu"
 
 
-
+#include <list>
+#include <stdlib.h>
+#include <fstream>
 #include <iostream>
 #include <chrono>
 
 
 
 
-/*
-//Test TTT with MCTS
-TTT_Player Player0 = TTT_Player(0,'X');
-TTT_Player Player1 = TTT_Player(1,'O');
-Game *_Game = new TTT({&Player0,&Player1});
+void SaveMovesToFile(const std::list<TTT_Move>& RolloutMoves, const std::string& filename) {
+    // Open an output file stream to write to a file
+    std::ofstream outFile(filename, std::ios::app);
 
-TreeSimulation *Sim = new MCTS(_Game);
-Sim->Search(15000,&Player0);
+    // Check if the file was successfully opened
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Could not open the file for writing!" << std::endl;
+        return;
+    }
 
-//delete &Player0;
-//delete &Player1;
-//delete _Game;
-delete Sim;
-*/
-bool UTTT_Player_Init(){
-  //std::cout << "Hello World!";
-  //UTTT_Player Player0 = UTTT_Player(0,'X');
-  //delete Player0;
-  return 0;
+    // Iterate through the moves and write to the file
+    for (const TTT_Move& p : RolloutMoves) {
+        outFile << p.Row << p.Col << ",";  // Write the row and column to the file
+    }
+    outFile << std::endl;  // Write a new line after all moves are written
+
+    // Close the file stream
+    outFile.close();
 }
 
 /*
@@ -60,19 +61,22 @@ As of right now, Both players are attempting to give Player0 the win.
 +I belive its fixed, need further testing, MCTS_Node values are (negative).
 */
 int main() {
+
   std::clock_t    start;
   start = std::clock();
 
-  UTTT_Player Player0 = UTTT_Player(0,'X');
-  UTTT_Player Player1 = UTTT_Player(1,'O');
+  TTT_Player Player0 = TTT_Player(0,'X');
+  TTT_Player Player1 = TTT_Player(1,'O');
 
   //Player* Player0 = static_cast<Player*>(&TTTPlayer0);
   //Player* Player1 = static_cast<Player*>(&TTTPlayer1);
 
-  UTTT *_Game = new UTTT({&Player0,&Player1});
+  TTT *_Game = new TTT({&Player0,&Player1});
+  std::list<TTT_Move> GameHistory;
 
-  MCTS<UTTT,UTTT_Player> *Sim = new MCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
-  Sim->Search(1000000);
+  MCTS<TTT,TTT_Player,TTT_Move> *Sim = new MCTS<TTT,TTT_Player,TTT_Move>(_Game,{&Player0,&Player1});
+  Sim->Search(100);
+  //GameHistory.push_back(*Sim->ReturnBestMove()->Move);
 
   //delete &Player0;
   //delete &Player1;

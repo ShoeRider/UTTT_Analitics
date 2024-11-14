@@ -103,7 +103,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////
     // Initialization method.
-    PMCTS_Node(Game_Tp* Instance,std::list<Player_Tp*> GivenPlayers,GameMove_Tp* GivenMove){
+    PMCTS_Node(Game_Tp* Instance,GameMove_Tp* GivenMove){
       for (Player_Tp* Player : GivenPlayers){
             //printf("adding Player:%p\n",(_Player));
             Players.push_back(Player);

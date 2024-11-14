@@ -7,6 +7,9 @@ all: Test TTT_Test UTTT_Test
 	#nvcc -o ./MCTS ./SRC/MCTS.cu
 	#./MCTS
 
+Libs:
+	nvcc -o ./BinaryWriter ./Libs/BinaryWriter.cu
+
 UTTT_Test:
 	@echo "Compiling(Tests) ..."
 	nvcc -o ./UTTT_Test ./Tests/UTTT_Tests.cu

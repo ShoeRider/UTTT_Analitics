@@ -1,10 +1,9 @@
-#ifndef MCTS_Tests_CU
-#define MCTS_Tests_CU
+#ifndef PMCHS_Tests_CU
+#define PMCHS_Tests_CU
 
 #include "../../Games/SRC/Game.cpp"
 #include "../../Games/SRC/TTT/TTT.cpp"
 #include "../../Games/SRC/UTTT/UTTT.cpp"
-#include "../SRC/MCTS.cpp"
 #include "../SRC/PMCTS.cu"
 
 
@@ -79,14 +78,14 @@ int main(int argc, char *argv[]) {
   }
 
  //std::cout << "Hello World!";
- UTTT_Player Player0 = UTTT_Player(0,'X');
- UTTT_Player Player1 = UTTT_Player(1,'O');
+ TTT_Player Player0 = TTT_Player(0,'X');
+ TTT_Player Player1 = TTT_Player(1,'O');
 
- UTTT *_Game = new UTTT({&Player0,&Player1});
+ TTT *_Game = new TTT({&Player0,&Player1});
  //printf("_Game:%p\n",_Game);
  // delete _Game;
 
- PMCTS<UTTT,UTTT_Player> *Sim = new PMCTS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
+ PMCTS<TTT,TTT_Player,TTT_Move> *Sim = new PMCTS<TTT,TTT_Player,TTT_Move>(_Game,{&Player0,&Player1});
 //Pause;
  Sim->Search(Threads,SearchDepth);
 
@@ -99,4 +98,4 @@ int main(int argc, char *argv[]) {
  return 0;
 }
 
-#endif //MCTS_Tests_CU
+#endif //PMCHS_Tests_CU

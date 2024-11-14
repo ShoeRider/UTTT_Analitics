@@ -13,27 +13,54 @@
 
 
 
+void SaveMovesToFile(const std::list<TTT_Move>& RolloutMoves, const std::string& filename) {
+    // Open an output file stream to write to a file
+    std::ofstream outFile(filename, std::ios::app);
+
+    // Check if the file was successfully opened
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Could not open the file for writing!" << std::endl;
+        return;
+    }
+
+    // Iterate through the moves and write to the file
+    for (const TTT_Move& p : RolloutMoves) {
+        outFile << p.Row << p.Col << ",";  // Write the row and column to the file
+    }
+    outFile << std::endl;  // Write a new line after all moves are written
+
+    // Close the file stream
+    outFile.close();
+}
+
 /*
-//Test TTT with MCTS
 TTT_Player Player0 = TTT_Player(0,'X');
 TTT_Player Player1 = TTT_Player(1,'O');
-Game *_Game = new TTT({&Player0,&Player1});
 
-TreeSimulation *Sim = new MCTS(_Game);
-Sim->Search(15000,&Player0);
+//Player* Player0 = static_cast<Player*>(&TTTPlayer0);
+//Player* Player1 = static_cast<Player*>(&TTTPlayer1);
+
+TTT *_Game = new TTT({&Player0,&Player1});
+
+MCTS<TTT,TTT_Player> *Sim = new MCTS<TTT,TTT_Player>(_Game,{&Player0,&Player1});
+Sim->Search(100000);
+
 
 //delete &Player0;
 //delete &Player1;
 //delete _Game;
-delete Sim;
 */
-bool UTTT_Player_Init(){
-  //std::cout << "Hello World!";
-  //UTTT_Player Player0 = UTTT_Player(0,'X');
-  //delete Player0;
-  return 0;
-}
+
+
 /*
+TODO: Fix Rotating Winner priority.
+As of right now, Both players are attempting to give Player0 the win.
++I believe its fixed, need further testing, MCHS_Node values are (negative).
+*/
+int main() {
+
+  std::clock_t    start;
+  start = std::clock();
 
   TTT_Player Player0 = TTT_Player(0,'X');
   TTT_Player Player1 = TTT_Player(1,'O');
@@ -42,78 +69,23 @@ bool UTTT_Player_Init(){
   //Player* Player1 = static_cast<Player*>(&TTTPlayer1);
 
   TTT *_Game = new TTT({&Player0,&Player1});
+  std::list<TTT_Move> GameHistory;
 
 
-  MCHS<TTT,TTT_Player> *Sim = new MCHS<TTT,TTT_Player>(_Game,{&Player0,&Player1});
-  Sim->Search(100000);
-*/
-/*
-UTTT_Player Player0 = UTTT_Player(0,'X');
-UTTT_Player Player1 = UTTT_Player(1,'O');
+  MCHS<TTT,TTT_Player,TTT_Move> *Sim = new MCHS<TTT,TTT_Player,TTT_Move>(_Game,{&Player0,&Player1});
+  Sim->Search(1000);
+  //GameHistory.push_back(*Sim->ReturnBestMove()->Move);
 
-//Player* Player0 = static_cast<Player*>(&TTTPlayer0);
-//Player* Player1 = static_cast<Player*>(&TTTPlayer1);
-
-UTTT *_Game = new UTTT({&Player0,&Player1});
-
-MCHS<UTTT,UTTT_Player> *Sim = new MCHS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
-Sim->Search(1000000);
-
-//delete &Player0;
-//delete &Player1;
-//delete _Game;
-delete Sim;
-*/
-
-
-/*
-TODO: Fix Rotating Winner priority.
-As of right now, Both players are attempting to give Player0 the win.
-+I belive its fixed, need further testing, MCTS_Node values are (negative).
-*/
-int main(int argc, char *argv[]) {
-  long int SearchDepth = 10;
-  bool DisplayResults = false;
-  for (int i = 1; i < argc; i++) {
-
-      if (strcmp(argv[i],"-sd")==0) {
-          SearchDepth = atol(argv[i+1]);
-          printf("SearchDepth: %ld",SearchDepth);
-      } else if (strcmp(argv[i],"-d")==0) {
-          DisplayResults = true;
-      }
-
-  }
-
-  std::clock_t    start;
-  start = std::clock();
-
-  UTTT_Player Player0 = UTTT_Player(0,'X');
-  UTTT_Player Player1 = UTTT_Player(1,'O');
-
-  //Player* Player0 = static_cast<Player*>(&TTTPlayer0);
-  //Player* Player1 = static_cast<Player*>(&TTTPlayer1);
-
-  UTTT *_Game = new UTTT({&Player0,&Player1});
-
-  MCHS<UTTT,UTTT_Player> *Sim = new MCHS<UTTT,UTTT_Player>(_Game,{&Player0,&Player1});
-  Sim->Search(SearchDepth);
-
-  if(DisplayResults){
-    Sim->DisplayStats(1);
-  }
   //delete &Player0;
   //delete &Player1;
   //delete _Game;
-
   std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
 
-  //delete &Player0;
-  //delete &Player1;
-  //delete _Game;
-  delete Sim;
 
+
+  delete Sim;
  return 0;
 }
+
 
 #endif //MCTS_Tests_CU

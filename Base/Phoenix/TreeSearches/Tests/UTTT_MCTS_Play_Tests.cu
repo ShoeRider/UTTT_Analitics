@@ -15,7 +15,7 @@
 
 
 template <typename T>
-void DeleteAllItems(std::list<T> itemList) {
+void DeleteAllItems(std::vector<T> itemList) {
     // Iterate through the list and delete each pointer
     for (T item : itemList) {
         delete item;  // Free the memory
@@ -47,7 +47,7 @@ void DeleteAllItems(std::list<T> itemList) {
 **/
 int main(int argc, char *argv[]) {
   bool DisplayResults = false;
-  long int SearchDepth = 500;
+  long int SearchDepth = 200000;
   std::string ResultPath = "X_RandomSearchResults.csv";
   for (int i = 1; i < argc; i++) {
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
 
     UTTT* Game = new UTTT({Player0,Player1});
-    std::list<UTTT_Move*> GameHistory;
+    std::vector<UTTT_Move*> GameHistory;
 
     while(!Game->isGameFinished){
         UTTT_Player* Player = Game->Players.front();

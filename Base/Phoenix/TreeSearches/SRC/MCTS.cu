@@ -68,24 +68,24 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   double NodeVisits;
   double ValueSum;
-  Game_Tp* GivenGame = NULL;
+  Game_Tp* GivenGame = nullptr;
   GameMove_Tp* Move;
   //////////////////////////////////////////////////////////////////////////////
   // List of Players to maintain turn order.
   //////////////////////////////////////////////////////////////////////////////
-  std::list<Player_Tp*> Players;
+  std::vector<Player_Tp*> Players;
 
   //////////////////////////////////////////////////////////////////////////////
   // pointers to maintain tree structure.
   //////////////////////////////////////////////////////////////////////////////
   MCTS_Node*           Parent       = nullptr;
   MCTS_Node*           RollOutChild = nullptr;
-  std::list<MCTS_Node*> Children;
+  std::vector<MCTS_Node*> Children;
 
 
     //////////////////////////////////////////////////////////////////////////////
     // Initialization method.
-    MCTS_Node(Game_Tp* Instance,std::list<Player_Tp*> GivenPlayers,GameMove_Tp* GivenMove){
+    MCTS_Node(Game_Tp* Instance,std::vector<Player_Tp*> GivenPlayers,GameMove_Tp* GivenMove){
       for (Player_Tp* _Player : GivenPlayers){
             //printf("adding Player:%p\n",(_Player));
             Players.push_back(_Player);
@@ -127,7 +127,7 @@ public:
     MCTS_Node* Find_MAX_UCB1_Child();
     MCTS_Node* ReturnBestMove();
     MCTS_Node* RollOut();
-    int        AddChildren(std::list<GameMove_Tp*> PossibleInstances);
+    int        AddChildren(std::vector<GameMove_Tp*> PossibleInstances);
     void       BackPropagation(Player_Tp* GivenPlayer);
     double     GetAverageValue();
     void       DisplayTree();
@@ -147,10 +147,7 @@ MCTS_Node* get(std::list<MCTS_Node*> _list, int _i){
 
 template <typename Game_Tp, typename Player_Tp, typename GameMove_Tp>
 void MCTS_Node<Game_Tp,Player_Tp, GameMove_Tp>::RotatePlayers(){
-  Players.splice(Players.end(),        // destination position
-                 Players,              // source list
-                 Players.begin());     // source position
-
+  std::rotate(Players.begin(), Players.begin() + 1, Players.end());
 };
 
 
@@ -247,7 +244,7 @@ MCTS_Node<Game_Tp,Player_Tp, GameMove_Tp>* MCTS_Node<Game_Tp,Player_Tp, GameMove
 
 
 template <typename Game_Tp, typename Player_Tp, typename GameMove_Tp>
-int MCTS_Node<Game_Tp,Player_Tp, GameMove_Tp>::AddChildren(std::list<GameMove_Tp*> PossibleInstances){
+int MCTS_Node<Game_Tp,Player_Tp, GameMove_Tp>::AddChildren(std::vector<GameMove_Tp*> PossibleInstances){
   int ChildrenAdded = 0;
   //std::list<Game_Tp*> PossibleGames = this->GivenGame->PossibleGames(PossibleInstances);
 
@@ -495,7 +492,7 @@ public:
   //////////////////////////////////////////////////////////////////////////////
   // The current head node.
   //////////////////////////////////////////////////////////////////////////////
-  std::list<Player_Tp*> Players;
+  std::vector<Player_Tp*> Players;
   Player_Tp* GivenPlayer;
 
 
@@ -503,13 +500,13 @@ public:
   // Initialization method.
   MCTS(Game_Tp* Game){
 
-    Players = Game->Players;
+    GivenGame = Game->CopyGame();
+    Players = GivenGame->Players;
     GivenPlayer = *(Players.begin());
 
     //HeadNode  = NULL;
     //printf("new MCTS_Node's Player:%p\n",Player);
     //std::cin.get();
-    GivenGame = Game->CopyGame();
     HeadNode  = new MCTS_Node<Game_Tp,Player_Tp,GameMove_Tp>(GivenGame,Players,nullptr);
   }
 
@@ -631,7 +628,7 @@ MCTS_Node<Game_Tp,Player_Tp,GameMove_Tp>*
     // Find all possible games from branch.
     /////////////////////////////////////////////////////////////////
     //std::list<Game_Tp*> Games = TransversedNode->GivenGame->PossibleGames();
-    std::list<GameMove_Tp*> GameMoves = TransversedNode->GivenGame->PossibleMoves();
+    std::vector<GameMove_Tp*> GameMoves = TransversedNode->GivenGame->PossibleMoves();
     //std::cout << "Adding Children Size:" << Games.size() << "\n";
 
 

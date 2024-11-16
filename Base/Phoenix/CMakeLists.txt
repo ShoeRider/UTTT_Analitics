@@ -56,4 +56,5 @@ add_executable(Phoenix
     TreeSearches/Tests/UTTT_MCTS_GenerateSearchGames.cu
     TreeSearches/Tests/UTTT_MCTS_Play_Tests.cu
     TreeSearches/Tests/UTTT_PMCTS_GenerateSearchGames.cu
-    TreeSearches/Tests/UTTT_PMCTS_Play_Tests.cu)
+    TreeSearches/Tests/UTTT_PMCTS_Play_Tests.cu
+        TreeSearches/Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu)

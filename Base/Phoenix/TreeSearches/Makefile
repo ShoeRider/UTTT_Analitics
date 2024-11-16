@@ -126,9 +126,12 @@ UTTT_PMCTS_GenerateGameData:
 	nvcc -DPRINT_TO_SCREEN -o UTTT_PMCTS_GenerateSearchGames ./Tests/UTTT_PMCTS_GenerateSearchGames.cu -ljsoncpp -O3 -lineinfo
 
 	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
-	#valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
-	./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+	#./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
 
+.PHONY: Run_UTTT_PMCTS_GenerateGameData
+Run_UTTT_PMCTS_GenerateGameData:
+	./UTTT_PMCTS_GenerateSearchGames -g 1 -sd 2000000 -t 24 -p UTTT_PMCTS_GenerateSearchGames.csv
 
 .PHONY: Test
 Test:

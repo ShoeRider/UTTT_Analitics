@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 
             } else {
                 std::cout << "Performing 100 Node MTCS Search." << std::endl;
-                MCTS<TTT,TTT_Player,TTT_Move> *Sim = new MCTS<TTT,TTT_Player,TTT_Move>(Game,{&Player0,&Player1});
+                MCTS<TTT,TTT_Player,TTT_Move> *Sim = new MCTS<TTT,TTT_Player,TTT_Move>(Game);
                 Sim->Search(250);
                 SearchMove = new TTT_Move(*Sim->ReturnBestMove());
                 GameHistory.push_back(SearchMove);
@@ -137,6 +137,8 @@ int main(int argc, char *argv[]) {
                 //delete SearchMove;
                 delete Sim;
             }
+
+            std::cout << Game->Generate_StringRepresentation()<< std::endl;
         }
         SaveMovesToFile(GameHistory,ResultPath);
         delete Game;

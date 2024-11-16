@@ -15,7 +15,7 @@
 
 
 template <typename T>
-void DeleteAllItems(std::list<T> itemList) {
+void DeleteAllItems(std::vector<T> itemList) {
     // Iterate through the list and delete each pointer
     for (T item : itemList) {
         delete item;  // Free the memory
@@ -59,8 +59,8 @@ void DeleteAllItems(std::list<T> itemList) {
 **/
 int main(int argc, char *argv[]) {
   float RandomMovePercentage = 20;
-  long int GamesToSimulate = 20;
-  long int SearchDepth = 250000;
+  long int GamesToSimulate = 1;
+  long int SearchDepth = 2000;
   bool DisplayResults = false;
   std::string ResultPath = "X_RandomSearchResults.csv";
   for (int i = 1; i < argc; i++) {
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < GamesToSimulate; i++) {
         UTTT* Game = new UTTT({Player0,Player1});
-        std::list<UTTT_Move*> GameHistory;
+        std::vector<UTTT_Move*> GameHistory;
 
         while(!Game->isGameFinished){
             randomNumber = std::rand() % 100;
@@ -125,7 +125,6 @@ int main(int argc, char *argv[]) {
                 //delete SearchMove;
                 //printf("Deleting Sim");
                 delete Sim;
-                Pause
             }
         }
 

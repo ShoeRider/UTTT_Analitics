@@ -26,7 +26,7 @@ Description:
     - Player Pointers to TTT_Player.
     - GameMove Pointers to TTT_Move.
     TODO: Move:
-      T* get(std::list<T*> _list, int _i)
+      T* get(std::vector<T*> _list, int _i)
       to new base library folder.
 ==========================================================
 Date:           30 September 2021
@@ -76,6 +76,8 @@ Modify TTT to support Binary Writer.
 #include <iomanip>
 #include <unordered_map>
 
+#include <algorithm>
+#include <vector>
 
 //Read and save Game states.
 
@@ -274,7 +276,7 @@ void TTT_Player::Display()
 
 
 
-void Free_TTTMoveList(std::list<TTT_Move*> GameMoves)
+void Free_TTTMoveList(std::vector<TTT_Move*> GameMoves)
 {
     // Iterate through the list of TTT_Move* pointers
     for (TTT_Move* GMove : GameMoves) {
@@ -311,7 +313,7 @@ Algorithm():: A recursive implementation of the MCTS algorithm. Recursively crea
 
  * @param
     Game*_Game,
-    std::list<Player*> _GivenPlayers)
+    std::vector<Player*> _GivenPlayers)
 
  *
  * @see MCTS_Node::Find_MAX_UCB1_Child()
@@ -328,9 +330,9 @@ public:
   // Player(s) DATA
   //TODO: Take Draw player during Initialization.
   //////////////////////////////////////////////////////////////////////////////
-  TTT_Player* Draw ;
+  TTT_Player* Draw = new TTT_Player(-1, 'C');
 
-  std::list<TTT_Player*> Players;
+  std::vector<TTT_Player*> Players;
   TTT_Player*  WinningPlayer = nullptr;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -361,11 +363,10 @@ public:
 
 
 
-  TTT(std::list<TTT_Player*> GivenPlayers){
-      Draw = new TTT_Player(-1, 'C');
+  TTT(std::vector<TTT_Player*> GivenPlayers){
       //this->DeclarePlayers(GivenPlayers);
       Players = GivenPlayers;
-      this->WinningPlayer  = NULL;
+      this->WinningPlayer  = nullptr;
       MovesRemaining       = 9;
 
       isGameFinished = false;
@@ -374,7 +375,6 @@ public:
       //std::cout<< "GameHash:" << GameHash <<"\n";
     }
     virtual ~TTT(){
-
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -382,7 +382,7 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     TTT_Player* GetWinner();
     void DisplayWinner();
-    void DeclarePlayers(std::list<TTT_Player*> GivenPlayers);
+    void DeclarePlayers(std::vector<TTT_Player*> GivenPlayers);
     void PrintPlayers();
     void SetUpBoard();
 
@@ -393,9 +393,9 @@ public:
     bool ValidMove(GameMove* Move);
     TTT_Player* TestForWinner();
 
-    std::list<TTT_Move*> PossibleMoves();
-    std::list<TTT*>     PossibleGames();
-    std::list<TTT*>     PossibleGames(std::list<TTT_Move*> Moves);
+    std::vector<TTT_Move*> PossibleMoves();
+    std::vector<TTT*>     PossibleGames();
+    std::vector<TTT*>     PossibleGames(std::vector<TTT_Move*> Moves);
     std::string Generate_StringRepresentation();
 
     TTT_Player* DeclareWinner(TTT_Player* Winner);
@@ -403,9 +403,9 @@ public:
     //void DisplayInTerminal();
     TTT_Move* FindRandomMove();
     TTT* RollOut();
-    std::list<TTT_Move> RollOut_ReturnGameMoves();
+    std::vector<TTT_Move> RollOut_ReturnGameMoves();
     void PlayGame();
-    //hash<TTT> GenerateHash(std::list<TTT_Player*> GivenPlayers);
+    //hash<TTT> GenerateHash(std::vector<TTT_Player*> GivenPlayers);
     bool equal(TTT* OtherGame);
 
     uint16_t MoveToBits(TTT_Move* Move);
@@ -454,7 +454,7 @@ void TTT::SetUpBoard()
 
 
 
-void TTT::DeclarePlayers(std::list<TTT_Player*> GivenPlayers)
+void TTT::DeclarePlayers(std::vector<TTT_Player*> GivenPlayers)
 {
   //printf("Adding Players\n");
   for (TTT_Player* i : GivenPlayers) { // c++11 range-based for loop
@@ -474,10 +474,7 @@ void TTT::PrintPlayers()
 }
 
 void TTT::RotatePlayers(){
-  Players.splice(Players.end(),        // destination position
-                 Players,              // source list
-                 Players.begin());     // source position
-
+  std::rotate(Players.begin(), Players.begin() + 1, Players.end());
 };
 
 
@@ -719,9 +716,9 @@ Winning Diagonal Method Found. Example:
 }
 
 
-std::list<TTT_Move*> TTT::PossibleMoves()
+std::vector<TTT_Move*> TTT::PossibleMoves()
 {
-    std::list<TTT_Move*> Moves;  // This will store GameMove pointers
+    std::vector<TTT_Move*> Moves;  // This will store GameMove pointers
 
     // Iterate over the board and check for empty spots
     for (int Row = 0; Row < 3; Row++)
@@ -733,19 +730,19 @@ std::list<TTT_Move*> TTT::PossibleMoves()
                 // Create a new TTT_Move object for the valid move
                 TTT_Move* TTTMove = new TTT_Move(Row, Col);
 
-                // Cast TTT_Move* to TTT_Move* and add it to the list
+                // Cast TTT_Move* to TTT_Move* and add it to the vector
                 Moves.push_back(TTTMove);
             }
         }
     }
-    return Moves;  // Return the list of possible moves as GameMove pointers
+    return Moves;  // Return the vector of possible moves as GameMove pointers
 }
 
 
-std::list<TTT*> TTT::PossibleGames()
+std::vector<TTT*> TTT::PossibleGames()
 {
-  std::list<TTT_Move*> Moves = PossibleMoves();
-  std::list<TTT*>Games;
+  std::vector<TTT_Move*> Moves = PossibleMoves();
+  std::vector<TTT*>Games;
   TTT* Branch;
   for (TTT_Move* GMove : Moves) { // c++11 range-based for loop
        Branch = new TTT(*this);
@@ -768,9 +765,9 @@ for (Player* _Pl : Branch->_Players){
 }
 
 
-std::list<TTT*> TTT::PossibleGames(std::list<TTT_Move*> Moves)
+std::vector<TTT*> TTT::PossibleGames(std::vector<TTT_Move*> Moves)
 {
-  std::list<TTT*>Games;
+  std::vector<TTT*>Games;
   TTT* Branch;
   for (TTT_Move* GMove : Moves) { // c++11 range-based for loop
        Branch = new TTT(*this);
@@ -804,7 +801,7 @@ bool TTT::equal(TTT* OtherGame)
 TTT_Move* TTT::FindRandomMove(){
   TTT_Move* Move;
   int Range;
-    std::list<TTT_Move*>GameMoves = PossibleMoves();
+    std::vector<TTT_Move*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
     //printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
@@ -823,7 +820,7 @@ TTT* TTT::RollOut(){
   while(WinningPlayer == nullptr){
 
     //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-    std::list<TTT_Move*>GameMoves = PossibleMoves();
+    std::vector<TTT_Move*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
     //printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
@@ -840,15 +837,15 @@ TTT* TTT::RollOut(){
   return this;
 }
 
-std::list<TTT_Move> TTT::RollOut_ReturnGameMoves(){
-  std::list<TTT_Move> GameHistory;
+std::vector<TTT_Move> TTT::RollOut_ReturnGameMoves(){
+  std::vector<TTT_Move> GameHistory;
   TTT_Move* Move;
   int Range;
   //TTT_Player* TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
   while(WinningPlayer == NULL){
 
     //TTTPlayer = static_cast<TTT_Player*>(TestForWinner());
-    std::list<TTT_Move*>GameMoves = PossibleMoves();
+    std::vector<TTT_Move*>GameMoves = PossibleMoves();
     Range = GameMoves.size();
     //printf("Range:%d\n",Range);
     Move          = get(GameMoves,(rand() % (Range)));
@@ -931,7 +928,7 @@ std::string ToBinaryString(uint32_t value, int bitSize) {
 
 
 // Assuming TTT_Move has Row and Col as public members
-void SaveMovesToFile(const std::list<TTT_Move*>& RolloutMoves, const std::string& filename) {
+void SaveMovesToFile(const std::vector<TTT_Move*>& RolloutMoves, const std::string& filename) {
 
   // Open an output file stream to write to a file
   std::ofstream outFile(filename, std::ios::app);

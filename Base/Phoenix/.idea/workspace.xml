@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="Phoenix" targetName="Phoenix" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="85d48cfe-8f6a-477c-9cb5-ed50bbe4cba3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/SRC/TTT/TTT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Games/SRC/TTT/TTT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/SRC/UTTT/UTTT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Games/SRC/UTTT/UTTT.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/SRC/MCTS.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/SRC/MCTS.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/SRC/PMCTS.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/SRC/PMCTS.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/TTT_MCTS_GenerateSearchGames" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/TTT_MCTS_GenerateSearchGames" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/TTT_MCTS_GenerateSearchGames.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/TTT_MCTS_GenerateSearchGames.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/TTT_PMCTS_Play_Tests" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/TTT_PMCTS_Play_Tests" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/TTT_MCTS_GenerateSearchGames.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/TTT_MCTS_GenerateSearchGames.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/TTT_PMCTS_Play_Tests.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/TTT_PMCTS_Play_Tests.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_MCTS_GenerateSearchGames.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_MCTS_GenerateSearchGames.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_MCTS_Play_Tests.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_MCTS_Play_Tests.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_PMCTS_GenerateSearchGames.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_PMCTS_GenerateSearchGames.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_PMCTS_Play_Tests.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_PMCTS_Play_Tests.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_MCTS_GenerateSearchGames" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_MCTS_GenerateSearchGames" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_MCTS_GenerateSearchGames.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_MCTS_GenerateSearchGames.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_MCTS_Play_Tests" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_MCTS_Play_Tests" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_GenerateSearchGames" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_GenerateSearchGames" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_GenerateSearchGames.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_GenerateSearchGames.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_Play_Tests" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_Play_Tests" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/X_RandomSearchResults.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/X_RandomSearchResults.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/index-2024-11-14T00-52-10-0235.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="clangTidyViaClangd" value="false" />
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2024" />
+    <option name="minorVersion" value="2.2" />
+    <option name="productBranch" value="Classic" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2orRytpo7bF72Ci3QTDm8iqTIbt" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Makefile Target.MCHS_Tests.executor": "Run",
+    "Makefile Target.Run_UTTT_PMCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.TTT_MCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.TTT_MCTS_Play_Tests.executor": "Run",
+    "Makefile Target.TTT_PMCTS_Play_Tests.executor": "Run",
+    "Makefile Target.UTTT_MCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.UTTT_MCTS_Play_Tests.executor": "Run",
+    "Makefile Target.UTTT_PMCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.UTTT_PMCTS_Play_Tests.executor": "Run",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "ChangeListToVector",
+    "last_opened_file_path": "/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="Makefile Target.Run_UTTT_PMCTS_GenerateGameData">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Phoenix" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Phoenix" TARGET_NAME="Phoenix" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Phoenix" RUN_TARGET_NAME="Phoenix" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Run_UTTT_PMCTS_GenerateGameData" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="Run_UTTT_PMCTS_GenerateGameData" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="TTT_MCTS_GenerateGameData" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="TTT_MCTS_GenerateGameData" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="UTTT_MCTS_GenerateGameData" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="UTTT_MCTS_GenerateGameData" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="UTTT_PMCTS_GenerateGameData" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="UTTT_PMCTS_GenerateGameData" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="UTTT_PMCTS_Play_Tests" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="UTTT_PMCTS_Play_Tests" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Google Test.Phoenix" />
+      <item itemvalue="Makefile Target.Run_UTTT_PMCTS_GenerateGameData" />
+      <item itemvalue="Makefile Target.TTT_MCTS_GenerateGameData" />
+      <item itemvalue="Makefile Target.UTTT_MCTS_GenerateGameData" />
+      <item itemvalue="Makefile Target.UTTT_PMCTS_GenerateGameData" />
+      <item itemvalue="Makefile Target.UTTT_PMCTS_Play_Tests" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Makefile Target.Run_UTTT_PMCTS_GenerateGameData" />
+        <item itemvalue="Makefile Target.UTTT_PMCTS_GenerateGameData" />
+        <item itemvalue="Makefile Target.UTTT_MCTS_GenerateGameData" />
+        <item itemvalue="Makefile Target.TTT_MCTS_GenerateGameData" />
+        <item itemvalue="Makefile Target.UTTT_PMCTS_Play_Tests" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="85d48cfe-8f6a-477c-9cb5-ed50bbe4cba3" name="Changes" comment="" />
+      <created>1731625965997</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1731625965997</updated>
+      <workItem from="1731625967558" duration="19171000" />
+      <workItem from="1731651679075" duration="2209000" />
+      <workItem from="1731710403598" duration="11845000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Games/SRC/UTTT/UTTT.cpp</url>
+          <line>25</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

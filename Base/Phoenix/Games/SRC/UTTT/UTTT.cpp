@@ -36,7 +36,6 @@ Email:          as3379@nau.edu
 
 
 #include <algorithm>
-#include <utility>
 #include <vector>
 
 
@@ -192,13 +191,21 @@ class UTTT_SubGame : public TTT
     UTTT_Player* DeclareWinner(UTTT_Player* GivenWinner);
     std::vector<UTTT_Move*> PossibleMoves();
   //void DeclarePlayers(const std::vector<UTTT_Player*>& GivenPlayers);
-
+  void SetUpBoard();
   bool ValidMove(UTTT_Move *Move);
 
   bool equal(TTT* OtherGame);
     //bool ValidMove(GameMove* Move);
   UTTT_Player* TestForWinner();
 };
+
+void UTTT_SubGame::SetUpBoard()
+{
+  for (char & EachPositions : Board)
+  {
+    EachPositions = ' ';
+  }
+}
 /*
 *
 void UTTT_SubGame::DeclarePlayers(const std::vector<UTTT_Player*>& GivenPlayers)
@@ -481,26 +488,32 @@ public:
   bool isGameFinished;
 
   //Represenations of each game within the larger 3x3 game.
-  UTTT_SubGame* Boards[3][3];
+  UTTT_SubGame* Boards[3][3]{};
   std::size_t GameHash;
 
 
   //////////////////////////////////////////////////////////////////////////////
-  // Initialization method.
-  UTTT(std::vector<UTTT_Player*> GivenPlayers){
+  // Initialization method.i
+  explicit UTTT(const std::vector<UTTT_Player*>& GivenPlayers){
       Draw    = new UTTT_Player(-1,'C');
       //Players = std::move(GivenPlayers);
       this->DeclarePlayers(GivenPlayers);
-
+      for (int Row = 0; Row < 3; Row++) {
+        for (int Col = 0; Col < 3; Col++) {
+          Boards[Row][Col] = nullptr;
+        }
+      }
+      this->SetUpBoards();
       this->WinningPlayer  = nullptr;
       NextMove_Row   = -1;
       NextMove_Col   = -1;
       MovesRemaining = 81;
-      this->SetUpBoards(&Players);
+
+
       isGameFinished = false;
       GameHash = this->Hash();
     }
-    ~UTTT(){
+    ~UTTT() override{
     //std::cout << "Free:" << std::endl;
       //this->PrintPointers();
       this->FreeBoards();
@@ -513,15 +526,15 @@ public:
     // Method Declarations.
     //////////////////////////////////////////////////////////////////////////////
     void PrintPointers() const;
-    void SetUpBoards(std::vector<UTTT_Player *> *GivenPlayers);
+    void SetUpBoards();
     void FreeBoards();
     void PrintPlayers();
     void RotatePlayers();
     bool Move(UTTT_Move* Move);
-    UTTT* Move_ReturnNewGame(UTTT_Move* Move);
+    UTTT* Move_ReturnNewGame(UTTT_Move* UTTTMove);
     bool ValidMove(UTTT_Move* Move);
     UTTT_Player* TestForWinner();
-    void DisplayWinner();
+    void DisplayWinner() override;
     std::vector<UTTT_Move*> PossibleMoves();
     std::vector<UTTT*>     PossibleGames();
     UTTT_Move *FindRandomMove();
@@ -529,13 +542,13 @@ public:
     std::string Generate_StringRepresentation() override;
 
     //void DisplayInTerminal();
-    UTTT* RollOut();
-    UTTT* CopyGame();
+    UTTT* RollOut() override;
+    UTTT* CopyGame() override;
     void PlayGame();
 
 
     void DeclarePlayers(const std::vector<UTTT_Player*>& GivenPlayers);
-    UTTT_Player* DeclareWinner(UTTT_Player* Winner);
+    UTTT_Player* DeclareWinner(UTTT_Player* GivenWinner);
     bool equal(UTTT* OtherGame);
 
     std::size_t Hash();
@@ -615,13 +628,13 @@ SetUpBoard
 
 param (std::vector<Player*> GivenPlayers), as the players to play the game.
 */
-void UTTT::SetUpBoards(std::vector<UTTT_Player*>* GivenPlayers)
+void UTTT::SetUpBoards()
 {
   for (int Row = 0; Row < 3; Row++)
   {
     for (int Col = 0; Col < 3; Col++)
     {
-        Boards[Row][Col] =  new UTTT_SubGame(GivenPlayers,Draw);
+      Boards[Row][Col] =  new UTTT_SubGame(&Players,Draw);
     }
   }
 }
@@ -636,6 +649,7 @@ void UTTT::FreeBoards()
     for (int Col = 0; Col < 3; Col++)
     {
         delete Boards[Row][Col];
+        Boards[Row][Col] = nullptr;
     }
   }
 

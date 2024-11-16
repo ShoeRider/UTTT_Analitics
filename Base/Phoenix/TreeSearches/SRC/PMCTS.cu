@@ -126,21 +126,13 @@ public:
 
 
     ~PMCTS_Node(){
-      for (PMCTS_Node<Game_Tp,Player_Tp, GameMove_Tp>* Node : Children){
+      for (const PMCTS_Node<Game_Tp,Player_Tp, GameMove_Tp>* Node : Children){
         delete Node;
       }
-      if (RollOutChild != nullptr)
-      {
-          delete RollOutChild;
-      }
-      if (GivenGame != nullptr)
-      {
-        delete GivenGame;
-      }
-      if (Move != nullptr)
-      {
-        delete Move;
-      }
+      delete RollOutChild;
+      delete GivenGame;
+      delete Move;
+
     }
 
 

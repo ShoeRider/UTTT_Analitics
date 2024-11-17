@@ -191,7 +191,8 @@ int main(int argc, char *argv[]) {
 
             } else {
                 std::cout << Game->Generate_StringRepresentation()<< std::endl;
-                std::cout << "Performing SearchDepth:"<<SearchDepth<<", Threads:"<<Threads<<" Node PMTCS Search." << std::endl;
+                std::cout << "GamesToSimulate:"<<i<<"/"<<GamesToSimulate<<", MoveDepthRemaining:"<<MoveDepthRemaining<<"." << std::endl;
+                std::cout << "   Performing SearchDepth:"<<SearchDepth<<", Threads:"<<Threads<<" Node PMTCS Search." << std::endl;
                 PMCTS<UTTT,UTTT_Player,UTTT_Move> *Sim = new PMCTS<UTTT,UTTT_Player,UTTT_Move>(Game);
                 Sim->Search(Threads,SearchDepth);
                 SearchMove = new UTTT_Move(*Sim->ReturnBestMove());

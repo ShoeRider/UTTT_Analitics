@@ -24,11 +24,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85d48cfe-8f6a-477c-9cb5-ed50bbe4cba3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/TreeSearches/UTTT_Search.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TreeSearches/alert.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/SRC/UTTT/UTTT.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Games/SRC/UTTT/UTTT.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TreeSearches/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TreeSearches/SRC/PMCTS.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/SRC/PMCTS.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_ContinueGenerateSearchGame" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_ContinueGenerateSearchGame" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_ContinueGenerateSearchGame.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TreeSearches/UTTT_PMCTS_ContinueGenerateSearchGame.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,37 +59,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Makefile Target.MCHS_Tests.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame2.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame3.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.Run_UTTT_PMCTS_GenerateGameData.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.TTT_MCTS_GenerateGameData.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.TTT_MCTS_Play_Tests.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.TTT_PMCTS_Play_Tests.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.UTTT_MCTS_GenerateGameData.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.UTTT_MCTS_Play_Tests.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.UTTT_PMCTS_ContinueGenerateSearchGame.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.UTTT_PMCTS_GenerateGameData.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.UTTT_PMCTS_Play_Tests.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;ChangeListToVector&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Makefile Target.MCHS_Tests.executor": "Run",
+    "Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame.executor": "Run",
+    "Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame2.executor": "Run",
+    "Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame3.executor": "Run",
+    "Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame4.executor": "Run",
+    "Makefile Target.Run_UTTT_PMCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.TTT_MCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.TTT_MCTS_Play_Tests.executor": "Run",
+    "Makefile Target.TTT_PMCTS_Play_Tests.executor": "Run",
+    "Makefile Target.UTTT_MCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.UTTT_MCTS_Play_Tests.executor": "Run",
+    "Makefile Target.UTTT_PMCTS_ContinueGenerateSearchGame.executor": "Run",
+    "Makefile Target.UTTT_PMCTS_GenerateGameData.executor": "Run",
+    "Makefile Target.UTTT_PMCTS_Play_Tests.executor": "Run",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "ChangeListToVector",
+    "last_opened_file_path": "/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/TreeSearches/Tests" />
@@ -118,8 +121,8 @@
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="Run_UTTT_PMCTS_GenerateGameData" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="Run_UTTT_PMCTS_GenerateGameData" workingDirectory="" arguments="">
+    <configuration name="Run_UTTT_PMCTS_ContinueGenerateSearchGame4" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/TreeSearches/Makefile" target="Run_UTTT_PMCTS_ContinueGenerateSearchGame4" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -132,10 +135,10 @@
     </configuration>
     <list>
       <item itemvalue="Google Test.Phoenix" />
+      <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame4" />
       <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame2" />
       <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame3" />
       <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame" />
-      <item itemvalue="Makefile Target.Run_UTTT_PMCTS_GenerateGameData" />
       <item itemvalue="Makefile Target.UTTT_PMCTS_ContinueGenerateSearchGame" />
     </list>
     <recent_temporary>
@@ -143,8 +146,8 @@
         <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame3" />
         <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame2" />
         <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame" />
+        <item itemvalue="Makefile Target.Run_UTTT_PMCTS_ContinueGenerateSearchGame4" />
         <item itemvalue="Makefile Target.UTTT_PMCTS_ContinueGenerateSearchGame" />
-        <item itemvalue="Makefile Target.Run_UTTT_PMCTS_GenerateGameData" />
       </list>
     </recent_temporary>
   </component>
@@ -160,7 +163,7 @@
       <workItem from="1731651679075" duration="2209000" />
       <workItem from="1731710403598" duration="17174000" />
       <workItem from="1731778037878" duration="2779000" />
-      <workItem from="1731785407016" duration="9815000" />
+      <workItem from="1731785407016" duration="21465000" />
     </task>
     <servers />
   </component>

@@ -151,17 +151,25 @@ Run_UTTT_PMCTS_ContinueGenerateSearchGame:
 	#-t Threads
 	#./UTTT_PMCTS_ContinueGenerateSearchGame -pg 0112,1202,0202,0221, -sd 2000 -m 10 -t 9 -rd 0 -g 10 -p UTTT_2K_PMCTS_BookMoveSet1.csv
 	./UTTT_PMCTS_ContinueGenerateSearchGame -sd 2000000 -m 10 -t 9 -rd 0 -g 10 -p UTTT_2M_PMCTS_BookMoveSet1.csv
+	./alert.sh
 
 .PHONY: Run_UTTT_PMCTS_GenerateGameData2
 Run_UTTT_PMCTS_ContinueGenerateSearchGame2:
 	#./UTTT_PMCTS_ContinueGenerateSearchGame -pg 0112,1202,0202,0221, -sd 200000 -m 1 -t 9 -rd 0 -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
 	./UTTT_PMCTS_ContinueGenerateSearchGame -sd 2000000 -m 10 -t 9 -rd 0 -g 10 -p UTTT_2M_PMCTS_BookMoveSet2.csv
+	./alert.sh
 
 .PHONY: Run_UTTT_PMCTS_GenerateGameData3
 Run_UTTT_PMCTS_ContinueGenerateSearchGame3:
 	#./UTTT_PMCTS_ContinueGenerateSearchGame -pg 0112,1202,0202,0221, -sd 200000 -m 1 -t 9 -rd 0 -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
-	./UTTT_PMCTS_ContinueGenerateSearchGame -sd 2500000 -m 10 -t 9 -rd 0 -g 10 -p UTTT_2.5M_PMCTS_BookMoveSet1.csv
+	./UTTT_PMCTS_ContinueGenerateSearchGame -sd 2500000 -m 10 -t 9 -rd 0 -g 100 -p UTTT_2.5M_PMCTS_BookMoveSet1.csv
+	./alert.sh
 
+.PHONY: Run_UTTT_PMCTS_GenerateGameData4
+Run_UTTT_PMCTS_ContinueGenerateSearchGame4:
+	#./UTTT_PMCTS_ContinueGenerateSearchGame -pg 0112,1202,0202,0221, -sd 200000 -m 1 -t 9 -rd 0 -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
+	./UTTT_PMCTS_ContinueGenerateSearchGame -sd 5000000 -m 3 -t 1 -rd 0 -g 10 -p UTTT_5M_PMCTS_BookMoveSet1.csv
+	./alert.sh
 
 .PHONY: Test
 Test:

@@ -9,6 +9,12 @@ include_directories(Games/SRC/UTTT)
 include_directories(ThreadingTools/SRC)
 include_directories(TreeSearches/SRC)
 
+
+set(TF_INCLUDE_DIR "tensorflow/lite/nnapi/sl/include")
+set(TF_LIB_DIR "tensorflow/lite/experimental/shlo/legacy/include")
+include_directories(${TF_INCLUDE_DIR})
+link_directories(${TF_LIB_DIR})
+
 add_executable(Phoenix
     Games/SRC/TTT/JSON_TTT.cpp
     Games/SRC/TTT/TTT.cpp
@@ -57,4 +63,7 @@ add_executable(Phoenix
     TreeSearches/Tests/UTTT_MCTS_Play_Tests.cu
     TreeSearches/Tests/UTTT_PMCTS_GenerateSearchGames.cu
     TreeSearches/Tests/UTTT_PMCTS_Play_Tests.cu
-        TreeSearches/Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu)
+        TreeSearches/Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu
+        MachineLearning/UTTT/src/MachineLearning_Test.cpp)
+
+target_link_libraries(Phoenix tensorflow_cc tensorflow_framework)

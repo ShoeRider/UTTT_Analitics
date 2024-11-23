@@ -52,58 +52,65 @@ build cmake_object_order_depends_target_Phoenix: phony || .
 build CMakeFiles/Phoenix.dir/Games/SRC/TTT/JSON_TTT.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT/JSON_TTT.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/SRC/TTT/JSON_TTT.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/SRC/TTT
 
 build CMakeFiles/Phoenix.dir/Games/SRC/TTT/TTT.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT/TTT.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/SRC/TTT/TTT.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/SRC/TTT
 
 build CMakeFiles/Phoenix.dir/Games/SRC/UTTT/UTTT.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT/UTTT.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/SRC/UTTT/UTTT.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/SRC/UTTT
 
 build CMakeFiles/Phoenix.dir/Games/SRC/Game.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/Game.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/SRC/Game.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/SRC
 
 build CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/Tests/TTT_Tests.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/Tests
 
 build CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests_GTest.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/Tests/TTT_Tests_GTest.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests_GTest.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/Tests
 
 build CMakeFiles/Phoenix.dir/Games/Tests/UTTT_Tests.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/Tests/UTTT_Tests.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/Games/Tests/UTTT_Tests.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/Games/Tests
 
 build CMakeFiles/Phoenix.dir/TreeSearches/SRC/TreeSearch.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC/TreeSearch.cpp || cmake_object_order_depends_target_Phoenix
   DEP_FILE = CMakeFiles/Phoenix.dir/TreeSearches/SRC/TreeSearch.cpp.o.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/TreeSearches/SRC
+
+build CMakeFiles/Phoenix.dir/MachineLearning/UTTT/src/MachineLearning_Test.cpp.o: CXX_COMPILER__Phoenix_unscanned_Debug /media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/src/MachineLearning_Test.cpp || cmake_object_order_depends_target_Phoenix
+  DEP_FILE = CMakeFiles/Phoenix.dir/MachineLearning/UTTT/src/MachineLearning_Test.cpp.o.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/TTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/Games/SRC/UTTT -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/ThreadingTools/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/TreeSearches/SRC -I/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/nnapi/sl/include
+  OBJECT_DIR = CMakeFiles/Phoenix.dir
+  OBJECT_FILE_DIR = CMakeFiles/Phoenix.dir/MachineLearning/UTTT/src
 
 
 # =============================================================================
@@ -113,8 +120,10 @@ build CMakeFiles/Phoenix.dir/TreeSearches/SRC/TreeSearch.cpp.o: CXX_COMPILER__Ph
 #############################################
 # Link the executable Phoenix
 
-build Phoenix: CXX_EXECUTABLE_LINKER__Phoenix_Debug CMakeFiles/Phoenix.dir/Games/SRC/TTT/JSON_TTT.cpp.o CMakeFiles/Phoenix.dir/Games/SRC/TTT/TTT.cpp.o CMakeFiles/Phoenix.dir/Games/SRC/UTTT/UTTT.cpp.o CMakeFiles/Phoenix.dir/Games/SRC/Game.cpp.o CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests.cpp.o CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests_GTest.cpp.o CMakeFiles/Phoenix.dir/Games/Tests/UTTT_Tests.cpp.o CMakeFiles/Phoenix.dir/TreeSearches/SRC/TreeSearch.cpp.o
+build Phoenix: CXX_EXECUTABLE_LINKER__Phoenix_Debug CMakeFiles/Phoenix.dir/Games/SRC/TTT/JSON_TTT.cpp.o CMakeFiles/Phoenix.dir/Games/SRC/TTT/TTT.cpp.o CMakeFiles/Phoenix.dir/Games/SRC/UTTT/UTTT.cpp.o CMakeFiles/Phoenix.dir/Games/SRC/Game.cpp.o CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests.cpp.o CMakeFiles/Phoenix.dir/Games/Tests/TTT_Tests_GTest.cpp.o CMakeFiles/Phoenix.dir/Games/Tests/UTTT_Tests.cpp.o CMakeFiles/Phoenix.dir/TreeSearches/SRC/TreeSearch.cpp.o CMakeFiles/Phoenix.dir/MachineLearning/UTTT/src/MachineLearning_Test.cpp.o
   FLAGS = -g
+  LINK_LIBRARIES = -Wl,-rpath,/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/experimental/shlo/legacy/include  -ltensorflow_cc  -ltensorflow_framework
+  LINK_PATH = -L/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/tensorflow/lite/experimental/shlo/legacy/include
   OBJECT_DIR = CMakeFiles/Phoenix.dir
   POST_BUILD = :
   PRE_LINK = :

@@ -23,6 +23,9 @@ requirements:
 gcc
 valgrind
 
+Tensorflow
+
+
 
 My System:
 nvcc --version:

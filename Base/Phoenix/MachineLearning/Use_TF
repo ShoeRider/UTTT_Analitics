@@ -1,0 +1,19 @@
+python3 -m venv tf
+source tf/bin/activate
+pip install --upgrade pip
+
+# For GPU users
+pip install tensorflow[and-cuda]
+# For CPU users
+pip install tensorflow
+
+
+#Test installation:
+python3 -c "import tensorflow as tf; print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
+#GPU installed:
+python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+
+
+pip install scikit-learn
+
+https://github.com/wookayin/gpustat

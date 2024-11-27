@@ -64,6 +64,8 @@ add_executable(Phoenix
     TreeSearches/Tests/UTTT_PMCTS_GenerateSearchGames.cu
     TreeSearches/Tests/UTTT_PMCTS_Play_Tests.cu
         TreeSearches/Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu
-        MachineLearning/UTTT/src/MachineLearning_Test.cpp)
+        MachineLearning/UTTT/src/MachineLearning_Test.cpp
+        MachineLearning/UTTT/src/GenerateTrainingData.h
+        MachineLearning/UTTT/src/Generate_UTTT_TrainingData.cpp)
 
 target_link_libraries(Phoenix tensorflow_cc tensorflow_framework)

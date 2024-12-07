@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
     long int GamesToSimulate = 1;
     int MoveDepth = -1;
     float RandomMovePercentage = 20;
-    long int SearchDepth = 200;
+    long int SearchDepth = 1000;
     long int Threads = 2;
     bool DisplayResults = false;
     std::string ResultPath = "X_RandomSearchResults.csv";
@@ -179,9 +179,11 @@ int main(int argc, char *argv[]) {
         //std::cout << Game->Generate_StringRepresentation()<< std::endl;
 
 
-        while(!Game->isGameFinished && (MoveDepthRemaining != 0)){
+        while(!(Game->isGameFinished) && (MoveDepthRemaining != 0)){
             const float randomNumber = std::rand() % 100;
             std::cout << randomNumber << std::endl;
+
+            SaveMovesToFile(GameHistory,ResultPath);
             if (randomNumber < RandomMovePercentage) {
                 std::cout << "Adding Random Move." << std::endl;
                 SearchMove = Game->FindRandomMove();
@@ -190,10 +192,12 @@ int main(int argc, char *argv[]) {
                 //delete SearchMove;
 
             } else {
-                std::cout << Game->Generate_StringRepresentation()<< std::endl;
+                std::cout << Game->Generate_StringRepresentation() << std::endl;
                 std::cout << "GamesToSimulate:"<<i<<"/"<<GamesToSimulate<<", MoveDepthRemaining:"<<MoveDepthRemaining<<"." << std::endl;
                 std::cout << "   Performing SearchDepth:"<<SearchDepth<<", Threads:"<<Threads<<" Node PMTCS Search." << std::endl;
+                std::cout << "   Game->PossibleMoves().size() :"<< Game->PossibleMoves().size()  << std::endl;
                 PMCTS<UTTT,UTTT_Player,UTTT_Move> *Sim = new PMCTS<UTTT,UTTT_Player,UTTT_Move>(Game);
+
                 Sim->Search(Threads,SearchDepth);
                 SearchMove = new UTTT_Move(*Sim->ReturnBestMove());
                 GameHistory.push_back(SearchMove);

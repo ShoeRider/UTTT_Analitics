@@ -535,6 +535,7 @@ public:
     bool ValidMove(UTTT_Move* Move);
     UTTT_Player* TestForWinner();
     void DisplayWinner() override;
+    std::list<UTTT_Move*> GetAll_PossibleMoves();
     std::vector<UTTT_Move*> PossibleMoves();
     std::vector<UTTT*>     PossibleGames();
     UTTT_Move *FindRandomMove();
@@ -1060,30 +1061,33 @@ Winning Diagonal Method Found. Example:
   return WinningPlayer;
 }
 
+std::list<UTTT_Move*> UTTT::GetAll_PossibleMoves() {
+  std::list<UTTT_Move*> moveList;
+  for (int Row = 0; Row < 2; Row++) {
+    for (int Col = 0; Col < 2; Col++) {
+      std::vector<UTTT_Move*> GMoves = Boards[Row][Col]->PossibleMoves();
 
+      for (GameMove* GMove : GMoves) { // Range-based for loop for C++11
+        UTTT_Move* UTTT_GMove = static_cast<UTTT_Move*>(GMove);
+        UTTT_GMove->GameRow = Row;
+        UTTT_GMove->GameCol = Col;
+        moveList.push_back(UTTT_GMove);
+      }
+    }
+  }
+  return moveList;
+}
 
 std::vector<UTTT_Move*> UTTT::PossibleMoves()
 {
   std::list<UTTT_Move*> moveList;
 
   if (NextMove_Row == -1 || NextMove_Col == -1) {
-    for (int Row = 0; Row < 2; Row++) {
-      for (int Col = 0; Col < 2; Col++) {
-        std::vector<UTTT_Move*> GMoves = Boards[Row][Col]->PossibleMoves();
-
-        for (GameMove* GMove : GMoves) { // Range-based for loop for C++11
-          UTTT_Move* UTTT_GMove = static_cast<UTTT_Move*>(GMove);
-          UTTT_GMove->GameRow = Row;
-          UTTT_GMove->GameCol = Col;
-          moveList.push_back(UTTT_GMove);
-        }
-      }
-    }
+    moveList = GetAll_PossibleMoves();
   } else {
     std::vector<UTTT_Move*> SubGame_PossibleMoves = Boards[NextMove_Row][NextMove_Col]->PossibleMoves();
     if (!SubGame_PossibleMoves.empty()) {
-      for (UTTT_Move* GMove : SubGame_PossibleMoves) {
-        UTTT_Move* UTTT_GMove = GMove;
+      for (UTTT_Move* UTTT_GMove : SubGame_PossibleMoves) {
         UTTT_GMove->GameRow = NextMove_Row;
         UTTT_GMove->GameCol = NextMove_Col;
         moveList.push_back(UTTT_GMove);
@@ -1092,7 +1096,7 @@ std::vector<UTTT_Move*> UTTT::PossibleMoves()
       // Resetting next move and recursively calling PossibleMoves if no moves available
       NextMove_Row = -1;
       NextMove_Col = -1;
-      return PossibleMoves();
+      moveList = GetAll_PossibleMoves();
     }
   }
 

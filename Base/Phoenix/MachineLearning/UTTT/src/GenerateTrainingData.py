@@ -1,5 +1,7 @@
 import csv
 import argparse
+
+
 import tensorflow as tf
 import numpy as np
 
@@ -10,8 +12,10 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 
 import threading
-
+import copy
 import logging
+
+
 '''
 # Example usage:
 if __name__ == '__main__':
@@ -227,6 +231,10 @@ def Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove=False):
     MoveMade = [[[[0 for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
 
     _3x3_1Matrix = [[1 for _ in range(3)] for _ in range(3)]
+    if(FirstMove):
+        for x in range(3):
+            for y in range(3):
+                PastGameAttention[x][y] = _3x3_1Matrix
     if(not FirstMove):
         PastGameAttention[int(Move[0])][int(Move[1])] = _3x3_1Matrix
 
@@ -244,10 +252,11 @@ def Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove=False):
     return {
         "PastGameNONAttention": PastGameNONAttention,
         "PastGameAttention": PastGameAttention,
-        "XGameStates": XGameStates,
-        "OGameStates": OGameStates,
-        "MoveMade": MoveMade,
-        "ActivePlayer":ActivePlayer
+        "XGameStates": copy.deepcopy(XGameStates),
+        "OGameStates": copy.deepcopy(OGameStates),
+        "MoveMade": copy.deepcopy(MoveMade),
+        "ActivePlayer":ActivePlayer,
+        "FirstMove":FirstMove
     }
 
 def Make_Move(XGameStates,OGameStates,Move,GameMemoryCount,ActivePlayer):
@@ -277,13 +286,33 @@ def Process_UTTT_Game(Moves,GameMemoryCount):
 
     for Move in Moves:
         TrainingInstance = Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove)
+        TrainingInstance["Move"] = Move
         TrainingData.append(TrainingInstance)
 
-        Make_Move(XGameStates,OGameStates,Move,GameMemoryCount,ActivePlayer)
+        ######################
+        #Make Move
+        for i in range(GameMemoryCount - 2, -1, -1):
+            #print("Moving game:",i," To:",i+1)
+            XGameStates[i+1] = copy.deepcopy(XGameStates[i])
+            OGameStates[i+1] = copy.deepcopy(OGameStates[i])
 
+        if ActivePlayer == 'X':
+            XGameStates[0].Boards[int(Move[0])][int(Move[1])][int(Move[2])][int(Move[3])] = 1
+        if ActivePlayer == 'O':
+            OGameStates[0].Boards[int(Move[0])][int(Move[1])][int(Move[2])][int(Move[3])] = 1
+
+        ######################
         # Switch ActivePlayer between 'X' and 'O'
         ActivePlayer = 'O' if ActivePlayer == 'X' else 'X'
         FirstMove = False
+
+        '''print(XGameStates[0])
+        print(TrainingInstance["XGameStates"][0])
+        print(TrainingInstance["XGameStates"][0].Boards)
+        print(TrainingInstance["OGameStates"][0].Boards)
+        print(TrainingInstance["PastGameAttention"])
+        print(TrainingInstance["MoveMade"])
+        print(TrainingInstance["Move"])'''
     return TrainingData
 
 
@@ -643,20 +672,7 @@ def get_output_matrix(model, input_data):
 
     return output_matrix
 
-
-def DiagnoseModelByGame():
-    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
-    TestGame = TestGame.split(',')[:-1]
-    UTTT_UTIL = UTTT()
-    ProcessedData = []
-    # Iterate through each row and print it
-    print(TestGame)
-    print(Process_UTTT_Game(TestGame,Game_MoveMemory))
-    input()
-
-
-
-if __name__ == "__main__":
+def Test_Train():
     Game_MoveMemory = 3
     setup_logger('app.log', logging.DEBUG)  # Set up logger to log to 'app.log' with DEBUG level
     #TODO: Game_MoveMemory=4 generates error...
@@ -664,9 +680,11 @@ if __name__ == "__main__":
     Split_game_data = split_data(game_data, test_size=0.2, random_state=42)
     epochs = 0
 
-    #readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
-    #model = tf.keras.models.load_model(readFile)
-    model = build_model(Game_MoveMemory =3)
+    readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
+    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
+    print(readFile)
+    model = tf.keras.models.load_model(readFile)
+    #model = build_model(Game_MoveMemory =3)
 
     Continue = True
     while (Continue):
@@ -677,11 +695,11 @@ if __name__ == "__main__":
         print("Evaluate against testing:")
 
         model.evaluate(Split_game_data["test"]["x"], Split_game_data["test"]["y"], verbose=2)
-        print(Split_game_data["test"]["x"][0])
-        print(Split_game_data["test"]["y"][0])
-        get_output_matrix(model, Split_game_data["test"]["x"][0])
+        print(Split_game_data["test"]["x"][5])
+        print(Split_game_data["test"]["y"][5])
+        get_output_matrix(model, Split_game_data["test"]["x"][5])
 
-        print(get_output_matrix(model, Split_game_data["test"]["x"][0]))
+        print(get_output_matrix(model, Split_game_data["test"]["x"][5]))
 
         timeout_seconds = 5
         prompt = input_with_timeout("Continue(Y/Yes): ", timeout_seconds)
@@ -692,8 +710,122 @@ if __name__ == "__main__":
         else:
             print("Input received, continuing...")
         epochs+=1
-        SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
-        print(SaveFile)
+
         model.save(SaveFile)
 #import tensorflow as tf
-    #print(tf.reduce_sum(tf.random.normal([1000, 1000])))
+#print(tf.reduce_sum(tf.random.normal([1000, 1000])))
+def DiagnoseModelByGame():
+    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
+    TestGame = TestGame.split(',')[:-1]
+    UTTT_UTIL = UTTT()
+    ProcessedData = []
+    # Iterate through each row and print it
+    print(TestGame)
+    print(Process_UTTT_Game(TestGame,3))
+    input()
+
+def DiagnoseGameData():
+    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
+    TestGame = TestGame.split(',')[:-1]
+    UTTT_UTIL = UTTT()
+    ProcessedData = []
+    # Iterate through each row and print it
+    ProcessedGameList = Process_UTTT_Game(TestGame,3)
+    print(TestGame)
+
+    for processedGame in ProcessedGameList:
+        print("Returned Data...")
+        print(processedGame["XGameStates"][0])
+        print(processedGame["XGameStates"][0].Boards)
+        print(processedGame["OGameStates"][0].Boards)
+        print(processedGame["PastGameAttention"])
+        print(processedGame["MoveMade"])
+        print(processedGame["Move"])
+        input()
+
+def InferenceModel(Path):
+    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
+    TestGame = TestGame.split(',')[:-1]
+    UTTT_UTIL = UTTT()
+    ProcessedData = []
+    # Iterate through each row and print it
+    GD = Process_UTTT_Game(TestGame,3)
+    PGD_x, PGD_y =  prepare_training_data(GD)
+    #model.evaluate(GD, GD, verbose=2)
+    print(len(GD))
+    print(len(PGD_x))
+    print(len(PGD_y))
+    index = 7
+    processedGame = PGD_x[index]
+    ProcessedGame_MoveMade = PGD_y[index]
+
+
+    print("Processed Game Data...")
+
+    print(*np.array(processedGame[0]).flatten(), sep=" ")
+    print(*np.array(processedGame[1]).flatten(), sep=" ")
+    print(*np.array(processedGame[2]).flatten(), sep=" ")
+    print(*np.array(processedGame[3]).flatten(), sep=" ")
+    print(*np.array(processedGame[4]).flatten(), sep=" ")
+    print(*np.array(processedGame[5]).flatten(), sep=" ")
+    print(*np.array(processedGame[6]).flatten(), sep=" ")
+    print(*np.array(ProcessedGame_MoveMade).flatten(), sep=" ")
+    #get_output_matrix(model, GD[5])
+    PredictedMove = get_output_matrix(model, processedGame)
+    print(PredictedMove.ndim)
+    print(processedGame.ndim)
+    print(PredictedMove)
+
+def TestRotate():
+    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
+    TestGame = TestGame.split(',')[:-1]
+    UTTT_UTIL = UTTT()
+    ProcessedData = []
+    # Iterate through each row and print it
+    R90  = UTTT_UTIL.Rotate_GameHistory(TestGame)
+    print(TestGame)
+    print(R90)
+    input()
+    GD = Process_UTTT_Game(TestGame,3)
+    PGD_x, PGD_y =  prepare_training_data(GD)
+    #model.evaluate(GD, GD, verbose=2)
+    print(len(GD))
+    print(len(PGD_x))
+    print(len(PGD_y))
+    index = 0
+    processedGame = PGD_x[index]
+    ProcessedGame_MoveMade = PGD_y[index]
+
+
+    print("Processed Game Data...")
+
+    print(*np.array(processedGame[0]).flatten(), sep=" ")
+    print(*np.array(processedGame[1]).flatten(), sep=" ")
+    print(*np.array(processedGame[2]).flatten(), sep=" ")
+    print(*np.array(processedGame[3]).flatten(), sep=" ")
+    print(*np.array(processedGame[4]).flatten(), sep=" ")
+    print(*np.array(processedGame[5]).flatten(), sep=" ")
+    print(*np.array(processedGame[6]).flatten(), sep=" ")
+    print(*np.array(ProcessedGame_MoveMade).flatten(), sep=" ")
+    #get_output_matrix(model, GD[5])
+    PredictedMove = get_output_matrix(model, processedGame)
+    print(PredictedMove.ndim)
+    print(processedGame.ndim)
+    print(PredictedMove)
+
+if __name__ == "__main__":
+    readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
+    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
+    print(readFile)
+    model = tf.keras.models.load_model(readFile)
+
+    InferenceModel(model)
+
+
+def RunTest():
+    readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
+    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
+    print(readFile)
+    model = tf.keras.models.load_model(readFile)
+
+    InferenceModel(model)

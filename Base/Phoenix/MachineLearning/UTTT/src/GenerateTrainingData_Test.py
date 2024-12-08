@@ -255,8 +255,8 @@ def Make_Move(XGameStates,OGameStates,Move,GameMemoryCount,ActivePlayer):
 
     for i in range(GameMemoryCount - 2, -1, -1):
         #print("Moving game:",i," To:",i+1)
-        XGameStates[i+1] = XGameStates[i]
-        OGameStates[i+1] = OGameStates[i]
+        XGameStates[i+1] = copy.deepcopy(XGameStates[i])
+        OGameStates[i+1] = copy.deepcopy(OGameStates[i])
 
     if ActivePlayer == 'X':
         XGameStates[0].Boards[int(Move[0])][int(Move[1])][int(Move[2])][int(Move[3])] = 1
@@ -426,8 +426,64 @@ def Compile_Data_main(Game_MoveMemory = 3,RotateGames=True):
 
 
 
+def build_model2(Game_MoveMemory =3,L2Reg=0.01):
+    Adjusted_Input_By_GameMemory =(Game_MoveMemory*2+1)
+    input_shape=(Adjusted_Input_By_GameMemory, 3, 3, 3, 3)
+    output_shape=(3, 3, 3, 3)
+    """
+    Builds a neural network model for training on the given input and output shapes.
+    
+    Args:
+        input_shape (tuple): Shape of the input tensor (default: (7, 3, 3, 3, 3)).
+        output_shape (tuple): Shape of the output tensor (default: (3, 3, 3, 3)).
+    
+    Returns:
+        tf.keras.Model: Compiled model.
+    """
+    reshaped_input_shape = (3, 3, 3, Adjusted_Input_By_GameMemory*3)  # Combine 7 channels into the last axis
+    output_units = int(tf.reduce_prod(output_shape))  # Ensure output units is an integer
 
+    # Define input shape
+    input_layer = tf.keras.Input(shape=input_shape)
 
+    # Reshape input to combine 7 channels
+    reshaped_input = tf.keras.layers.Reshape(reshaped_input_shape)(input_layer)
+
+    # First set of Dense layers (with skip connections)
+    x1 = tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg))(reshaped_input)
+    x1_residual = x1  # Save the output for the skip connection
+
+    x2 = tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg))(x1)
+    x2 = tf.keras.layers.Add()([x2, x1_residual])  # Skip connection: Add x1 to x2
+
+    x3 = tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg))(x2)
+    x3 = tf.keras.layers.Add()([x3, x2])  # Skip connection: Add x2 to x3
+
+    # Second set of Dense layers (with skip connections)
+    x4 = tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg))(x3)
+    x4_residual = x4  # Save the output for the skip connection
+
+    x5 = tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg))(x4)
+    x5 = tf.keras.layers.Add()([x5, x4_residual])  # Skip connection: Add x4 to x5
+
+    x6 = tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg))(x5)
+    x6 = tf.keras.layers.Add()([x6, x5])  # Skip connection: Add x5 to x6
+
+    # Flatten features to a dense layer
+    x7 = tf.keras.layers.Flatten()(x6)
+
+    # Additional dense layer
+    x8 = tf.keras.layers.Dense(512, activation='relu', kernel_regularizer=l2(L2Reg))(x7)
+
+    # Output dense layer reshaped to the desired output dimensions
+    output_layer = tf.keras.layers.Dense(output_units, activation='softmax', kernel_regularizer=l2(L2Reg))(x8)
+
+    # Reshape output to match the desired shape
+    output = tf.keras.layers.Reshape(output_shape)(output_layer)
+
+    # Define the model
+    model = tf.keras.Model(inputs=input_layer, outputs=output)
+    return model
 
 def build_model(Game_MoveMemory =3,L2Reg=0.01):
     Adjusted_Input_By_GameMemory =(Game_MoveMemory*2+1)
@@ -446,7 +502,6 @@ def build_model(Game_MoveMemory =3,L2Reg=0.01):
     reshaped_input_shape = (3, 3, 3, Adjusted_Input_By_GameMemory*3)  # Combine 7 channels into the last axis
     output_units = int(tf.reduce_prod(output_shape))  # Ensure output units is an integer
 
-    kernel_size=(3,3,3)
     model = tf.keras.Sequential([
         # Input layer
         tf.keras.layers.InputLayer(input_shape=input_shape),
@@ -455,25 +510,13 @@ def build_model(Game_MoveMemory =3,L2Reg=0.01):
         tf.keras.layers.Reshape(reshaped_input_shape),
 
         # 3D Convolutional layers
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg)),
 
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg)),
 
 
         # Flatten features to a dense layer
@@ -668,28 +711,37 @@ def Test_Train():
     Game_MoveMemory = 3
     setup_logger('app.log', logging.DEBUG)  # Set up logger to log to 'app.log' with DEBUG level
     #TODO: Game_MoveMemory=4 generates error...
-    game_data = Compile_Data_main(Game_MoveMemory = Game_MoveMemory, RotateGames=False)
+    game_data = Compile_Data_main(Game_MoveMemory = Game_MoveMemory, RotateGames=True)
     Split_game_data = split_data(game_data, test_size=0.2, random_state=42)
-    epochs = 0
+    epochs = 10
 
     #readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
+    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
+    #print(readFile)
     #model = tf.keras.models.load_model(readFile)
-    model = build_model(Game_MoveMemory =3)
+    model = build_model2(Game_MoveMemory =3)
 
     Continue = True
     while (Continue):
 
         #models = train_model_with_kfold(Split_game_data["train"])
-        model = train_model(Split_game_data["train"],model, epochs=10, batch_size=128,Game_MoveMemory =3)
+        model = train_model(Split_game_data["train"],model, epochs=epochs, batch_size=1,Game_MoveMemory =3)
 
         print("Evaluate against testing:")
 
         model.evaluate(Split_game_data["test"]["x"], Split_game_data["test"]["y"], verbose=2)
-        print(Split_game_data["test"]["x"][0])
-        print(Split_game_data["test"]["y"][0])
-        get_output_matrix(model, Split_game_data["test"]["x"][0])
-
-        print(get_output_matrix(model, Split_game_data["test"]["x"][0]))
+        print(Split_game_data["test"]["x"][5])
+        processedGame = Split_game_data["test"]["y"][5]
+        print(*np.array(processedGame[0]).flatten(), sep=" ")
+        print(*np.array(processedGame[1]).flatten(), sep=" ")
+        print(*np.array(processedGame[2]).flatten(), sep=" ")
+        print(*np.array(processedGame[3]).flatten(), sep=" ")
+        print(*np.array(processedGame[4]).flatten(), sep=" ")
+        print(*np.array(processedGame[5]).flatten(), sep=" ")
+        print(*np.array(processedGame[6]).flatten(), sep=" ")
+        print("MoveMade:")
+        print(*np.array(Split_game_data["test"]["y"][5]).flatten(), sep=" ")
+        print(get_output_matrix(model, Split_game_data["test"]["x"][5]))
 
         timeout_seconds = 5
         prompt = input_with_timeout("Continue(Y/Yes): ", timeout_seconds)
@@ -700,8 +752,7 @@ def Test_Train():
         else:
             print("Input received, continuing...")
         epochs+=1
-        SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
-        print(SaveFile)
+
         model.save(SaveFile)
 #import tensorflow as tf
 #print(tf.reduce_sum(tf.random.normal([1000, 1000])))

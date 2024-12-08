@@ -50,6 +50,17 @@ Generate_UTTT_TrainingData_PY:
 	@echo "Using Bash shell: $(SHELL)"
 	@VENV_PATH=./../tf && \
 	source $$VENV_PATH/bin/activate && \
-	python3 ./src/GenerateTrainingData.py -i ./data/1.csv -o ./data/Results.csv
+	python3 ./src/GenerateTrainingData.py -i ./data/UTTT_4.5M_2.5M_2.5M_PMCTS_BookMoveSet2.csv -o ./data/Results.csv
+
+	#python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+
+
+
+.PHONY: Generate_UTTT_TrainingData2_PY
+Generate_UTTT_TrainingData2_PY:
+	@echo "Using Bash shell: $(SHELL)"
+	@VENV_PATH=./../tf && \
+	source $$VENV_PATH/bin/activate && \
+	python3 ./src/GenerateTrainingData_Test.py -i ./data/UTTT_4.5M_2.5M_2.5M_PMCTS_BookMoveSet2.csv -o ./data/Results.csv
 
 	#python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"

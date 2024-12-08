@@ -45,9 +45,6 @@ def build_model(Game_MoveMemory =3,L2Reg=0.01):
         tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
 
 
-        tf.keras.layers.Dense(336, activation='relu', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Dense(336, activation='relu', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Dense(336, activation='relu', kernel_regularizer=l2(L2Reg)),
         # Flatten features to a dense layer
         tf.keras.layers.Flatten(),
         #tf.keras.layers.Dense(1024, activation='relu'),

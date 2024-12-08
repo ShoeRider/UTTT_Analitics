@@ -10,7 +10,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 
 import threading
-
+import copy
 import logging
 '''
 # Example usage:
@@ -244,10 +244,11 @@ def Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove=False):
     return {
         "PastGameNONAttention": PastGameNONAttention,
         "PastGameAttention": PastGameAttention,
-        "XGameStates": XGameStates,
-        "OGameStates": OGameStates,
-        "MoveMade": MoveMade,
-        "ActivePlayer":ActivePlayer
+        "XGameStates": copy.deepcopy(XGameStates),
+        "OGameStates": copy.deepcopy(OGameStates),
+        "MoveMade": copy.deepcopy(MoveMade),
+        "ActivePlayer":ActivePlayer,
+        "FirstMove":FirstMove
     }
 
 def Make_Move(XGameStates,OGameStates,Move,GameMemoryCount,ActivePlayer):
@@ -277,13 +278,33 @@ def Process_UTTT_Game(Moves,GameMemoryCount):
 
     for Move in Moves:
         TrainingInstance = Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove)
+        TrainingInstance["Move"] = Move
         TrainingData.append(TrainingInstance)
 
-        Make_Move(XGameStates,OGameStates,Move,GameMemoryCount,ActivePlayer)
+        ######################
+        #Make Move
+        for i in range(GameMemoryCount - 2, -1, -1):
+            #print("Moving game:",i," To:",i+1)
+            XGameStates[i+1] = XGameStates[i]
+            OGameStates[i+1] = OGameStates[i]
 
+        if ActivePlayer == 'X':
+            XGameStates[0].Boards[int(Move[0])][int(Move[1])][int(Move[2])][int(Move[3])] = 1
+        if ActivePlayer == 'O':
+            OGameStates[0].Boards[int(Move[0])][int(Move[1])][int(Move[2])][int(Move[3])] = 1
+
+        ######################
         # Switch ActivePlayer between 'X' and 'O'
         ActivePlayer = 'O' if ActivePlayer == 'X' else 'X'
         FirstMove = False
+
+        '''print(XGameStates[0])
+        print(TrainingInstance["XGameStates"][0])
+        print(TrainingInstance["XGameStates"][0].Boards)
+        print(TrainingInstance["OGameStates"][0].Boards)
+        print(TrainingInstance["PastGameAttention"])
+        print(TrainingInstance["MoveMade"])
+        print(TrainingInstance["Move"])'''
     return TrainingData
 
 
@@ -643,20 +664,7 @@ def get_output_matrix(model, input_data):
 
     return output_matrix
 
-
-def DiagnoseModelByGame():
-    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
-    TestGame = TestGame.split(',')[:-1]
-    UTTT_UTIL = UTTT()
-    ProcessedData = []
-    # Iterate through each row and print it
-    print(TestGame)
-    print(Process_UTTT_Game(TestGame,Game_MoveMemory))
-    input()
-
-
-
-if __name__ == "__main__":
+def Test_Train():
     Game_MoveMemory = 3
     setup_logger('app.log', logging.DEBUG)  # Set up logger to log to 'app.log' with DEBUG level
     #TODO: Game_MoveMemory=4 generates error...
@@ -696,4 +704,35 @@ if __name__ == "__main__":
         print(SaveFile)
         model.save(SaveFile)
 #import tensorflow as tf
-    #print(tf.reduce_sum(tf.random.normal([1000, 1000])))
+#print(tf.reduce_sum(tf.random.normal([1000, 1000])))
+def DiagnoseModelByGame():
+    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
+    TestGame = TestGame.split(',')[:-1]
+    UTTT_UTIL = UTTT()
+    ProcessedData = []
+    # Iterate through each row and print it
+    print(TestGame)
+    print(Process_UTTT_Game(TestGame,Game_MoveMemory))
+    input()
+
+def DiagnoseGameData():
+    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
+    TestGame = TestGame.split(',')[:-1]
+    UTTT_UTIL = UTTT()
+    ProcessedData = []
+    # Iterate through each row and print it
+    ProcessedGameList = Process_UTTT_Game(TestGame,3)
+    print(TestGame)
+
+    for processedGame in ProcessedGameList:
+        print("Returned Data...")
+        print(processedGame["XGameStates"][0])
+        print(processedGame["XGameStates"][0].Boards)
+        print(processedGame["OGameStates"][0].Boards)
+        print(processedGame["PastGameAttention"])
+        print(processedGame["MoveMade"])
+        print(processedGame["Move"])
+        input()
+
+if __name__ == "__main__":
+    Test_Train()

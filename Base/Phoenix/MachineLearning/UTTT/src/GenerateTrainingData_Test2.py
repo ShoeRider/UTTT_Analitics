@@ -1,7 +1,5 @@
 import csv
 import argparse
-
-
 import tensorflow as tf
 import numpy as np
 
@@ -14,9 +12,9 @@ from tensorflow.keras.regularizers import l2
 import threading
 import copy
 import logging
-
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+from tensorflow.python.training.input import batch
+
 '''
 # Example usage:
 if __name__ == '__main__':
@@ -42,6 +40,69 @@ def setup_logger(log_file='app.log', log_level=logging.INFO):
         format='%(asctime)s - %(levelname)s - %(message)s',  # Format of log messages
         datefmt='%Y-%m-%d %H:%M:%S'      # Date format in the log messages
     )
+
+def set_visible_gpus(cuda_devices):
+    """
+    Sets the visible CUDA devices based on the provided input.
+
+    Args:
+        cuda_devices (str): Comma-separated string of GPU indices to make visible.
+                            Example: "0,1" to make GPU 0 and GPU 1 visible.
+    """
+    os.environ["CUDA_VISIBLE_DEVICES"] = cuda_devices
+    print(f"CUDA_VISIBLE_DEVICES set to: {cuda_devices}")
+
+    # Enable memory growth for the visible GPUs
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print(f"Memory growth enabled for GPUs: {cuda_devices}")
+        except RuntimeError as e:
+            print(f"Error setting memory growth: {e}")
+    else:
+        print("No GPUs found. Please check your CUDA_VISIBLE_DEVICES setting.")
+
+def uniformMemory():
+    # List all available GPUs
+    gpus = tf.config.list_physical_devices('GPU')
+
+    if gpus:
+        try:
+            # Set memory growth uniformly across all GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print("Memory growth enabled on all GPUs")
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs are initialized
+            print(f"Error setting memory growth: {e}")
+    else:
+        print("No GPUs found")
+def initialize_gpu(gpu_number):
+    """
+    Initializes TensorFlow to use the specified GPU by its index.
+
+    Args:
+        gpu_number (int): The index of the GPU to use.
+    """
+    # Get a list of available GPUs
+    gpus = tf.config.list_physical_devices('GPU')
+
+    if not gpus:
+        raise RuntimeError("No GPUs found on this system.")
+
+    if gpu_number >= len(gpus):
+        raise ValueError(f"Invalid GPU number {gpu_number}. Only {len(gpus)} GPUs are available.")
+
+    # Set the specific GPU to be visible
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_number)
+
+    # Optionally, configure memory growth on the selected GPU
+    selected_gpu = gpus[gpu_number]
+    tf.config.experimental.set_memory_growth(selected_gpu, True)
+
+    print(f"Using GPU: {selected_gpu}")
 
 def log_message(message, level=logging.INFO):
     """
@@ -231,12 +292,13 @@ def Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove=False):
     PastGameAttention = [[[[0 for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
     MoveMade = [[[[0 for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
 
+    _3x3_0Matrix = [[0 for _ in range(3)] for _ in range(3)]
     _3x3_1Matrix = [[1 for _ in range(3)] for _ in range(3)]
     if(FirstMove):
-        for x in range(3):
-            for y in range(3):
-                PastGameAttention[x][y] = _3x3_1Matrix
+        PastGameAttention = [[[[1 for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
+
     if(not FirstMove):
+        MoveMade = [[[[-0.05 for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
         PastGameAttention[int(Move[0])][int(Move[1])] = _3x3_1Matrix
 
         '''for Game_row in range(3):
@@ -247,8 +309,9 @@ def Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove=False):
 
                         if Sub_col != int(Move[3]):
                         '''
+    #MovesMade = np.logical_or(XGameStates.Boards, OGameStates.Boards).astype(int)
 
-
+    MoveMade[int(Move[0])][int(Move[1])]= _3x3_0Matrix
     MoveMade[int(Move[0])][int(Move[1])][int(Move[2])][int(Move[3])] = 1
     return {
         "PastGameNONAttention": PastGameNONAttention,
@@ -284,6 +347,7 @@ def Process_UTTT_Game(Moves,GameMemoryCount):
     # - History
     XGameStates = [UTTT() for _ in range(GameMemoryCount)]
     OGameStates = [UTTT() for _ in range(GameMemoryCount)]
+    MovesMade   = UTTT()
 
     for Move in Moves:
         TrainingInstance = Process_Move(XGameStates,OGameStates,Move,ActivePlayer,FirstMove)
@@ -341,7 +405,7 @@ def prepare_training_data(game_data,GameHistory=3):
         #print(item)
         #print(item["PastGameAttention"])
         past_game_attention = np.array(item["PastGameAttention"])  # Shape: (3, 3, 3, 3)
-        array = np.array(past_game_attention)
+        #array = np.array(past_game_attention)
 
         GameHistory_Array = []
         for x in range(GameHistory):
@@ -377,26 +441,27 @@ def prepare_training_data(game_data,GameHistory=3):
         combined_input = np.concatenate(
             [past_game_attention[np.newaxis, ...], GameHistory_Array], axis=0
         )  # Shape: (7, 3, 3, 3, 3)
+        #combined_input = CreatePositive_Example(item,GameHistory)
 
-        move_made = np.array(item["MoveMade"])  # Shape: (3, 3, 3, 3)
+        # Chosen Move:
         x_train.append(combined_input)
-        y_train.append(move_made)
+        y_train.append(np.array(item["MoveMade"]))
 
+        """if(IncludePossibleMoves):
+            # Possible Moves:
+            x_train.append(combined_input)
+            y_train.append(np.array(item["PastGameAttention"]))"""
     # Convert lists to numpy arrays
     x_train = np.array(x_train)  # Shape: (num_samples, 7, 3, 3, 3, 3)
     y_train = np.array(y_train)  # Shape: (num_samples, 3, 3, 3, 3)
 
     return x_train, y_train
 
-def Compile_Data_main(Game_MoveMemory = 3,RotateGames=True):
+def Compile_Data_main(args, Game_MoveMemory = 3,RotateGames=True):
     """
     Main function that handles command-line arguments and reads the input CSV file.
     """
-    parser = argparse.ArgumentParser(description="Process input and output CSV files.")
-    parser.add_argument("-i", required=True, help="Path to the input CSV file.")
-    parser.add_argument("-o", required=True, help="Path to the output CSV file.")
 
-    args = parser.parse_args()
 
     input_path = args.i
     result_path = args.o
@@ -435,8 +500,71 @@ def Compile_Data_main(Game_MoveMemory = 3,RotateGames=True):
 
 
 
+def build_model2(Game_MoveMemory =3,L2Reg=0.01):
+    Adjusted_Input_By_GameMemory =(Game_MoveMemory*2+1)
+    input_shape=(Adjusted_Input_By_GameMemory, 3, 3, 3, 3)
+    output_shape=(3, 3, 3, 3)
+    """
+    Builds a neural network model for training on the given input and output shapes.
+    
+    Args:
+        input_shape (tuple): Shape of the input tensor (default: (7, 3, 3, 3, 3)).
+        output_shape (tuple): Shape of the output tensor (default: (3, 3, 3, 3)).
+    
+    Returns:
+        tf.keras.Model: Compiled model.
+    """
+    reshaped_input_shape = (3, 3, 3, Adjusted_Input_By_GameMemory*3)  # Combine 7 channels into the last axis
+    output_units = int(tf.reduce_prod(output_shape))  # Ensure output units is an integer
 
+    # Define input shape
+    input_layer = tf.keras.Input(shape=input_shape)
 
+    # Reshape input to combine 7 channels
+    reshaped_input = tf.keras.layers.Reshape(reshaped_input_shape)(input_layer)
+
+    # First set of Dense layers (with skip connections)
+    x1 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(reshaped_input)
+    x1_residual = x1  # Save the output for the skip connection
+
+    x2 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x1)
+    x2 = tf.keras.layers.Add()([x2, x1_residual])  # Skip connection: Add x1 to x2
+
+    x3 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x2)
+    x3 = tf.keras.layers.Add()([x3, x2])  # Skip connection: Add x2 to x3
+
+    # Second set of Dense layers (with skip connections)
+    x4 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x3)
+    x4_residual = x4  # Save the output for the skip connection
+
+    x5 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x4)
+    x5 = tf.keras.layers.Add()([x5, x4_residual])  # Skip connection: Add x4 to x5
+
+    x6 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x5)
+    x6 = tf.keras.layers.Add()([x6, x5])  # Skip connection: Add x5 to x6
+
+    x7 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x6)
+    #x7 = tf.keras.layers.Add()([x7])  # Skip connection: Add x5 to x6
+    x7 = tf.keras.layers.Add()([x7, x6])  # Skip connection: Add x5 to x6
+
+    x8 = tf.keras.layers.Dense(256, activation='sigmoid', kernel_regularizer=l2(L2Reg))(x7)
+    x8 = tf.keras.layers.Add()([x8, x7])  # Skip connection: Add x5 to x6
+
+    # Flatten features to a dense layer
+    x9 = tf.keras.layers.Flatten()(x8)
+
+    # Additional dense layer
+    x9 = tf.keras.layers.Dense(512, activation='relu', kernel_regularizer=l2(L2Reg))(x9)
+
+    # Output dense layer reshaped to the desired output dimensions
+    output_layer = tf.keras.layers.Dense(output_units, activation='softmax', kernel_regularizer=l2(L2Reg))(x9)
+
+    # Reshape output to match the desired shape
+    output = tf.keras.layers.Reshape(output_shape)(output_layer)
+
+    # Define the model
+    model = tf.keras.Model(inputs=input_layer, outputs=output)
+    return model
 
 def build_model(Game_MoveMemory =3,L2Reg=0.01):
     Adjusted_Input_By_GameMemory =(Game_MoveMemory*2+1)
@@ -455,7 +583,6 @@ def build_model(Game_MoveMemory =3,L2Reg=0.01):
     reshaped_input_shape = (3, 3, 3, Adjusted_Input_By_GameMemory*3)  # Combine 7 channels into the last axis
     output_units = int(tf.reduce_prod(output_shape))  # Ensure output units is an integer
 
-    kernel_size=(3,3,3)
     model = tf.keras.Sequential([
         # Input layer
         tf.keras.layers.InputLayer(input_shape=input_shape),
@@ -464,25 +591,13 @@ def build_model(Game_MoveMemory =3,L2Reg=0.01):
         tf.keras.layers.Reshape(reshaped_input_shape),
 
         # 3D Convolutional layers
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(42, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_regularizer=l2(L2Reg)),
 
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(84, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(168, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
-        tf.keras.layers.Conv3D(336, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg)),
+        tf.keras.layers.Dense(2048, activation='relu', kernel_regularizer=l2(L2Reg)),
 
 
         # Flatten features to a dense layer
@@ -529,6 +644,127 @@ def split_data(game_data, test_size=0.2, random_state=42):
         "train": {"x": x_train, "y": y_train},
         "test": {"x": x_test, "y": y_test},
     }
+import tensorflow as tf
+from tensorflow.keras.layers import Input, Conv3D, Add, Dense, Flatten, Reshape
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.optimizers import Adam
+
+import tensorflow as tf
+from tensorflow.keras.layers import Input, Reshape, Conv3D, Dense, Flatten, Add
+from tensorflow.keras.regularizers import l2
+
+def build_model3(Game_MoveMemory=3, L2Reg=0.01):
+    """
+    Builds a neural network model for training on the given input and output shapes.
+
+    Args:
+        Game_MoveMemory (int): Number of past moves to consider for memory.
+        L2Reg (float): L2 regularization parameter.
+
+    Returns:
+        tf.keras.Model: Compiled model.
+    """
+    # Adjust input shape based on Game_MoveMemory
+    Adjusted_Input_By_GameMemory = (Game_MoveMemory * 2 + 1)
+    input_shape = (Adjusted_Input_By_GameMemory, 3, 3, 3, 3)
+    output_shape = (3, 3, 3, 3)
+
+    # Combine the channel dimension
+    reshaped_input_shape = (3, 3, 3, Adjusted_Input_By_GameMemory * 3)
+    output_units = int(tf.reduce_prod(output_shape))  # Flatten the output shape to units
+
+    kernel_size = (3, 3, 3)
+
+    # Reshape input
+
+    inputs = Input(shape=input_shape)
+    x = Reshape(reshaped_input_shape)(inputs)
+
+    def conv_block(x, filters, kernel_size, regularizer):
+        # First Conv3D layer
+        conv1 = Conv3D(filters, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=regularizer)(x)
+        # Second Conv3D layer
+        conv2 = Conv3D(filters, kernel_size=kernel_size, activation='relu', padding='same', kernel_regularizer=regularizer)(conv1)
+
+        # Adjust the input tensor's channel dimension to match the output if necessary
+        shortcut = Conv3D(filters, kernel_size=(1, 1, 1), activation=None, padding='same', kernel_regularizer=regularizer)(x)
+
+        # Add skip connection
+        return Add()([shortcut, conv2])  # Add the shortcut to the conv2 output
+
+
+    def dense_block(x, units, regularizer,activation='sigmoid'):
+        """
+        Creates a block of 3 Dense layers with a skip connection around the block.
+
+        Args:
+            x (tf.Tensor): Input tensor.
+            units (int): Number of units in each Dense layer.
+            regularizer: Regularizer for Dense layers.
+
+            'relu'
+        Returns:
+            tf.Tensor: Output tensor with a skip connection around the Dense layers.
+        """
+        # First Dense layer
+        dense1 = Dense(units, activation=activation, kernel_regularizer=regularizer)(x)
+        # Second Dense layer
+        dense2 = Dense(units, activation=activation, kernel_regularizer=regularizer)(dense1)
+        # Third Dense layer
+        dense3 = Dense(units, activation=activation, kernel_regularizer=regularizer)(dense2)
+
+        # Shortcut connection: Adjust the input dimensions with a Dense layer
+        shortcut = Dense(units, activation=None, kernel_regularizer=regularizer)(x)
+
+        # Add skip connection
+        return Add()([shortcut, dense3])
+    # Stacking convolutional layers with skip connections
+    #x = conv_block(x, 42, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 42, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 84, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 84, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 168, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 168, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 336, kernel_size, l2(L2Reg))
+    #x = conv_block(x, 336, kernel_size, l2(L2Reg))
+
+
+    x = dense_block(x, 42, l2(L2Reg),activation='sigmoid')
+    x = dense_block(x, 42, l2(L2Reg),activation='sigmoid')
+
+    x = dense_block(x, 84, l2(L2Reg),activation='sigmoid')
+    x = dense_block(x, 84, l2(L2Reg),activation='sigmoid')
+
+    x = dense_block(x, 168, l2(L2Reg),activation='sigmoid')
+    x = dense_block(x, 168, l2(L2Reg),activation='sigmoid')
+
+    x = dense_block(x, 336, l2(L2Reg),activation='sigmoid')
+    x = dense_block(x, 336, l2(L2Reg),activation='sigmoid')
+
+    x = dense_block(x, 672, l2(L2Reg),activation='sigmoid')
+    x = dense_block(x, 672, l2(L2Reg),activation='sigmoid')
+
+    # Flatten and final dense layers
+    x = Flatten()(x)
+    x = Dense(512, activation='relu', kernel_regularizer=l2(L2Reg))(x)
+    outputs = Dense(output_units, activation='softmax', kernel_regularizer=l2(L2Reg))(x)
+
+    # Reshape to desired output shape
+    outputs = Reshape(output_shape)(outputs)
+
+    # Create the model
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+    # Compile the model
+    model.compile(
+        optimizer='adam',
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    print(f"Expected Reshape Output Shape: {output_shape}, Total Units in Dense Layer: {tf.reduce_prod(output_shape)}")
+    print(f"Input Shape for Model: {input_shape}")
+    return model
 
 def train_model(game_data,model, epochs=5, batch_size=256,Game_MoveMemory =3):
     # Example synthetic game data
@@ -673,35 +909,76 @@ def get_output_matrix(model, input_data):
 
     return output_matrix
 
-def Test_Train():
+
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
+
+def Test_Train(args,RotateGames=False):
     Game_MoveMemory = 3
     setup_logger('app.log', logging.DEBUG)  # Set up logger to log to 'app.log' with DEBUG level
-    #TODO: Game_MoveMemory=4 generates error...
-    game_data = Compile_Data_main(Game_MoveMemory = Game_MoveMemory, RotateGames=False)
-    Split_game_data = split_data(game_data, test_size=0.2, random_state=42)
-    epochs = 0
 
-    #readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
-    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_104_ConvMix.keras'
-    print(readFile)
-    #model = tf.keras.models.load_model(readFile)
-    model = build_model(Game_MoveMemory =3)
+    readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_105_ConvMix.keras'
+    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_105_ConvMix.keras'
+    try:
+        model = tf.keras.models.load_model(readFile)
+        #model = build_model3(Game_MoveMemory =3)
+    except:
+        # Load the model without optimizer state
+        model = tf.keras.models.load_model(readFile, compile=False)
 
+        # Reinitialize and compile the model
+        from tensorflow.keras.optimizers import Adam
+        optimizer = Adam(learning_rate=0.001)  # Adjust learning rate as needed
+        model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    batchsize = 20
     Continue = True
+
+    #TODO: Game_MoveMemory=4 generates error...
+    game_data = Compile_Data_main(args,Game_MoveMemory = Game_MoveMemory, RotateGames=RotateGames)
+    Split_game_data = split_data(game_data, test_size=0.2, random_state=42)
+    dataset = Split_game_data["train"]
+    epochs = 1
+    Itteration=0
+    #Mixed precision uses float16 for computations instead of float32, significantly reducing memory usage.
+    #policy = mixed_precision.Policy('mixed_float16')
+    #mixed_precision.set_policy(policy)
+
     while (Continue):
+        try:
+            # Set steps_per_epoch in model.fit
+            model = train_model(dataset, model, epochs=epochs, batch_size=batchsize,Game_MoveMemory =3)
+            model.save(SaveFile)
+        except:
+            batchsize = 1
+            model = tf.keras.models.load_model(readFile)
+            from tensorflow.keras import backend as K
+        print("Clearing memory.")
+        K.clear_session()
+        tf.compat.v1.reset_default_graph()
 
-        #models = train_model_with_kfold(Split_game_data["train"])
-        model = train_model(Split_game_data["train"],model, epochs=10, batch_size=128,Game_MoveMemory =3)
+        #print("Evaluate against testing:")
 
-        print("Evaluate against testing:")
+        #model.evaluate(Split_game_data["test"]["x"], Split_game_data["test"]["y"], verbose=2)
+        #print(Split_game_data["test"]["x"][5])
+        try:
+            index = 5
+            processedGame = Split_game_data["test"]["x"][index]
+            print("Itteration: ",Itteration)
+            print(*np.array(processedGame[0]).flatten('C'), sep=" ")
+            print(*np.array(processedGame[1]).flatten('C'), sep=" ")
+            print(*np.array(processedGame[2]).flatten('C'), sep=" ")
+            print(*np.array(processedGame[3]).flatten('C'), sep=" ")
+            print(*np.array(processedGame[4]).flatten('C'), sep=" ")
+            print(*np.array(processedGame[5]).flatten('C'), sep=" ")
+            print(*np.array(processedGame[6]).flatten('C'), sep=" ")
 
-        model.evaluate(Split_game_data["test"]["x"], Split_game_data["test"]["y"], verbose=2)
-        print(Split_game_data["test"]["x"][5])
-        print(Split_game_data["test"]["y"][5])
-        get_output_matrix(model, Split_game_data["test"]["x"][5])
+            print(processedGame[0])
+            print("MoveMade:")
+            print(*np.array(Split_game_data["test"]["y"][index]).flatten('C'), sep=" ")
+            print(*np.array(get_output_matrix(model, processedGame)).flatten('C'), sep="`n\n")
+            print(np.round(get_output_matrix(model, processedGame), 3), sep=" ")
 
-        print(get_output_matrix(model, Split_game_data["test"]["x"][5]))
-
+        except:
+            print("Print Failed")
         timeout_seconds = 5
         prompt = input_with_timeout("Continue(Y/Yes): ", timeout_seconds)
         if prompt is None:
@@ -710,8 +987,8 @@ def Test_Train():
             Continue = False
         else:
             print("Input received, continuing...")
-        epochs+=1
-
+        #epochs+=1
+        Itteration+=1
         model.save(SaveFile)
 #import tensorflow as tf
 #print(tf.reduce_sum(tf.random.normal([1000, 1000])))
@@ -722,7 +999,7 @@ def DiagnoseModelByGame():
     ProcessedData = []
     # Iterate through each row and print it
     print(TestGame)
-    print(Process_UTTT_Game(TestGame,3))
+    print(Process_UTTT_Game(TestGame,Game_MoveMemory))
     input()
 
 def DiagnoseGameData():
@@ -744,91 +1021,20 @@ def DiagnoseGameData():
         print(processedGame["Move"])
         input()
 
-def InferenceModel(Path):
-    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
-    TestGame = TestGame.split(',')[:-1]
-    UTTT_UTIL = UTTT()
-    ProcessedData = []
-    # Iterate through each row and print it
-    GD = Process_UTTT_Game(TestGame,3)
-    PGD_x, PGD_y =  prepare_training_data(GD)
-    #model.evaluate(GD, GD, verbose=2)
-    print(len(GD))
-    print(len(PGD_x))
-    print(len(PGD_y))
-
-    for index in range(len(PGD_x)):
-        processedGame = PGD_x[index]
-        ProcessedGame_MoveMade = PGD_y[index]
-
-
-        print("Processed Game Data...")
-
-        print(*np.array(processedGame[0]).flatten(), sep=" ")
-        print(*np.array(processedGame[1]).flatten(), sep=" ")
-        print(*np.array(processedGame[2]).flatten(), sep=" ")
-        print(*np.array(processedGame[3]).flatten(), sep=" ")
-        print(*np.array(processedGame[4]).flatten(), sep=" ")
-        print(*np.array(processedGame[5]).flatten(), sep=" ")
-        print(*np.array(processedGame[6]).flatten(), sep=" ")
-        print(*np.array(ProcessedGame_MoveMade).flatten(), sep=" ")
-        #get_output_matrix(model, GD[5])
-        PredictedMove = get_output_matrix(model, processedGame)
-        print(PredictedMove.ndim)
-        print(processedGame.ndim)
-        print(np.round(PredictedMove, 3), sep=" ")
-        input()
-
-def TestRotate():
-    TestGame = "1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1220,2021,2122,2221,2111,1101,0100,0000,0001,0101,0102,0222,2200,0020,2002,"
-    TestGame = TestGame.split(',')[:-1]
-    UTTT_UTIL = UTTT()
-    ProcessedData = []
-    # Iterate through each row and print it
-    R90  = UTTT_UTIL.Rotate_GameHistory(TestGame)
-    print(TestGame)
-    print(R90)
-    input()
-    GD = Process_UTTT_Game(TestGame,3)
-    PGD_x, PGD_y =  prepare_training_data(GD)
-    #model.evaluate(GD, GD, verbose=2)
-    print(len(GD))
-    print(len(PGD_x))
-    print(len(PGD_y))
-    index = 0
-    processedGame = PGD_x[index]
-    ProcessedGame_MoveMade = PGD_y[index]
-
-
-    print("Processed Game Data...")
-
-    print(*np.array(processedGame[0]).flatten(), sep=" ")
-    print(*np.array(processedGame[1]).flatten(), sep=" ")
-    print(*np.array(processedGame[2]).flatten(), sep=" ")
-    print(*np.array(processedGame[3]).flatten(), sep=" ")
-    print(*np.array(processedGame[4]).flatten(), sep=" ")
-    print(*np.array(processedGame[5]).flatten(), sep=" ")
-    print(*np.array(processedGame[6]).flatten(), sep=" ")
-    #print(np.round(get_output_matrix(model, processedGame), 3), sep=" ")
-    #get_output_matrix(model, GD[5])
-    PredictedMove = get_output_matrix(model, processedGame)
-    print(np.round(PredictedMove, 3), sep=" ")
-    print(PredictedMove.ndim)
-    print(processedGame.ndim)
-
 if __name__ == "__main__":
-    readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
-    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
-    print(readFile)
-    model = tf.keras.models.load_model(readFile)
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description=".")
+    parser.add_argument("-i", required=True, help="Path to the input CSV file.")
+    parser.add_argument("-o", required=True, help="Path to the output CSV file.")
+    parser.add_argument("--CUDA", type=str, required=True,
+                        help="Comma-separated list of GPU indices to make visible (e.g., '0,1').")
+    args = parser.parse_args()
 
-    InferenceModel(model)
-
-
-def RunTest():
-    readFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
-    SaveFile = '/media/pc/3ddaa8a1-223c-4f10-b7d3-4b8e6a96e670/UTTT/UTTT_Project/UTTT_Analitics/Base/Phoenix/MachineLearning/UTTT/data/4.5M_2.5M_Test_102_ConvMix.keras'
-    print(readFile)
-    model = tf.keras.models.load_model(readFile)
-
-    InferenceModel(model)
+    # Set the visible CUDA GPUs
+    set_visible_gpus(args.CUDA)
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    #initialize_gpu(1)
+    Test_Train(args,RotateGames=True)

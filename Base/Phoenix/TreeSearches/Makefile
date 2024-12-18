@@ -143,7 +143,8 @@ UTTT_PMCTS_ContinueGenerateSearchGame:
 
 	#./TTT_GenerateSearchGames -g 10000 -p 10000_RandomSearchResults.csv
 	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_ContinueGenerateSearchGame1 -pg 0112,1202,0202,0221, -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
-	#./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
+	valgrind --leak-check=yes --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./UTTT_PMCTS_ContinueGenerateSearchGame1 -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
+    #./UTTT_PMCTS_GenerateSearchGames -g 1 -p UTTT_PMCTS_GenerateSearchGames.csv
 
 .PHONY: Run_UTTT_PMCTS_GenerateGameData
 Run_UTTT_PMCTS_ContinueGenerateSearchGame:
@@ -167,8 +168,16 @@ Run_UTTT_PMCTS_ContinueGenerateSearchGame3:
 
 .PHONY: Run_UTTT_PMCTS_GenerateGameData4
 Run_UTTT_PMCTS_ContinueGenerateSearchGame4:
+	nvcc -DPRINT_TO_SCREEN -o ./Bin/UTTT_PMCTS_ContinueGenerateSearchGame2 ./Tests/UTTT_PMCTS_ContinueGenerateSearchGame.cu -ljsoncpp -O3 -lineinfo
 	#./UTTT_PMCTS_ContinueGenerateSearchGame -pg 0112,1202,0202,0221, -sd 200000 -m 1 -t 9 -rd 0 -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
-	./UTTT_PMCTS_ContinueGenerateSearchGame -sd 4500000 -m 15 -t 16 -rd 0 -g 1000 -p UTTT_4.5M_PMCTS_BookMoveSet2.csv
+	valgrind ./Bin/UTTT_PMCTS_ContinueGenerateSearchGame2 -sd 1000 -m -1 -t 1 -rd 0 -g 1 -p UTTT_1k_PMCTS_BookMoveSet1.csv
+	./alert.sh
+
+
+.PHONY: Run_UTTT_PMCTS_GenerateGameData_Test
+Run_UTTT_PMCTS_ContinueGenerateSearchGame_Test:
+	#./UTTT_PMCTS_ContinueGenerateSearchGame -pg 0112,1202,0202,0221, -sd 200000 -m 1 -t 9 -rd 0 -p UTTT_PMCTS_ContinueGenerateSearchGame.csv
+	./Bin/UTTT_PMCTS_ContinueGenerateSearchGame -pg 1002,0202,0221,2100,0022,2220,2020,2012,1222,2202,0220,2022,2222,2210,1012,1210,1022,2221,2112,1221,2111,1102,0222,2200,0000,0021,2102,0212,1201,0121, -sd 4500000 -m -1 -t 16 -rd 0 -g 1 -p UTTT_4.5M_PMCTS_BookMoveSet_Test.csv
 	./alert.sh
 
 .PHONY: Test
